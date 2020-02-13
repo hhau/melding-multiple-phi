@@ -1,0 +1,41 @@
+\begin{figure}[tb]
+  \centering
+  \begin{tikzpicture}[node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.25cm}]  
+  % Nodes
+  \node [state] (model-1) {$\textcolor{mymidblue}{\pd_{1}}$};
+  \node [state] [above right = of model-1] (model-2) {$\textcolor{mymidblue}{\pd_{2}}$};
+ 
+  \coordinate [right of = model-2] (blank1);
+
+  \node [state] [right of = blank1] (model-Kminus1) {$\textcolor{mymidblue}{\pd_{k - 1}}$};
+  \node [state] [below right = of model-Kminus1] (model-K) {$\pd_{k}$};
+  \node [state] [above right = of model-K] (model-Kplus1) {$\textcolor{myredhighlight}{\pd_{k + 1}}$};
+
+  \coordinate [right of = model-Kplus1] (blank2);
+  
+  \node [state] [right = of blank2] (model-Mminus1) {$\textcolor{myredhighlight}{\pd_{\Nm - 1}}$};
+  \node [state] [below right = of model-Mminus1] (model-M) {$\textcolor{myredhighlight}{\pd_{\Nm}}$};
+
+  \coordinate [below of = model-1] (blank3);
+  \coordinate [below of = model-K] (blank4);
+  \coordinate [below of = model-M] (blank5);
+  
+
+  % Edges
+  \draw (model-1) edge node[above left] {$\textcolor{mymidblue}{\phi_{1:2}}$} (model-2);
+
+  \draw [dotted] (model-2) edge (model-Kminus1);
+
+  \draw (model-Kminus1) edge node[above right] {$\textcolor{mymidblue}{\phi_{k - 1:k}}$} (model-K);
+  \draw (model-K) edge node[above left] {$\textcolor{myredhighlight}{\phi_{k:k + 1}}$} (model-Kplus1);
+
+  \draw [dotted] (model-Kplus1) edge (model-Mminus1);
+
+  \draw (model-Mminus1) edge node[above right] {$\textcolor{myredhighlight}{\phi_{\Nm - 1:\Nm}}$} (model-M);
+
+  % \draw [<->](model-1.south) -- (model-K.south);
+
+  \end{tikzpicture}
+  \caption{Divide and conquer sampler overview}
+  \label{fig:dc-tikz-target}
+\end{figure}

@@ -1,0 +1,42 @@
+\begin{figure}[tb]
+  \centering
+  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.25cm}]
+  % nodes 
+  \node [state] (model-1) {$\pd_{1}$};
+  \node [state] [above right = of model-1] (model-3) {$\pd_{3}$};
+  \node [state] [above = of model-3] (model-4) {$\pd_{4}$};
+  \node [state] [below  = of model-1] (model-5) {$\pd_{5}$};
+
+  \coordinate [above left of = model-1] (blank2);
+
+  \node [state] [above = 2.3cm of blank2] (model-2) {$\pd_{2}$};
+
+  % edges
+  \path[->] (model-2) edge[out = 270, in = 135] node [above right] (phi-12) {$\phi_{1:2}$} (model-1);
+  \path[->] (model-4) edge node [right] (phi-34) {$\phi_{3:4}$} (model-3);
+
+  \path (model-3) edge node [below right] (phi-13) {$\phi_{1:3}$} (model-1);
+  \path (model-1) edge node [right] (phi-15) {$\phi_{1:5}$} (model-5);
+
+  % stage one - blue
+  \node (stage-1) [draw = mymidblue, fit = (model-4) (phi-34), inner sep = 0.05cm, dotted] {};
+  \node (stage-1-label) [yshift = 1.5ex, mymidblue] at (stage-1.north east) {$s_{1}$};
+  \node (stage-1-prime) [draw = mymidblue, fit = (model-2) (phi-12), inner sep = 0.05cm, dotted] {};
+  \node (stage-1-prime-label) [yshift = 1.5ex, mymidblue] at (stage-1-prime.north east) {$s_{1}'$};
+
+  % stage two - grey
+  \node (stage-2) [draw = mydarkblue, fit = (model-3) (model-4) (phi-13) (phi-34) (stage-1-label), inner sep = 0.1cm, dotted] {};
+  \node (stage-2-label) [yshift = 1.5ex, mydarkblue] at (stage-2.north east) {$s_{2}$};
+
+  % stage three - red
+  \node (stage-3) [draw = myredhighlight, fit = (model-1) (model-2) (model-4) (phi-15) (phi-34) (stage-2-label), inner sep = 0.135cm, dotted] {};
+  \node (stage-3-label) [yshift = 1.5ex, myredhighlight] at (stage-3.north east) {$s_{3}$};
+
+  % stage four - black
+  \node (stage-4) [draw = black, fit = (model-2) (model-4) (model-5) (phi-34) (stage-3-label), inner sep = 0.225cm] {};
+  \node [yshift = 1.5ex, black] at (stage-4.north east) {$s_{4}$};
+
+  \end{tikzpicture}
+  \caption{An arbitrary graph connected by common quantities $\phi_{\modelindex : \modelindex'}$. The bounding boxes represent the models considered in stage $s_{\modelindex}$ of the multi-stage sampler.}
+  \label{fig:example-model-graph-top-down}
+\end{figure}

@@ -1,0 +1,47 @@
+\begin{multline}
+  \alpha \left(
+    (\phi_{1:2}^{*}, \ldots, \phi_{k - 1:k}^{*}, \psi_{1}^{*}, \ldots, \psi_{k - 1}^{*}),
+    (\phi_{1:2}, \ldots, \phi_{k - 1:k}, \psi_{1}, \ldots, \psi_{k - 1})
+  \right)
+  =\\ 
+  \frac {
+    \pd_{k}(\phi_{k - 1:k}^{*}, \phi_{k:k + 1}, \psi_{k}, Y_{k})
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1})
+    \pd_{\text{pool}}(\phi_{1:2}^{*}, \ldots, \phi_{k - 1:k}^{*}, \phi_{k:k + 1}, \ldots, \phi_{\Nm - 1})
+  } {
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1}, \psi_{k}, Y_{k})
+    \pd_{k}(\phi_{k - 1:k}^{*}, \phi_{k:k + 1})
+    \pd_{\text{pool}}(\phi_{1:2}, \ldots, \phi_{k - 1:k}, \phi_{k:k + 1}, \ldots, \phi_{\Nm - 1})
+  }
+  \end{multline}
+  \begin{multline}
+  \alpha \left(
+    (\phi_{k:k + 1}^{*} \ldots, \phi_{\Nm - 1:\Nm}^{*}, \psi_{k + 1}^{*}, \ldots, \psi_{\Nm}^{*}),
+    (\phi_{k:k + 1} \ldots, \phi_{\Nm - 1:\Nm}, \psi_{k + 1}, \ldots, \psi_{\Nm})
+  \right)
+  =\\
+  \frac {
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1}^{*}, \psi_{k}, Y_{k})
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1})
+    \pd_{\text{pool}}(\phi_{1:2}, \ldots, \phi_{k - 1:k}, \phi_{k:k + 1}^{*}, \ldots, \phi_{\Nm - 1}^{*})
+  } {
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1}, \psi_{k}, Y_{k})
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1}^{*})
+    \pd_{\text{pool}}(\phi_{1:2}, \ldots, \phi_{k - 1:k}, \phi_{k:k + 1}, \ldots, \phi_{\Nm - 1})
+  } 
+  \end{multline}
+  \begin{equation}
+  \alpha \left(
+    (\psi_{k}^{*}),
+    (\psi_{k})
+  \right)
+  = 
+  \frac {
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1}, \psi_{k}^{*}, Y_{k})
+    \q(\psi_{k} \mid \psi_{k}^{*})
+  } {
+    \pd_{k}(\phi_{k - 1:k}, \phi_{k:k + 1}, \psi_{k}, Y_{k})
+    \q(\psi_{k}^{*} \mid \psi_{k})
+  }
+  \label{eqn:dc-acceptance-probabilities}
+\end{equation}

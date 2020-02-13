@@ -1,0 +1,2 @@
+RSTUDIO_PANDOC="/Applications/RStudio.app/Contents/MacOS/pandoc"
+PATH="/Applications/RStudio.app/Contents/MacOS/pandoc:${PATH}"

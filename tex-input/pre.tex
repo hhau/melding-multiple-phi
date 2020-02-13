@@ -1,0 +1,76 @@
+\usepackage{amsmath}
+% I always seem to need tikz for something
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes, intersections, through, backgrounds, fit, decorations.pathmorphing, angles, quotes}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{lineno}
+% \linenumbers
+
+% required for landscape pages. beware, they back the build very slow.
+\usepackage{pdflscape}
+
+% table - `gt' package uses these, often unimportant
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\usepackage{color}
+\definecolor{myredhighlight}{RGB}{180, 15, 32}
+\definecolor{mydarkblue}{RGB}{0, 33, 79}
+\definecolor{mymidblue}{RGB}{44, 127, 184}
+\definecolor{mylightblue}{RGB}{166, 233, 255}
+
+\newcommand{\semitransp}[2][35]{\color{fg!#1}#2}
+
+\setcounter{secnumdepth}{4}
+
+% pd stands for: probability distribution and is useful to distringuish
+% marignals for probabilities specifically p(p_{1}) and the like.
+\newcommand{\pd}{\text{p}}
+\newcommand{\q}{\text{q}}
+\newcommand{\w}{\text{w}}
+\newcommand{\pdr}{\text{r}}
+\newcommand{\pdrh}{\hat{\text{r}}}
+
+% melding
+\newcommand{\ppoolphi}{\pd_{\text{pool}}(\phi)}
+\newcommand{\pmeld}{\pd_{\text{meld}}}
+
+% the q(x)w(x), "weighted target" density 
+% for the moment I'm going to call it s(x), as that is the next letter of the 
+% alphabet. Can change it later
+\newcommand{\s}{\text{s}}
+% direct density estimate - replaces lambda.
+\newcommand{\ddest}{\text{s}}
+% target weighting function
+\newcommand{\tarw}{\text{u}}
+
+% constants - usually sizes of things
+\newcommand{\Nx}{N}
+\newcommand{\Nnu}{\text{N}_{\text{nu}}}
+\newcommand{\Nde}{\text{N}_{\text{de}}}
+\newcommand{\Nmc}{\text{N}_{\text{mc}}}
+\newcommand{\Nw}{W}
+\newcommand{\Nm}{M}
+\newcommand{\Ns}{S}
+\newcommand{\Np}{P}
+
+% locales - could switch to x and x'
+\newcommand{\xnu}{x_{\text{nu}}}
+\newcommand{\xde}{x_{\text{de}}}
+\newcommand{\phinu}{\phi_{\text{nu}}}
+\newcommand{\phide}{\phi_{\text{de}}}
+
+% sugiyama stuff
+\newcommand{\pdnu}{\pd_{\text{nu}}}
+\newcommand{\pdde}{\pd_{\text{de}}}
+
+% indices 
+\newcommand{\wfindex}{w}
+\newcommand{\sampleindex}{n}
+\newcommand{\modelindex}{m}
+\newcommand{\stageindex}{s}
+\newcommand{\phiindex}{p}

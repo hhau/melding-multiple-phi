@@ -1,0 +1,21 @@
+\begin{figure}[tb]
+  \centering
+  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.25cm}]
+  % nodes 
+  \node [state] (model-1) {$\pd_{1}$};
+  \node [state] [above left = of model-1](model-2) {$\pd_{2}$};
+  \node [state] [above right = of model-1](model-3) {$\pd_{3}$};
+  \node [state] [right = of model-3](model-4) {$\pd_{4}$};
+  \node [state] [below  = of model-1](model-5) {$\pd_{5}$};
+
+  % edges
+  \path[->] (model-2) edge node[above right] {$\phi_{1:2}$} (model-1);
+  \path[->] (model-4) edge node[above] {$\phi_{3:4}$} (model-3);
+
+  \path (model-3) edge node[above left] {$\phi_{1:3}$} (model-1);
+  \path (model-1) edge node[right] {$\phi_{1:5}$} (model-5);
+
+  \end{tikzpicture}
+  \caption{An arbitrary graph connected by common quantities $\phi_{\modelindex : \modelindex'}$.}
+  \label{fig:example-model-graph}
+\end{figure}

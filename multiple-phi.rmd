@@ -1,0 +1,279 @@
+---
+title: "Multiple models, multiple shared quantities"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../0bibliography/year-1-bib.bib
+csl: aam71-test.csl
+output: 
+  pdf_document:
+    includes:
+      in_header:
+        tex-input/pre.tex
+    fig_caption: true
+    number_sections: true
+    keep_tex: true
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "95%", fig.align = "center", auto_pdf = TRUE)
+```
+
+# Introduction
+
+```{r libpath_test}
+.libPaths()
+```
+
+
+Simple case: we have three models:
+
+- $\pd_{1}(\phi_{1:2}, \psi_{1}, Y_{1})$
+- $\pd_{2}(\phi_{1:2}, \phi_{2:3}, \psi_{2}, Y_{2})$
+- $\pd_{3}(\phi_{2:3}, \psi_{3}, Y_{3})$
+
+How do we construct the melded model such that we don't have an over/under specified model for any of the $\phi$s.
+Are there other kinds of model joining situations?
+
+## Chains of models
+
+\input{tex-input/multiple-phi/0040-model-ex-dag.tex}
+
+## Rings of models?
+
+- Rings are very similar to chains
+    - Just have to be a bit careful in stage one of the sampler.
+
+## Trees of models?
+
+- This is a considerably harder problem.
+- The use of the word tree implied some kind of nested structure that I'm not sure we want to think about.
+
+## Arbitrary graphs of models.
+
+- Look at the spatial statistics literature for neighbour notation? $y \sim y'$
+    - Not sure I like this because it assumes things are gridded. (GMRF)
+- Graph / Bishop book $\text{N}(n)$ - things that are connected to node $n$
+
+
+## Notation
+
+- Models: $\modelindex = 1, \ldots, \Nm$
+- Common quantity: $\phiindex = 1, \ldots, \Np$, with 
+    - specific shared quantities $\phi_{1:2}, \ldots, \phi_{\Nm - 1:\Nm}$ (in case of a chain).
+    - Unsure about this notation
+
+# Literature review + analysis 
+
+- Massa papers (Again)
+    - See if they have a good graph theory based notation
+    - Think in terms of adjacency matrices / adjacencies
+- Data fusion? they have some nice words for this: (data|information) (fusion|combination|integration)
+- Network meta analysis
+- https://arxiv.org/pdf/1810.05575.pdf ? - too specific / technical
+- https://dl.acm.org/citation.cfm?id=1512927
+    - "Target" here has an interesting meaning
+- Probability propagation / belief propagation
+    - https://link.springer.com/article/10.1007/BF01531015
+    - http://www.stats.ox.ac.uk/~steffen/teaching/gm09/propag.pdf
+
+# Melded model
+
+For the $\Nm = 3$ case, where the $\modelindex = 2$ model contains both $\phi_{1:2}$ and $\phi_{2:3}$
+\input{tex-input/multiple-phi/0010-melded-model.tex}
+Note that we cannot necessarily factorise $\pd_{2}(\phi_{1:2}, \phi_{2:3}) = \pd_{2}(\phi_{1:2})\pd_{2}(\phi_{2:3})$, as this falsely assumes independence.
+
+## General case
+
+In the general case of $\Nm$ models, the melded model is
+\input{tex-input/multiple-phi/0011-melded-model-general.tex}
+
+# Pooled prior and pooling weights
+
+Forming $\pd_{\text{pool}}(\phi_{1:2}, \phi_{2:3})$ from the various marginals requires careful consideration.
+Say we employ logarithmic pooling with weights $\lambda_{1}, \lambda_{2}, \lambda_{3}$
+\input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
+We need to ensure that $\iint\pd_{\text{pool}} (\phi_{1:2}, \phi_{2:3})\text{d}\phi_{1:2}\text{d}\phi_{2:3} < \infty$, which I think is guaranteed for $\lambda_{\phiindex} > 0, \forall \phiindex$.
+I think this also guarantees that the marginals admitted by $\pd_{\text{pool}} (\phi_{1:2}, \phi_{2:3})$ have finite integral
+\input{tex-input/multiple-phi/0060-pooled-marginals.tex}
+(subject to some regularity conditions?)
+Actually performing these integrals is probably quite challenging, and I do not think the multi-stage sampler strictly requires using the marginals of the pooled prior.
+
+## Pooling weights
+
+- Say we know $\pd_{1}(\phi_{1:2})$ and $\pd_{2}(\phi_{1:2}, \phi_{2:3})$ contain the same (marginal) information about $\phi_{1:2}$.
+- If we have no reason to prefer one model over the other, then we should choose $\lambda_{1}$ and $\lambda_{2}$ (or strictly an identifiable combination of them, i.e. $\lambda_{1} \lambda_{2} = K_{1}, \lambda_{2} = K_{2}$), such that 
+    \input{tex-input/multiple-phi/0052-marginal-pooling-weights.tex}
+for any $\phi_{1}$.
+- Might need some very simple cases that we can do analytically
+- For $\lambda_{\modelindex}$ to be interpretable as a weight, we need to combine densities of the same dimension.
+- In the $\Nm = 3$ model case this might look like
+    \input{tex-input/multiple-phi/0053-pooling-via-marginalised-marginals.tex}
+though I really dislike this notation.
+    - $\pd_{2}(\phi_{1:2})$ and $\pd_{2}(\phi_{2:3})$ are even less likely to be available analytically
+    - If we need to sample and estimate $\pd_{2}(\phi_{1:2}, \phi_{2:3})$, then we do not have to do any more sampling for the KDEs: $\hat{\pd}_{2}(\phi_{1:2}), \hat{\pd}_{2}(\phi_{2:3})$
+
+## General case
+
+The logarithmic pooled prior for $\Nm$ models in a chain is
+\input{tex-input/multiple-phi/0051-pooled-prior-overall-general.tex}
+
+
+<!-- Always Log pooling. Needs better notation? The colon stuff is a bit busy.
+
+- $\pd_{\text{pool}, 1:2}(\phi_{1}) \propto \pd_{1}(\phi_{1})^{\lambda_{1, 1:2}} \pd_{2}(\phi_{1})^{\lambda_{2, 1:2}}$
+- $\pd_{\text{pool}, 2:3}(\phi_{2}) \propto \pd_{2}(\phi_{2})^{\lambda_{2, 2:3}} \pd_{2}(\phi_{2})^{\lambda_{3, 2:3}}$ -->
+
+# Multi-stage sampler 1: starting with $\modelindex = 1$
+
+Beginning with the general case, the overall target is
+\input{tex-input/multi-stage-sampler/0010-melded-posterior.tex}
+
+## Stage one
+
+Target
+\input{tex-input/multi-stage-sampler/0020-stage-one-target.tex}
+This is targeted with a single MCMC proposal $\q(\phi_{1:2}^{*}, \psi_{1}^{*} \mid \phi_{1:2}, \psi_{1})$, leading to an acceptance probability of
+\input{tex-input/multi-stage-sampler/0021-stage-one-acceptance-probability.tex}
+
+
+## Stage two
+
+Target
+\input{tex-input/multi-stage-sampler/0030-stage-two-target.tex}
+using Gibbs updates (_Should Gibbs updates use the asterisk?_)
+\input{tex-input/multi-stage-sampler/0031-stage-two-gibbs-updates.tex}
+These updates have acceptance probabilities 
+\input{tex-input/multi-stage-sampler/0032-stage-two-acceptance-probabilities.tex}
+
+Formally, one can update the $\psi_{1}$ samples from stage one by keeping track of the indices[^indices].
+
+[^indices]: I need to formally think about and define the indices, we are going to refine / resample them in strange ways over many steps.
+
+## Stage $\Nm - 1$
+
+Target
+\input{tex-input/multi-stage-sampler/0040-stage-Mminus1-target.tex}
+using Gibbs updates
+\input{tex-input/multi-stage-sampler/0041-stage-Mminus1-gibbs-updates.tex}
+results in acceptance probabilities of
+\input{tex-input/multi-stage-sampler/0042-stage-Mminus1-acceptance-probabilities.tex}
+
+## Stage $\Nm$
+
+- Include the $\Nm$th model, which we already have samples of $\phi_{\Nm - 1}$ for.
+
+Target
+\input{tex-input/multi-stage-sampler/0050-stage-M-target.tex}
+with Gibbs updates
+\input{tex-input/multi-stage-sampler/0051-stage-M-gibbs-updates.tex}
+with acceptance probabilities
+\input{tex-input/multi-stage-sampler/0052-stage-M-acceptance-probabilities.tex}
+
+## Stage $\Nm + 1$
+
+Target
+\input{tex-input/multi-stage-sampler/0060-stage-Mplus1-target.tex}
+with a one step update
+\input{tex-input/multi-stage-sampler/0061-stage-Mplus1-update.tex}
+which has an acceptance probability of
+\input{tex-input/multi-stage-sampler/0062-stage-Mplus1-acceptance-probability.tex}
+
+- This could be combined with stage $\Nm$, but pedagogically it is nice to have it as a separate stage.
+
+\newpage
+
+# Multi-stage sampler 2: Split and recombine
+
+## Meet in the middle
+
+\input{tex-input/dc-sampler/0000-tikz-target.tex}
+
+Choose a specific model $k$.
+Recursively use this split and recombine method, or the aforementioned multi-stage sampler, to generate samples from the first set of models $\textcolor{mymidblue}{A} = \{1, \ldots, k - 1\}$, with melded joint distribution 
+    $$\pd_{\text{meld}, \textcolor{mymidblue}{A}}(\phi_{1:2}, \ldots, \phi_{k - 1:k}, \psi_{1}, \ldots, \psi_{k - 1}, Y_{1}, \ldots, Y_{k - 1})$$ 
+and the second set $\textcolor{myredhighlight}{B} = \{k + 1, \ldots, \Nm\}$, with melded joint distribution 
+    $$\pd_{\text{meld}, \textcolor{myredhighlight}{B}}(\phi_{k:k + 1}, \ldots, \phi_{\Nm - 1:\Nm}, \psi_{k + 1}, \ldots, \psi_{\Nm}, Y_{k + 1}, \ldots, Y_{\Nm}).$$
+
+The last step of the multi-stage sampler then targets the overall melded posterior
+\input{tex-input/dc-sampler/0010-dc-final-target.tex}
+with Gibbs updates
+\input{tex-input/dc-sampler/0011-dc-gibbs-updates.tex}
+and acceptance probabilities
+\input{tex-input/dc-sampler/0012-dc-acceptance-probabilities.tex}
+
+
+# Arbitrary graphs of models
+
+- Notation: Choose model $\pd_{a}$ for initial target?
+- The all models connected to $a$ are $b_{i}$ for $i = 1, \ldots, N_{b}$?
+    - This quickly breaks down if things reconnect? Also what would the next layer be called $c_{i, j}$? for $j = 1, \ldots, N_{j, b}$?
+- Lets look an an example DAG, we can also introduce the arrow notation for noninvertible link functions, Figure \ref{fig:example-model-graph}.
+
+\input{tex-input/arbitrary-graphs/0010-example-model-graph.tex}
+
+- We can come up with a sampling strategy for this, partially determined by the arrows
+    - $s_{1} = \{\pd_{4}\}, s_{1}' = \{\pd_{2}\}$
+        - These can occur in parallel
+    - $s_{2} = \{\pd_{3}, \pd_{4}\}$
+        - This can occur whilst $s_{1}$ is ongoing.
+    - $s_{3} = \{\pd_{1}, \pd_{2}, \pd_{3}, \pd_{4}\}$
+    - $s_{4} = \{\pd_{1}, \pd_{2}, \pd_{3}, \pd_{4}, \pd_{5}\}$
+
+- We should the redraw the DAG such that things that could be done in parallel are on an equal level.
+
+\input{tex-input/arbitrary-graphs/0011-example-model-graph.tex}
+
+# Examples
+
+Define $\text{N}_{+}(\mu, \sigma^2)$ as the Gaussian distribution truncated to $[0, \infty)$ and normalised, with parameters $\mu$ and $\sigma^2$. 
+Note that these are _not_ the mean and variance of the truncated distribution.
+
+## 3 Gaussians?
+
+- Nice tikz plot?
+- Small noninvertibility of $\mu = \phi_{1:2} + \phi_{2:3}$ in model $\modelindex = 2$.
+    - This is problematic, requires rethinking.
+
+### Model 1
+
+\input{tex-input/ex-three-gaussians/0010-model-1-specification.tex}
+
+### Model 2
+
+\input{tex-input/ex-three-gaussians/0020-model-2-specification.tex}
+
+- What happens if $\pd_{2}$ is written in terms of $\mu = \phi_{1:2} + \phi_{2:3}$?
+    - What is $\pd_{2}(\phi_{1:2}, \phi_{2:3})$?
+    - What are the implications for the pooled prior
+
+### Model 3
+
+\input{tex-input/ex-three-gaussians/0030-model-3-specification.tex}
+
+# Conclusion
+
+- There are a lot of unknown self-density ratios, including many $\pd_{\modelindex}(\phi_{\modelindex - 1, \text{nu}}, \phi_{\modelindex, \text{nu}}) \mathop{/} \pd_{\modelindex}(\phi_{\modelindex - 1, \text{de}}, \phi_{\modelindex, \text{de}})$ terms.
+    - In the case where $\phi_{\modelindex - 1}$ and $\phi_{\modelindex}$ are both one dimensional, this is already a four-dimensional problem.
+    - We can reframe this as an advantage, as estimating $\pd_{\text{pool}}(\phi_{1:2}, \ldots,\phi_{\Nm - 1})$ is potentially a series of lower dimensional estimation problems, which is easier than one estimation problem in a larger dimension?
+
+Concise summary
+
+<!-- -------------------- END OF MAIN BODY OF DOCUMENT -------------------- -->
+\newpage
+
+<!-- The {-} tag here suppresses the section numbering. -->
+# Bibliography {-}
+
+<!-- This makes pandoc-citeproc put the references before the end of document. -->
+<div id="refs"></div>
+
+\newpage
+
+<!-- Now switch to alphabetical numbering for the appendix, and reset the counter. -->
+\renewcommand{\thesection}{\Alph{section}}
+\setcounter{section}{0}
+
+# Appendix 

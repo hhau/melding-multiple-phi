@@ -1,0 +1,22 @@
+\begin{multline}
+  \pd_{\text{meld}}(\phi_{1:2}, \ldots, \phi_{\Nm - 1:\Nm}, \psi_{1}, \ldots, \psi_{\Nm} \mid Y_{1}, \ldots, Y_{\Nm}) \propto \\ 
+  \frac {
+      \pd_{1} (\phi_{1:2}, \psi_{1}, Y_{1})
+    } {
+      \pd_{1}(\phi_{1:2})
+    }
+  \prod_{\modelindex = 2}^{\Nm - 1} \left\{
+    \frac {
+      \pd_{\modelindex} (\phi_{\modelindex - 1:\modelindex}, \phi_{\modelindex:\modelindex + 1}, \psi_{\modelindex}, Y_{\modelindex})
+    } {
+      \pd_{\modelindex}(\phi_{\modelindex - 1:\modelindex}, \phi_{\modelindex:\modelindex + 1})
+    }
+  \right\}
+  \frac {
+    \pd_{\Nm} (\phi_{\Nm - 1:\Nm}, \psi_{\Nm}, Y_{\Nm})
+  } {
+    \pd_{\Nm}(\phi_{\Nm - 1:\Nm})
+  }
+  \pd_{\text{pool}}(\phi_{1:2}, \ldots, \phi_{\Nm - 1:\Nm}) 
+  \label{eqn:stage-Mplus1-target}
+\end{multline}

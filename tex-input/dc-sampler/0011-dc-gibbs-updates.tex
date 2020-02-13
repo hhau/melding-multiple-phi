@@ -1,0 +1,35 @@
+\begin{align}
+  \textcolor{mymidblue}{
+    \phi_{1:2}, \ldots, \phi_{k - 1:k},
+    \psi_{1}, \ldots, \psi_{k - 1}
+  }
+    \mid
+    \phi_{k + 1:k} \ldots, \phi_{\Nm - 1:\Nm},
+    \psi_{k},
+    \psi_{k + 1}, \ldots, \psi_{\Nm} 
+  \,\, &\sim \,\, 
+    \textcolor{mymidblue}{
+      \pd_{\text{meld}, \textcolor{mymidblue}{A}}
+    }
+   \\
+  \textcolor{myredhighlight}{
+    \phi_{k:k + 1} \ldots, \phi_{\Nm - 1:\Nm},
+    \psi_{k + 1}, \ldots, \psi_{\Nm}
+  }
+    \mid
+    \phi_{1:2}, \ldots, \phi_{k - 1:k},
+    \psi_{1}, \ldots, \psi_{k - 1},
+    \psi_{k}
+   \,\, &\sim \,\, 
+    \textcolor{myredhighlight}{
+      \pd_{\text{meld}, \textcolor{myredhighlight}{B}}
+    }
+   \\
+  \psi_{k} 
+  \mid 
+  \phi_{1:2}, \ldots, \phi_{\Nm - 1:\Nm},
+  \psi_{1}, \ldots, \psi_{k-1}, \psi_{k + 1}, \ldots, \psi_{\Nm} 
+  \,\, &\sim \,\, 
+  \q(\psi_{k}^{*} \mid \psi_{k})
+  \label{eqn:dc-gibbs-updates}
+\end{align}

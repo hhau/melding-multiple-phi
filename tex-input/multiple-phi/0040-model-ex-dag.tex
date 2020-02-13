@@ -1,0 +1,27 @@
+\begin{figure}[!ht]
+  \centering
+  \begin{tikzpicture}[node distance = 1.25cm, thick, state/.style={draw = none, minimum width = 1.25cm}]
+  % Nodes
+  \node [state] (model1) {$\pd_{1}$};
+  \node [state][above right = of model1] (model2) {$\pd_{2}$};
+  \node [state][below right = of model2] (model3) {$\pd_{3}$};
+  \node [state][above right = of model3] (model4) {$\pd_{4}$};
+  \node [state][right = of model4] (modelmm1) {$\pd_{\Nm - 1}$};
+  \node [state][below right = of modelmm1] (modelM) {$\pd_{\Nm}$};
+
+  % \coordinate [above right = of model2] (blank1);
+  % \coordinate [right = of blank1] (blank2);
+
+  % edges with things on them
+  \draw (model1) edge node[above left] {$\phi_{1:2}$} (model2);
+  \draw (model2) edge node[above right] {$\phi_{2:3}$} (model3);
+  \draw (model3) edge node[above left] {$\phi_{3:4}$} (model4);
+
+  \draw [dashed] (model4) edge (modelmm1);
+
+  \draw (modelmm1) edge node[above right] {$\phi_{\Nm - 1:\Nm}$} (modelM);
+
+  \end{tikzpicture}
+  \caption{A chain of $\Nm$ models.}
+  \label{fig:model-ex-dag}
+\end{figure}
