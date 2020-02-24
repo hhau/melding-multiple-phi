@@ -6,8 +6,8 @@ fontfamily: tgpagella
 fontsize: 10pt
 papersize: a4
 geometry: margin=2.25cm
-bibliography: ../0bibliography/year-1-bib.bib
-csl: aam71-test.csl
+bibliography: bibliography/multi-phi-bib.bib
+csl: bibliography/aam71-test.csl
 output: 
   pdf_document:
     includes:
@@ -22,11 +22,6 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "95%", fig.align =
 ```
 
 # Introduction
-
-```{r libpath_test}
-.libPaths()
-```
-
 
 Simple case: we have three models:
 
@@ -79,6 +74,66 @@ Are there other kinds of model joining situations?
     - https://link.springer.com/article/10.1007/BF01531015
     - http://www.stats.ox.ac.uk/~steffen/teaching/gm09/propag.pdf
 
+- Ecologists really want to do this kind of thing:
+    - https://esajournals.onlinelibrary.wiley.com/doi/toc/10.1002/(ISSN)1939-9170.SF-Data-Integration
+    - https://www.stat.colostate.edu/~hooten/papers/pdf/Williams_etal_Ecology_2017.pdf
+        - Too hard with the PDE term
+    - https://www.stat.colostate.edu/~hooten/papers/pdf/Pepin_etal_EcolLetters_2017.pdf
+        - Maybe? Meld over $\phi = (\theta, \sigma^2)$ if the DAG is to be believed
+        - This is a good melding example, but doesn't help with the multiple phi thing
+        - Might still be useful?
+    - https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/ecy.2710
+        - Model integration seems to be taking off
+    - https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecy.2711
+        - this has 5 data sources, but looks quite complicated, it would be real neat if we could do this properly? (nah, relies on some proprietary software)
+    - https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecy.2714
+        - Could be split into three models? Little different than I was thinking
+        - Has data and BUGS code
+    - https://link.springer.com/chapter/10.1007/978-1-4939-0977-3_9
+    - https://esajournals.onlinelibrary.wiley.com/doi/full/10.1890/11-1881.1
+    - https://esajournals.onlinelibrary.wiley.com/doi/full/10.1890/10-0052.1
+        - This is an interesting critique of one specific, complex model. It is somewhat dated (conjugate analyses are less prevalent nowadays) but it still rightly critiques complex models that do not have a grounded research question in mind.
+    - https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/ecy.1710
+        - yet another use of the term _data fusion_
+
+## Integrated population models
+
+There is a huge number of examples in Ecology of _integrated population models_.
+_Integrated_, in that they integrate more than one source of data and an associated model, with the overall focus being on estimating the dynamics of a _population_ (birth, death, reproduction, and migration rates) and temporal abundance (how many of them are there at a point in time.)
+
+- https://www.sciencedirect.com/science/article/pii/S0006320717305141?via%3Dihub
+    - Figure 1 in here is _exactly_ what I was thinking of in Section \ref{arbitrary-graphs-of-models}
+        - The process they describe is:
+            1. Specify submodels for the data sets (ensuring they have some parameters in common)
+            2. Form the joint model by multiplying the individual submodels together
+            3. Estimate the join model 
+        - This is in effect, melding for multiple parameters using product of experts for the pooled prior.
+        - The table gives us a bunch of examples to go and look at?
+    - The paper Figure 1 is based off: https://link.springer.com/article/10.1007%2Fs10336-010-0632-7
+        - _Sixth, the joint likelihood of integrated population models might be developed in such a way that it explicitly accounts for the dependence among datasets, such that the assumption of independence can be relaxed._
+            -  I don't think Melding specifically does this (just makes the inter model dependence explicit)
+        - _Seventh, the integrated population models could be modified in such a way that integral (i.e. continuous) population models (Ellner and Rees 2006) instead of stage- or age structured (i.e. categorical) population models are used to define the link between population size and demography. This would allow the quantifying of the impact of individual continuous traits on population dynamics._ 
+            - Melding can do this, but their gripe seems to be applications specific
+        - _Finally, another avenue is to explore additional data types that contain demographic information and that may be linked to a population model._
+            - This is application specific.
+- https://onlinelibrary.wiley.com/doi/epdf/10.1111/oik.01924
+    - Another very similar example
+    - The fit this jointly, and note that convergence is no good for some quantities, they also note an imbalance in information quantity between data sets.
+    - BUGS code: http://www.oikosjournal.org/sites/oikosjournal.org/files/appendix/oik-01924.pdf - somewhat complex.
+- https://link.springer.com/content/pdf/10.1007/s13253-018-00349-9.pdf 
+    - this is a statisical look at estimating IPMs using SMC, dealing with the fact that they often have latent discrete parameters
+    - `4.3. IMPROVING SMC EFFICIENCY FOR INTEGRATED MODELS` is effectively an SMC version of the melding multi-stage sampler, but with tempering
+    - Also a good source of examples, as they are 'pre-translated' into statistical language
+
+- https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13110
+    - Another recent, review on computational methods in integrated population models 
+    - It is interesting that they see the advantage of integrated modelling as being able to better design experiments? (as well as consider more sources of information)
+
+## More thoughts on examples
+
+- Seems to be a popular idea in Ecology, so useful as examples, but will not necessarily have the greatest impact (they are already aware they can do such a thing).
+
+
 # Melded model
 
 For the $\Nm = 3$ case, where the $\modelindex = 2$ model contains both $\phi_{1:2}$ and $\phi_{2:3}$
@@ -90,30 +145,57 @@ Note that we cannot necessarily factorise $\pd_{2}(\phi_{1:2}, \phi_{2:3}) = \pd
 In the general case of $\Nm$ models, the melded model is
 \input{tex-input/multiple-phi/0011-melded-model-general.tex}
 
-# Pooled prior and pooling weights
+# The pooled prior and pooling weights
 
-Forming $\pd_{\text{pool}}(\phi_{1:2}, \phi_{2:3})$ from the various marginals requires careful consideration.
-Say we employ logarithmic pooling with weights $\lambda_{1}, \lambda_{2}, \lambda_{3}$
+Appropriately forming the pooled prior is necessary to ensure the validity of the melded model. 
+Consider the $\Nm = 3$ case.
+Forming $\pd_{\text{pool}}(\phi_{1:2}, \phi_{2:3})$ requires us to coherently combine $\pd_{1}(\phi_{1:2}), \pd_{2}(\phi_{1:2}, \phi_{2:3})$, and $\pd_{2}(\phi_{2:3})$, with corresponding weights $\lambda_{1}, \lambda_{2}, \lambda_{3} \geq 0$ .
+We now investigate extensions to the typical univariate pooling methods -- linear and logarithmic pooling.
+
+## Linear pooling
+
+Naively employing linear pooling produces nonsensical results.
+If $\phi_{1:2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2:3} \in \mathbb{R}^{d_{2}}$, then the supports of $\pd_{1}, \pd_{2}$, and $\pd_{3}$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1} \times d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively.
+Because the supports differ for each marginal, an additive combination is incoherent. 
+Hence the natural extension to linear pooling
+\input{tex-input/multiple-phi/0052-linear-pooling.tex}
+does not admit a valid probability density function.
+
+One possible solution is to consider forming intermediary pooling densities via linear pooling
+\input{tex-input/multiple-phi/0054-silly-linear-solution.tex}
+then forming the pooled prior as
+\input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
+We do not need any weights in Equation \eqref{eqn:silly-linear-overall}, as $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are independent of each other.
+However, this process will always produce a pooled prior with no correlation between $\phi_{1:2}$ and $\phi_{2:3}$, which may be undesirable.
+
+## Logarithmic pooling.
+
+Logarithmic pooling captures correlation between common quantities.
+We define the logarithmically pooled prior to be 
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-We need to ensure that $\iint\pd_{\text{pool}} (\phi_{1:2}, \phi_{2:3})\text{d}\phi_{1:2}\text{d}\phi_{2:3} < \infty$, which I think is guaranteed for $\lambda_{\phiindex} > 0, \forall \phiindex$.
-I think this also guarantees that the marginals admitted by $\pd_{\text{pool}} (\phi_{1:2}, \phi_{2:3})$ have finite integral
-\input{tex-input/multiple-phi/0060-pooled-marginals.tex}
-(subject to some regularity conditions?)
-Actually performing these integrals is probably quite challenging, and I do not think the multi-stage sampler strictly requires using the marginals of the pooled prior.
+This is a coherent probability density function for $\phi_{1:2}, \phi_{2:3}$, conditional on $\pd_{\text{pool}}$ being integrable.
+Logarithmic pooling has two immediate advantages over linear pooling. 
+Correlation present in $\pd_{2}$ will persist into $\pd_{\text{pool}}$, and we can use weighted-sample self-density ratio estimation when estimating the melded posterior.
 
 ## Pooling weights
 
-- Say we know $\pd_{1}(\phi_{1:2})$ and $\pd_{2}(\phi_{1:2}, \phi_{2:3})$ contain the same (marginal) information about $\phi_{1:2}$.
-- If we have no reason to prefer one model over the other, then we should choose $\lambda_{1}$ and $\lambda_{2}$ (or strictly an identifiable combination of them, i.e. $\lambda_{1} \lambda_{2} = K_{1}, \lambda_{2} = K_{2}$), such that 
-    \input{tex-input/multiple-phi/0052-marginal-pooling-weights.tex}
-for any $\phi_{1}$.
-- Might need some very simple cases that we can do analytically
-- For $\lambda_{\modelindex}$ to be interpretable as a weight, we need to combine densities of the same dimension.
-- In the $\Nm = 3$ model case this might look like
-    \input{tex-input/multiple-phi/0053-pooling-via-marginalised-marginals.tex}
-though I really dislike this notation.
-    - $\pd_{2}(\phi_{1:2})$ and $\pd_{2}(\phi_{2:3})$ are even less likely to be available analytically
-    - If we need to sample and estimate $\pd_{2}(\phi_{1:2}, \phi_{2:3})$, then we do not have to do any more sampling for the KDEs: $\hat{\pd}_{2}(\phi_{1:2}), \hat{\pd}_{2}(\phi_{2:3})$
+Choosing values for $\lambda = (\lambda_{1}, \lambda_{2}, \lambda_{3})$ that produce an appropriate $\pd_{\text{pool}}$ is difficult.
+The components of $\lambda$ are not interpretable as weights (in the usual, mixture distribution sense) when $d_{1}$ and $d_{2}$ are not equal to 1, but are still weights in some manner.
+
+For example, consider pooling the following marginal distributions
+\input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
+where $f(\phi; \mu, \sigma^2)$ is a density function with location parameter $\mu$ and scale parameter $\sigma$, and $f$ is an appropriate dimension Gaussian or Student t density function.
+To assess the impact of the weights on the pooled prior consider two different values for $\lambda$.
+The first is an equal apportionment $\lambda = (\frac{1}{3}, \frac{1}{3}, \frac{1}{3})$, whilst the second is an unequal distribution $\lambda = (\frac{1}{9}, \frac{7}{9}, \frac{1}{9})$ meant to account for the higher dimensional nature of $\pd_{2}(\phi_{1:2}, \phi_{2:3})$.
+The resulting pooled priors are displayed in Figure \ref{fig:pooled_densities_plot}.
+
+```{r pooled_densities_plot, fig.cap = "The logarithmic pooled prior. Marginal distributions are Gaussian (left column) and Student t (right column). Weights are equal (top row, $\\lambda = (\\frac{1}{3}, \\frac{1}{3}, \\frac{1}{3})$) and unequal (bottom row, $\\lambda = (\\frac{1}{9}, \\frac{7}{9}, \\frac{1}{9})$)"}
+knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
+```
+
+- The only surprising thing in \ref{fig:pooled_densities_plot} is that the `equal_weights`/`student_t` case is as quite as asymmetric as it is (although thinking about this, i'm not sure its so surprising).
+- We could distribute weight between $(p_{1}(\phi_{1:2}) p_{3}(\phi_{2:3}))$ and $\pd_{2}(\phi_{1:2}), \phi_{2:3})$, as these are equal dimensional objects.
+    - This doesn't work for $\Nm = 4$ models. 
 
 ## General case
 
@@ -259,7 +341,6 @@ Note that these are _not_ the mean and variance of the truncated distribution.
     - In the case where $\phi_{\modelindex - 1}$ and $\phi_{\modelindex}$ are both one dimensional, this is already a four-dimensional problem.
     - We can reframe this as an advantage, as estimating $\pd_{\text{pool}}(\phi_{1:2}, \ldots,\phi_{\Nm - 1})$ is potentially a series of lower dimensional estimation problems, which is easier than one estimation problem in a larger dimension?
 
-Concise summary
 
 <!-- -------------------- END OF MAIN BODY OF DOCUMENT -------------------- -->
 \newpage

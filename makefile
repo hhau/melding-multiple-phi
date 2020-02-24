@@ -8,6 +8,9 @@ TEX_FILES = $(wildcard tex-input/*.tex) \
 PLOTS = plots
 RDS = rds
 
+# ALL figures
+ALL_PLOTS =
+
 # if you wildcard the all-target, then nothing will happen if the target doesn't
 # exist (no target). hard code the target.
 # CHANGE THIS:
@@ -17,10 +20,6 @@ all : $(WRITEUP)
 
 clean : 
 	trash *.aux *.out
-
-# knitr is becoming more picky about encoding, specify UTF-8 input
-$(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES)
-	$(RSCRIPT) -e "rmarkdown::render(input = Sys.glob('*.rmd'), encoding = 'UTF-8')"
 
 ## Three Gaussian example basenames
 EX_THREE_GAUSSIANS = ex-three-gaussians
@@ -37,3 +36,20 @@ MODEL_3_DATA : scripts/$(EX_THREE_GAUSSIANS)/data-generation-3.R
 MODEL_2_DATA = $(RDS)/$(EX_THREE_GAUSSIANS)/model-2-data.rds
 MODEL_2_DATA : scripts/$(EX_THREE_GAUSSIANS)/data-generation-2.R $(MODEL_1_DATA) $(MODEL_3_DATA)
 	$(RSCRIPT) $<
+
+
+## Pooling visualisation tests
+POOLING_TESTS = pooling-tests
+POOLING_SCRIPTS = scripts/$(POOLING_TESTS)
+
+POOLED_PLOT_2D = plots/pooling-tests/pooled-densities-2d.pdf
+$(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/visualisation.R $(POOLING_SCRIPTS)/density-functions.R $(PLOT_SETTINGS)
+	$(RSCRIPT) $<
+
+ALL_PLOTS += $(POOLED_PLOT_2D)
+
+################################################################################
+
+# knitr is becoming more picky about encoding, specify UTF-8 input
+$(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS)
+	$(RSCRIPT) -e "rmarkdown::render(input = Sys.glob('*.rmd'), encoding = 'UTF-8')"
