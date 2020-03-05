@@ -1,15 +1,15 @@
 \begin{align}
   \alpha\left(
-    (\phi_{1:2}^{*}, \ldots, \phi_{\Nm - 1:\Nm}^{*}, \psi_{1}^{*}, \ldots, \psi_{\Nm - 1}^{*}),
-    (\phi_{1:2}, \ldots, \phi_{\Nm - 1:\Nm}, \psi_{1}, \ldots, \psi_{\Nm - 1})
+    (\phi_{1 \cap 2}^{*}, \ldots, \phi_{\Nm - 1 \cap \Nm}^{*}, \psi_{1}^{*}, \ldots, \psi_{\Nm - 1}^{*}),
+    (\phi_{1 \cap 2}, \ldots, \phi_{\Nm - 1 \cap \Nm}, \psi_{1}, \ldots, \psi_{\Nm - 1})
   \right)
   &= 
   \frac {
-    \pd_{\Nm}(\phi_{\Nm - 1:\Nm}^{*}, \psi_{\Nm}, Y_{\Nm})
-    \pd_{\Nm}(\phi_{\Nm - 1:\Nm})
+    \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm}^{*}, \psi_{\Nm}, Y_{\Nm})
+    \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm})
   } {
-    \pd_{\Nm}(\phi_{\Nm - 1:\Nm}, \psi_{\Nm}, Y_{\Nm})
-    \pd_{\Nm}(\phi_{\Nm - 1:\Nm}^{*})
+    \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm}, \psi_{\Nm}, Y_{\Nm})
+    \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm}^{*})
   } \\ 
   \alpha\left(
     (\psi_{\Nm}^{*}),
@@ -17,9 +17,9 @@
   \right)
   &=  
   \frac {
-    \pd_{\Nm}(\phi_{\Nm - 1:\Nm}, \psi_{\Nm}^{*}, Y_{1})
+    \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm}, \psi_{\Nm}^{*}, Y_{1})
   } {
-    \pd_{\Nm}(\phi_{\Nm - 1:\Nm}, \psi_{\Nm}, Y_{1})
+    \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm}, \psi_{\Nm}, Y_{1})
   } 
   \label{eqn:stage-M-acceptance-probabilities}
 \end{align}

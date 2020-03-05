@@ -64,31 +64,31 @@ ggsave_halfheight(
 
 library(rstan)
 
-model_fit <- stan(
-  file = "scripts/pooling-tests/log-normal-pooling.stan",
-  data = list(
-    sigma_mat = matrix(
-      c(1, 0.8, 0.8, 1),
-      nrow = 2,
-      ncol = 2,
-      byrow = TRUE
-    )
-  ),
-  iter = 2e5,
-  cores = 6
-)
+# model_fit <- stan(
+#   file = "scripts/pooling-tests/log-normal-pooling.stan",
+#   data = list(
+#     sigma_mat = matrix(
+#       c(1, 0.8, 0.8, 1),
+#       nrow = 2,
+#       ncol = 2,
+#       byrow = TRUE
+#     )
+#   ),
+#   iter = 2e5,
+#   cores = 6
+# )
 
-samples <- extract(model_fit, pars = "phi")
+# samples <- extract(model_fit, pars = "phi")
 
-plot_tibble <- tibble(
-  x = samples$phi[, 1],
-  y = samples$phi[, 2]
-)
+# plot_tibble <- tibble(
+#   x = samples$phi[, 1],
+#   y = samples$phi[, 2]
+# )
 
-ggplot(plot_tibble, aes(x = x, y = y)) +
-  geom_density_2d()
-# 
-cor(samples$phi)
+# ggplot(plot_tibble, aes(x = x, y = y)) +
+#   geom_density_2d()
+# # 
+# cor(samples$phi)
 # cov(samples$phi) # variance > 1 means this has become non-Gaussian? Unless 
 # 
 # library(MVN)

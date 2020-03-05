@@ -1,0 +1,222 @@
+# From: Estimation of immigration rate using integrated population models
+# doi: 10.1111/j.1365-2664.2010.01789.x
+
+model {
+ #*****************************************
+ # 5.1 Define the regression equations
+ #*****************************************
+  for (i in 1:(ti - 1)) {
+    # Best model structure (phi(a2+sex+T),p(sex+t),b(t)) for little owl
+    # data from Schaub et al.(2006)
+    # standardize the variable
+    stdT[i] <- (time[i] - mean(time[1:(ti - 1)])) / sd(time[1:(ti - 1)])
+    
+    # Juvenile survival rate
+    logit(phijM[i]) <- v[1] + v[3] + v[4] * stdT[i]  # Male
+    logit(phij[i]) <- v[1] + v[4] * stdT[i]          # Female
+
+    # Adult survival
+    logit(phiaM[i]) <- v[1] + v[2] + v[3] +  v[4] * stdT[i]   # Male
+    logit(phia[i]) <- v[1] + v[2] + v[4] * stdT[i]            # Female
+
+    # Recapture rate
+    logit(pM[i]) <- v[5] + bp[i]  # Male
+    logit(p[i]) <- bp[i]          # Female
+
+    # Immigration
+    log(im[i]) <- v[6] # +  v[7] * voleH[i]     # Immigration rate as a function of # vole abundance
+    ## Wed  4 Mar 16:48:19 2020 - Vole abundance actively makes the model worse
+    ## according to Finke - removed from this model.
+
+    # voleH is a categorical variable  
+    # with 2 levels (high,low)
+  }
+
+  #*******************************************
+  # 5.2 Define the priors for the parameters
+  #*******************************************
+  for (i in 1:7) {
+    v[i] ~ dnorm(0, 0.0001) T(-10, 10)
+  } 
+  for (i in 1:(ti - 1)) {
+    bp[i] ~ dnorm(0, 0.0001) T(-10, 10)
+    fec[i] ~ dunif(0, 10)
+  }
+  # Wed  4 Mar 16:57:25 2020
+  # This is an error, continuous variables cannot be input to a discrete vector
+  # Doing it properly, and aligning with Finke:
+  for (ii in 1:50) {
+    flat_p[ii] <- 1 / 50
+  } 
+  N1[1] ~ dcat(flat_p[1 : 50])      # 1-year
+  NadSurv[1] ~ dcat(flat_p[1 : 50]) # Adults
+  Nadimm[1] ~ dcat(flat_p[1 : 50])  # Immigrants
+
+  #***********************************
+  # 5.3 Derived parameters
+  #************************************
+  # Population growth rate r[t], Mean population growth rate using
+  # geometric mean
+  for (tt in 1:(ti - 1)) {
+    lambda[tt] <- Ntot[tt + 1] / Ntot[tt]
+    logla[tt] <- log(lambda[tt])
+  } 
+  MELAM <- exp((1 / (ti - 1)) * sum(logla[1:(ti - 1)]))     # Mean population
+  
+  # growth rate
+  # Mean survival rates for females
+  MEPHJUF <- exp(v[1] + v[4] * 0 * mean(time[1:(ti - 1)])) / (1 + exp(v[1] + v[4] * 0 * mean(time[1:(ti - 1)])))
+  MEPHADF <- exp(v[1] + v[2] + v[4] * 0 * mean(time[1:(ti - 1)])) / (1 + exp(v[1] + v[2] + v[4] * 0 * mean(time[1:(ti - 1)])))
+
+  # Mean survival rates for males
+  MEPHJUM <- exp(v[1] + v[3] + v[4] * 0 * mean(time[1:(ti - 1)])) / (1 + exp(v[1] + v[3] +  v[4] * 0 * mean(time[1:(ti - 1)])))
+  MEPHADM <- exp(v[1] + v[2] + v[3] + v[4] * 0 * mean(time[1:(ti - 1)])) / (1 + exp(v[1] + v[2] + v[3] + v[4] * 0 * mean(time[1:(ti - 1)])))
+
+  # Mean fecundity rate
+  MEFE <- mean(fec[1:(ti - 1)])
+                
+  # Mean immigration rate
+  MEIM_H <- exp(v[6] + v[7])    # High vole abundance
+  MEIM_L <- exp(v[6])           # Low vole abundance
+  
+  #*****************************************
+  # 5.4 The Integrated population model
+  #******************************************
+
+  #**************************************************
+  # 5.4.1 Likelihood for reproductive data
+  #**************************************************
+  for (i in 1:(ti - 1)) {
+    nestlings[i] ~ dpois(rho[i])
+    rho[i] <- sample.size[i] * fec[i]
+  }
+
+  #***********************************************
+  # 5.4.2 Likelihood for population survey data
+  #************************************************
+  #***************************
+  # System process
+  #***************************
+  for (tt in 2:ti) {
+    mean1[tt] <- 0.5 * fec[tt - 1] * phij[tt - 1] * Ntot[tt - 1]
+    N1[tt] ~ dpois(mean1[tt])
+    mpo[tt] <- Ntot[tt - 1] * im[tt - 1]
+    NadSurv[tt] ~ dbin(phia[tt - 1], Ntot[tt - 1])
+    Nadimm[tt] ~ dpois(mpo[tt])
+  }
+
+  #*****************************
+  # Observation process
+  #*****************************
+  for (tt in 1:ti) {
+    Ntot[tt] <- NadSurv[tt] + Nadimm[tt] + N1[tt]
+    popcount[tt] ~ dpois(Ntot[tt])
+  } 
+             
+  #***********************************************************
+  # 5.4.3 Likelihood for capture-recapture data:CJS models (2 age classes)          #***********************************************************
+  #***********************************
+  # Female capture recapture data
+  #***********************************
+  for (i in 1:(2 * (ti - 1))) {
+    m[i, 1:ti] ~ dmulti(pr[i, 1:ti], r[i])
+  } 
+  
+  ## Wed  4 Mar 17:12:27 2020 - This should be passed in as data
+  ## # No. of released individuals
+  ## for (i in 1:2 * (ti - 1)) {
+  ##   r[i] <- sum(m[i, 1:ti])
+  ## } 
+
+  # m-array cell probabilities for juveniles
+  for (i in 1:(ti - 1)) {
+    q[i] <- 1 - p[i]
+    
+    # Main diagonal
+    pr[i, i]<- phij[i] * p[i]
+    
+    # above main diagonal
+    for (j in (i + 1):(ti - 1)) {
+      pr[i, j] <- phij[i] * prod(phia[(i + 1):j]) * prod(q[i:(j - 1)]) * p[j]
+    } 
+
+    # Below main diagonal
+    for (j in 1:(i - 1)) {
+      pr[i, j] <- 0
+    } 
+    
+    # Last column
+    pr[i, ti] <- 1 - sum(pr[i, 1:(ti - 1)])
+  } 
+  
+  # m-array cell probabilities for adults
+  for (i in 1:(ti - 1)) {
+    # main diagonal
+    pr[i + ti - 1, i] <- phia[i] * p[i]
+    
+    # above main diagonal
+    for (j in (i + 1):(ti - 1)) {
+      pr[i + ti - 1, j] <- prod(phia[i:j]) * prod(q[i:(j - 1)]) * p[j]
+    } 
+    
+    # below main diagonal
+    for (j in 1:(i - 1)) {
+      pr[i + ti - 1, j] <- 0
+    } 
+
+    # last column
+    pr[i + ti - 1, ti] <- 1 - sum(pr[i + ti - 1, 1:(ti - 1)])
+  } 
+  #*********************************
+  # Male capture recapture data
+  #*********************************
+  for (i in 1:(2 * (ti - 1))) {
+    mM[i, 1:ti] ~ dmulti(prM[i, 1:ti], rM[i])
+  } 
+  
+  ## Wed  4 Mar 17:12:27 2020 - This should be passed in as data
+  ## # No. of released individuals
+  ## for (i in 1:2 * (ti - 1)) {
+  ##   rM[i] <- sum(mM[i, 1:ti])
+  ## } 
+  
+  # m-array cell probabilities for juveniles
+  for (i in 1:(ti - 1)) {
+    qM[i] <- 1 - pM[i]
+    
+    # main diagonal
+    prM[i, i] <- phijM[i] * pM[i]
+    
+    # above main diagonal
+    for (j in (i + 1):(ti - 1)) {
+      prM[i, j] <- phijM[i] * prod(phiaM[(i + 1):j]) * prod(qM[i:(j - 1)]) * pM[j]
+    } 
+    
+    # below main diagonal
+    for (j in 1:(i - 1)) {
+      prM[i, j] <- 0
+    } 
+    
+    # last column
+    prM[i, ti] <- 1 - sum(prM[i, 1:(ti - 1)])
+  } 
+  
+  # m-array cell probabilities for adults
+  for (i in 1:(ti - 1)) {
+    # main diagonal
+    prM[i + ti - 1, i] <- phiaM[i] * pM[i]
+    
+    # above main diagonal
+    for (j in (i + 1):(ti - 1)) {
+      prM[i + ti - 1, j] <- prod(phiaM[(i + 1):j]) * prod(qM[i:(j - 1)]) * pM[j]
+    } 
+
+    # below main diagonal
+    for (j in 1:(i - 1)) {
+      prM[i + ti - 1, j] <- 0
+    } 
+    
+    # last column
+    prM[i + ti - 1, ti] <- 1 - sum(prM[i + ti - 1, 1:(ti - 1)])
+  } 
+}

@@ -13,6 +13,7 @@
 
 # the package directory - sometimes useful sometimes not
 #package/
+other-code/
 
 # the tex file for the rmd - useful for me, don't check into the repo
 multiple-phi.tex

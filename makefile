@@ -7,6 +7,7 @@ TEX_FILES = $(wildcard tex-input/*.tex) \
 # useful compound make components
 PLOTS = plots
 RDS = rds
+SCRIPTS = scripts
 
 # ALL figures
 ALL_PLOTS =
@@ -48,8 +49,23 @@ $(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/visualisation.R $(POOLING_SCRIPTS)/densit
 
 ALL_PLOTS += $(POOLED_PLOT_2D)
 
+## Owls example
+OWLS_BASENAME = owls-example
+OWLS_DATA = $(wildcard rds/owls-example/*-data.rds)
+
+$(OWLS_DATA) : $(SCRIPTS)/$(OWLS_BASENAME)/load-and-write-data.R
+	$(RSCRIPT) $<
+
+FECUNDITY_SUBPOSTERIOR = $(RDS)/$(OWLS_BASENAME)/fecundity-subposterior-samples.rds 
+$(FECUNDITY_SUBPOSTERIOR) : $(SCRIPTS)/$(OWLS_BASENAME)/fit-fecundity.R $(RDS)/$(OWLS_BASENAME)/models/fecundity-model.stan $(FECUNDITY_DATA)
+	$(RSCRIPT) $< 
+
+ORIG_IPM_RESULTS = $(RDS)/$(OWLS_BASENAME)/original-ipm-results.rds
+$(ORIG_IPM_RESULTS) : $(SCRIPTS)/$(OWLS_BASENAME)/fit-original-ipm.R $(SCRIPTS)/$(OWLS_BASENAME)/models/original-ipm.bug $(OWLS_DATA)
+	$(RSCRIPT) $<
+
 ################################################################################
 
 # knitr is becoming more picky about encoding, specify UTF-8 input
-$(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS)
+$(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS) $(OWLS_DATA)
 	$(RSCRIPT) -e "rmarkdown::render(input = Sys.glob('*.rmd'), encoding = 'UTF-8')"

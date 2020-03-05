@@ -13,13 +13,13 @@
   % \coordinate [right = of blank1] (blank2);
 
   % edges with things on them
-  \draw (model1) edge node[above left] {$\phi_{1:2}$} (model2);
-  \draw (model2) edge node[above right] {$\phi_{2:3}$} (model3);
-  \draw (model3) edge node[above left] {$\phi_{3:4}$} (model4);
+  \draw (model1) edge node[above left] {$\phi_{1 \cap 2}$} (model2);
+  \draw (model2) edge node[above right] {$\phi_{2 \cap 3}$} (model3);
+  \draw (model3) edge node[above left] {$\phi_{3 \cap 4}$} (model4);
 
   \draw [dashed] (model4) edge (modelmm1);
 
-  \draw (modelmm1) edge node[above right] {$\phi_{\Nm - 1:\Nm}$} (modelM);
+  \draw (modelmm1) edge node[above right] {$\phi_{\Nm - 1 \cap \Nm}$} (modelM);
 
   \end{tikzpicture}
   \caption{A chain of $\Nm$ models.}

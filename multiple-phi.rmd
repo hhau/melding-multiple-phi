@@ -7,7 +7,7 @@ fontsize: 10pt
 papersize: a4
 geometry: margin=2.25cm
 bibliography: bibliography/multi-phi-bib.bib
-csl: bibliography/aam71-test.csl
+csl: bibliography/american-statistical-association.csl
 output: 
   pdf_document:
     includes:
@@ -25,9 +25,9 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "95%", fig.align =
 
 Simple case: we have three models:
 
-- $\pd_{1}(\phi_{1:2}, \psi_{1}, Y_{1})$
-- $\pd_{2}(\phi_{1:2}, \phi_{2:3}, \psi_{2}, Y_{2})$
-- $\pd_{3}(\phi_{2:3}, \psi_{3}, Y_{3})$
+- $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$
+- $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$
+- $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$
 
 How do we construct the melded model such that we don't have an over/under specified model for any of the $\phi$s.
 Are there other kinds of model joining situations?
@@ -57,7 +57,7 @@ Are there other kinds of model joining situations?
 
 - Models: $\modelindex = 1, \ldots, \Nm$
 - Common quantity: $\phiindex = 1, \ldots, \Np$, with 
-    - specific shared quantities $\phi_{1:2}, \ldots, \phi_{\Nm - 1:\Nm}$ (in case of a chain).
+    - specific shared quantities $\phi_{1 \cap 2}, \ldots, \phi_{\Nm - 1 \cap \Nm}$ (in case of a chain).
     - Unsure about this notation
 
 # Literature review + analysis 
@@ -129,51 +129,87 @@ _Integrated_, in that they integrate more than one source of data and an associa
     - Another recent, review on computational methods in integrated population models 
     - It is interesting that they see the advantage of integrated modelling as being able to better design experiments? (as well as consider more sources of information)
 
+- https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-985X.2008.00582.x
+
+- https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.13538
+    - This example seems simpler, but can't get at code + data?
+
+
 ## More thoughts on examples
 
 - Seems to be a popular idea in Ecology, so useful as examples, but will not necessarily have the greatest impact (they are already aware they can do such a thing).
+- Why reframe these models in this particular framework?
+    - There is value in unifying disparate modelling frameworks. Different applied fields seem to do similar things but with different names. Advantages, practical tips, and patterns of thought are more easily shared with a common mathematical framework.
+        - Justifying this requires an example from another field.
+    - Having a mathematical framework may also make it easier to spot sensible extensions to models
+        - Really? Maybe writing down submodels in a common notation makes it easier to spot where additional information could be incorporated?
+    - (_somewhat specific to IPMs_): IPMs are currently limited to models where interacting with the joint distribution directly is possible; the sequential sampler is designed to circumvent this restriction, i.e. to enable inference in settings where evaluating the joint distribution is infeasible.
+        - As the authors of one particular review article note, many ecologists are technically inclined to implement their own IPMs (although they can be done in BUGS?), tools making this easier would be valuable.
+        - Finke/King/Beskos/Dellaportas SMC example still requires evaluating the joint.
+            - It might be sensible to steal then notation from here
 
 
 # Melded model
 
-For the $\Nm = 3$ case, where the $\modelindex = 2$ model contains both $\phi_{1:2}$ and $\phi_{2:3}$
+For the $\Nm = 3$ case, where the $\modelindex = 2$ model contains both $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$
 \input{tex-input/multiple-phi/0010-melded-model.tex}
-Note that we cannot necessarily factorise $\pd_{2}(\phi_{1:2}, \phi_{2:3}) = \pd_{2}(\phi_{1:2})\pd_{2}(\phi_{2:3})$, as this falsely assumes independence.
+Note that we cannot necessarily factorise $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2})\pd_{2}(\phi_{2 \cap 3})$, as this falsely assumes independence.
 
 ## General case
 
 In the general case of $\Nm$ models, the melded model is
 \input{tex-input/multiple-phi/0011-melded-model-general.tex}
 
+
 # The pooled prior and pooling weights
 
 Appropriately forming the pooled prior is necessary to ensure the validity of the melded model. 
 Consider the $\Nm = 3$ case.
-Forming $\pd_{\text{pool}}(\phi_{1:2}, \phi_{2:3})$ requires us to coherently combine $\pd_{1}(\phi_{1:2}), \pd_{2}(\phi_{1:2}, \phi_{2:3})$, and $\pd_{2}(\phi_{2:3})$, with corresponding weights $\lambda_{1}, \lambda_{2}, \lambda_{3} \geq 0$ .
+Forming $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ requires us to coherently combine $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$, with corresponding weights $\lambda_{1}, \lambda_{2}, \lambda_{3} \geq 0$.
+Throughout this section we assume that $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are normalised, integrable probability density functions, that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ admits proper marginals for $\pd_{2}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{2 \cap 3})$, and proper conditionals for $\pd_{2}(\phi_{1 \cap 2} \mid \phi_{2 \cap 3})$ and $\pd_{2}(\phi_{2 \cap 3} \mid \phi_{1 \cap 2})$.
 We now investigate extensions to the typical univariate pooling methods -- linear and logarithmic pooling.
 
 ## Linear pooling
 
 Naively employing linear pooling produces nonsensical results.
-If $\phi_{1:2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2:3} \in \mathbb{R}^{d_{2}}$, then the supports of $\pd_{1}, \pd_{2}$, and $\pd_{3}$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1} \times d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively.
-Because the supports differ for each marginal, an additive combination is incoherent. 
-Hence the natural extension to linear pooling
+If $\phi_{1 \cap 2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2 \cap 3} \in \mathbb{R}^{d_{2}}$, then the supports of $\pd_{1}, \pd_{2}$, and $\pd_{3}$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1} \times d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively.
+Consider the natural extension to linear pooling
 \input{tex-input/multiple-phi/0052-linear-pooling.tex}
-does not admit a valid probability density function.
+The different supports imply that \eqref{eqn:linear-pooling} is not normalised by construction, unlike typical mixture densities.
+If all the constituent densities of \eqref{eqn:linear-pooling} are normalised, then it seems reasonable to assume that a  combination of them should also be normalisable.
+Consider integrating $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$
+\input{tex-input/multiple-phi/00521-int-linear-pooling.tex}
+The first term of this integral
+\input{tex-input/multiple-phi/00522-int-linear-pooling.tex}
+is clearly divergent due to the $\int_{\mathbb{R}^{d_{2}}}\text{d}\phi_{2 \cap 3}$ term.
+Hence, the naive extension to linear pooling does not admit a valid probability density function.
 
 One possible solution is to consider forming intermediary pooling densities via linear pooling
 \input{tex-input/multiple-phi/0054-silly-linear-solution.tex}
-then forming the pooled prior as
+then form the pooled prior
 \input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
-We do not need any weights in Equation \eqref{eqn:silly-linear-overall}, as $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are independent of each other.
-However, this process will always produce a pooled prior with no correlation between $\phi_{1:2}$ and $\phi_{2:3}$, which may be undesirable.
+We do not need any weights in Equation \eqref{eqn:silly-linear-overall}, as $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are independent of each other, and  that $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are appropriate marginal distributions for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ by construction.
+However, this process will always produce a pooled prior with no correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, which may be undesirable.
+It is possible to induce correlation between independent marginal distributions via copulas [@nelsen:06] and other techniques [@lin:etal:14], but they are less intuitively appealing than capturing dependence in the pooling process.
 
 ## Logarithmic pooling.
 
 Logarithmic pooling captures correlation between common quantities.
 We define the logarithmically pooled prior to be 
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-This is a coherent probability density function for $\phi_{1:2}, \phi_{2:3}$, conditional on $\pd_{\text{pool}}$ being integrable.
+This is a coherent probability density function for $\phi_{1 \cap 2}, \phi_{2 \cap 3}$, conditional on $\pd_{\text{pool}}$ being integrable.
+To verify that this is indeed the case, consider computing the normalising constant
+\input{tex-input/multiple-phi/00501-int-pooled-prior-overall.tex}
+~~All density functions in Equation \eqref{eqn:int-pooled-prior-overall-2} are proper, thus both integrals are finite, and the pooled prior defined in Equation \eqref{eqn:pooled-prior-overall} is valid.~~
+__Equation \eqref{eqn:int-pooled-prior-overall-2} is obviously rubbish - can't move conditionals outside of the integrals like that.__
+It should instead read
+\input{tex-input/multiple-phi/00502-int-pooled-prior-overall-corrected.tex}
+
+- The inner integral in Equation \eqref{eqn:int-pooled-prior-overall-corrected-2} is finite because we assumed the conditional was a proper distribution, it emits a finite constant $Z(\phi_{2 \cap 3})$
+- The interaction between $Z(\phi_{2 \cap 3})$ and the outer integrand could possibly result in a divergent outer integral.
+    - This seems unlikely if we have already assumed that all prior marginal distributions are proper -- a product of proper distributions should be proper
+    - Is it possible to interpret this in a different way to find the minimal set of assumptions required for this to make sense 
+
 Logarithmic pooling has two immediate advantages over linear pooling. 
 Correlation present in $\pd_{2}$ will persist into $\pd_{\text{pool}}$, and we can use weighted-sample self-density ratio estimation when estimating the melded posterior.
 
@@ -186,7 +222,7 @@ For example, consider pooling the following marginal distributions
 \input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
 where $f(\phi; \mu, \sigma^2)$ is a density function with location parameter $\mu$ and scale parameter $\sigma$, and $f$ is an appropriate dimension Gaussian or Student t density function.
 To assess the impact of the weights on the pooled prior consider two different values for $\lambda$.
-The first is an equal apportionment $\lambda = (\frac{1}{3}, \frac{1}{3}, \frac{1}{3})$, whilst the second is an unequal distribution $\lambda = (\frac{1}{9}, \frac{7}{9}, \frac{1}{9})$ meant to account for the higher dimensional nature of $\pd_{2}(\phi_{1:2}, \phi_{2:3})$.
+The first is an equal apportionment $\lambda = (\frac{1}{3}, \frac{1}{3}, \frac{1}{3})$, whilst the second is an unequal distribution $\lambda = (\frac{1}{9}, \frac{7}{9}, \frac{1}{9})$ meant to account for the higher dimensional nature of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 The resulting pooled priors are displayed in Figure \ref{fig:pooled_densities_plot}.
 
 ```{r pooled_densities_plot, fig.cap = "The logarithmic pooled prior. Marginal distributions are Gaussian (left column) and Student t (right column). Weights are equal (top row, $\\lambda = (\\frac{1}{3}, \\frac{1}{3}, \\frac{1}{3})$) and unequal (bottom row, $\\lambda = (\\frac{1}{9}, \\frac{7}{9}, \\frac{1}{9})$)"}
@@ -194,7 +230,7 @@ knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
 ```
 
 - The only surprising thing in \ref{fig:pooled_densities_plot} is that the `equal_weights`/`student_t` case is as quite as asymmetric as it is (although thinking about this, i'm not sure its so surprising).
-- We could distribute weight between $(p_{1}(\phi_{1:2}) p_{3}(\phi_{2:3}))$ and $\pd_{2}(\phi_{1:2}), \phi_{2:3})$, as these are equal dimensional objects.
+- We could distribute weight between $(p_{1}(\phi_{1 \cap 2}) p_{3}(\phi_{2 \cap 3}))$ and $\pd_{2}(\phi_{1 \cap 2}), \phi_{2 \cap 3})$, as these are equal dimensional objects.
     - This doesn't work for $\Nm = 4$ models. 
 
 ## General case
@@ -202,11 +238,71 @@ knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
 The logarithmic pooled prior for $\Nm$ models in a chain is
 \input{tex-input/multiple-phi/0051-pooled-prior-overall-general.tex}
 
+# Ordering issues
 
-<!-- Always Log pooling. Needs better notation? The colon stuff is a bit busy.
+- [@massa:lauritzen:10] consider graphical Gaussian models
+- They express some concerns that the order of model composition influences the result.
+- I don't know how to resolve the tension between Example 5.6 and the stated incompatibility of Equation (4.1).
+    - The only way I could see both being true is if $h_{(A \cup B) \cap C} = h_{A \cap B}h_{B \cap C}$, which is making some kind of independence assumption. Exactly what kind I am unsure about.
+- The questions I think I should be asking and answering are:
+    1. _Is this any different from melding $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ together first, then melding the result with $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$?_
+        - Perhaps the distributed / parallel sampler makes the case for this to be different?
+            - No, the sampling process should not impact the model specification and combination process. Computation != specification.
+    2. _Does applying this operator to 2 $\Nm = 3$ chains of models (base case) result in the same thing as applying it to $\Nm = 6$ models at once?_
+        - This will depend on the relationship between the two groups of models? Assume it's a chain and check?
+        - We can probably just generalise the result from (1.) / the original melding operator?
 
-- $\pd_{\text{pool}, 1:2}(\phi_{1}) \propto \pd_{1}(\phi_{1})^{\lambda_{1, 1:2}} \pd_{2}(\phi_{1})^{\lambda_{2, 1:2}}$
-- $\pd_{\text{pool}, 2:3}(\phi_{2}) \propto \pd_{2}(\phi_{2})^{\lambda_{2, 2:3}} \pd_{2}(\phi_{2})^{\lambda_{3, 2:3}}$ -->
+## Noncommutativity of the original Markov Melding operator
+
+- Let's check if the original melding process is commutative in the three model case.
+- ~~All pooling is done with logarithmic pooling: $\pd_{\text{pool}}(\phi_{1 \cap 2}) = \frac{1}{Z_{1 \cap 2}} \pd_{1}(\phi_{1 \cap 2})^{\lambda_{1, 12}} \pd_{2}(\phi_{1 \cap 2})^{\lambda_{2, 12}}$~~.
+    - Let's try and make this pooling agnostic
+    - $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$
+- Consider the same three model setup
+    1. Melding $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ produces a joint model that is the product of these two submodels, as there is no quantity in common.
+    2. Thus we must meld $\pd_{1}$ and $\pd_{2}$ or $\pd_{2}$ and $\pd_{3}$ together first, then the result with the remaining model.
+    3. We have two questions to answer here:
+        - Does applying the original melding operator twice give the same result as what I am suggesting in Equation \eqref{eqn:melded-model}?
+        - Is the original melding model operator commutative in this setting? I.e. if we denote the original melding operator with $\pd_{1} \circledast \pd_{2}$, does  $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$?
+- The notation is very hard and overloaded here.
+    - Sensibly distinguishing between different melding states and weights is a nightmare.
+
+### $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}$: Step one
+
+In step one, $\pd_{1} \circledast \pd_{2}$ produces the usual melded model:
+\input{tex-input/noncommutativity/0010-usual-melded-model.tex}
+In the $\Nm = 2$ context the second model would be expressed in terms of $\psi_{2}' = (\psi_{2}, \phi_{2 \cap 3})$. 
+We are intentionally keeping these quantities distinct, to clarify the next application of the original melding operator. 
+
+### $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}$: Step two
+
+Next we compute $\pd_{\text{meld}}^{(12)3} = \pd_{\text{meld}}^{12} \circledast \pd_{3}$:
+\input{tex-input/noncommutativity/0011-double-melded-model.tex}
+with $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$.
+The difficult term here is $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$. Define $\Omega = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, then
+\input{tex-input/noncommutativity/0012-strange-marginal-definition.tex}
+In words, this is the marginal distribution for $\phi_{2 \cap 3}$ under the melded model $\pd_{1} \circledast \pd_{2}$, a strange distribution to be interested in.
+Expanding Equation \eqref{eqn:double-melded-model} gives:
+\input{tex-input/noncommutativity/0013-expanded-double-melded-model.tex}
+For this to be equal to the model defined in Equation \eqref{eqn:melded-model} (ignoring all normalising constants for clarity), the following equalities must hold:
+
+1. $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+    - This can only be true if $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are independent a priori in $\pd_{2}$, not true in general.
+2. $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$
+    - all the $g$'s must be logarithmic if we form the joint pooled prior via logarithmic pooling
+    - if we form the joint pooled prior via the strange form of linear pooling we define, then the joint has 4 terms. 
+        - As for the left hand side:
+            - $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ has 1 term (logarithmic) or 2 terms (linear).
+            - $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ has 1, 2 or 3 terms (if $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ is logarithmic or linear respectively -- due to the interaction with $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$). Hence, 
+        - So if we use linear pooling to form the joint pooled prior (RHS), then we must use logarithmic pooling for $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ and linear for $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ to result in the correct number of terms. This alone will not guarantee that the quantities are equal, but at least it may be possible.
+
+So in general, applying the original melding operator twice does __not__ result in the same model as \eqref{eqn:melded-model}.
+
+### Is is commutative? Does $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$?
+
+By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model}, we find that the original melding operator is only commutative if $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2}) \pd_{2}(\phi_{2 \cap 3})$, which implies the following equalities
+\input{tex-input/noncommutativity/0014-orig-melding-commutative-equalities.tex}
+I suspect that these equalities only hold when $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are independent in $\pd_{2}$.
 
 # Multi-stage sampler 1: starting with $\modelindex = 1$
 
@@ -217,7 +313,7 @@ Beginning with the general case, the overall target is
 
 Target
 \input{tex-input/multi-stage-sampler/0020-stage-one-target.tex}
-This is targeted with a single MCMC proposal $\q(\phi_{1:2}^{*}, \psi_{1}^{*} \mid \phi_{1:2}, \psi_{1})$, leading to an acceptance probability of
+This is targeted with a single MCMC proposal $\q(\phi_{1 \cap 2}^{*}, \psi_{1}^{*} \mid \phi_{1 \cap 2}, \psi_{1})$, leading to an acceptance probability of
 \input{tex-input/multi-stage-sampler/0021-stage-one-acceptance-probability.tex}
 
 
@@ -275,9 +371,9 @@ which has an acceptance probability of
 
 Choose a specific model $k$.
 Recursively use this split and recombine method, or the aforementioned multi-stage sampler, to generate samples from the first set of models $\textcolor{mymidblue}{A} = \{1, \ldots, k - 1\}$, with melded joint distribution 
-    $$\pd_{\text{meld}, \textcolor{mymidblue}{A}}(\phi_{1:2}, \ldots, \phi_{k - 1:k}, \psi_{1}, \ldots, \psi_{k - 1}, Y_{1}, \ldots, Y_{k - 1})$$ 
+    $$\pd_{\text{meld}, \textcolor{mymidblue}{A}}(\phi_{1 \cap 2}, \ldots, \phi_{k - 1 \cap k}, \psi_{1}, \ldots, \psi_{k - 1}, Y_{1}, \ldots, Y_{k - 1})$$ 
 and the second set $\textcolor{myredhighlight}{B} = \{k + 1, \ldots, \Nm\}$, with melded joint distribution 
-    $$\pd_{\text{meld}, \textcolor{myredhighlight}{B}}(\phi_{k:k + 1}, \ldots, \phi_{\Nm - 1:\Nm}, \psi_{k + 1}, \ldots, \psi_{\Nm}, Y_{k + 1}, \ldots, Y_{\Nm}).$$
+    $$\pd_{\text{meld}, \textcolor{myredhighlight}{B}}(\phi_{k \cap k + 1}, \ldots, \phi_{\Nm - 1 \cap \Nm}, \psi_{k + 1}, \ldots, \psi_{\Nm}, Y_{k + 1}, \ldots, Y_{\Nm}).$$
 
 The last step of the multi-stage sampler then targets the overall melded posterior
 \input{tex-input/dc-sampler/0010-dc-final-target.tex}
@@ -316,7 +412,7 @@ Note that these are _not_ the mean and variance of the truncated distribution.
 ## 3 Gaussians?
 
 - Nice tikz plot?
-- Small noninvertibility of $\mu = \phi_{1:2} + \phi_{2:3}$ in model $\modelindex = 2$.
+- Small noninvertibility of $\mu = \phi_{1 \cap 2} + \phi_{2 \cap 3}$ in model $\modelindex = 2$.
     - This is problematic, requires rethinking.
 
 ### Model 1
@@ -327,19 +423,52 @@ Note that these are _not_ the mean and variance of the truncated distribution.
 
 \input{tex-input/ex-three-gaussians/0020-model-2-specification.tex}
 
-- What happens if $\pd_{2}$ is written in terms of $\mu = \phi_{1:2} + \phi_{2:3}$?
-    - What is $\pd_{2}(\phi_{1:2}, \phi_{2:3})$?
+- What happens if $\pd_{2}$ is written in terms of $\mu = \phi_{1 \cap 2} + \phi_{2 \cap 3}$?
+    - What is $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$?
     - What are the implications for the pooled prior
 
 ### Model 3
 
 \input{tex-input/ex-three-gaussians/0030-model-3-specification.tex}
 
+## Owls
+
+- Notes from @finke:etal:19
+- There is no evidence to support the impact of Vole abundance on the immigration rate $\eta_{t}$. 
+    - Hence we can assume that $\eta_{t} = \eta$ for all time points.
+- The model with the highest log-evidence is model 4, so we should start with this one
+    - This model assumes that:
+        - $\rho_{t} = \rho$ for all time
+            - This is great, because we are melding over this parameter
+        - $\alpha_{3} = 0$
+            - This is also good, because $\boldsymbol{\alpha} = (\alpha_{0}, \alpha_{1}, \alpha_{2}, \alpha_{3})$ is another (sort of) melding parameter, so this reduces the dimensionality of the problem.
+
+- Denote the capture-recapture model as the first submodel $\pd_{1}$
+    - $\phi_{1 \cap 2} = \phi_{a, g, t} = (\alpha_{0}, \alpha_{1}, \alpha_{2})$
+- The count data model is $\pd_{2}$ 
+    - $\phi_{1 \cap 2} = \phi_{a, g, t} = (\alpha_{0}, \alpha_{1}, \alpha_{2})$
+    - $\phi_{1 \cap 2} = \rho$
+- The fecundity model is $\pd_{3}$
+    - $\phi_{1 \cap 2} = \rho$
+    - The original paper puts a $\text{Unif}(0, 10)$ prior on $\rho_{t}$, and the -@finke:etal:19 paper doesn't specify what they do (their `c++` code suggests a flat prior -- they never seem to do anything with it)
+    - there is a conflict between the original paper and the Finke paper on what this model is exactly.
+    - the original BUGS code has a typo in it that invalidates the results (r vs rM), and is also not valid BUGS
+
+
+### Sampling
+
+- Compare
+    - Original BUGS + Long run MCMC as baseline truth (+ also get ESS/second + check if everything converges)
+        - The only important thing to check is the quantity with the minimum ESS (excluding Log prob) + divide by total time
+    - D&C Melding algorithm (for truth + speed)
+        - We can use parts of the original BUGS code + Nimble for this
+
+
 # Conclusion
 
 - There are a lot of unknown self-density ratios, including many $\pd_{\modelindex}(\phi_{\modelindex - 1, \text{nu}}, \phi_{\modelindex, \text{nu}}) \mathop{/} \pd_{\modelindex}(\phi_{\modelindex - 1, \text{de}}, \phi_{\modelindex, \text{de}})$ terms.
     - In the case where $\phi_{\modelindex - 1}$ and $\phi_{\modelindex}$ are both one dimensional, this is already a four-dimensional problem.
-    - We can reframe this as an advantage, as estimating $\pd_{\text{pool}}(\phi_{1:2}, \ldots,\phi_{\Nm - 1})$ is potentially a series of lower dimensional estimation problems, which is easier than one estimation problem in a larger dimension?
+    - We can reframe this as an advantage, as estimating $\pd_{\text{pool}}(\phi_{1 \cap 2}, \ldots,\phi_{\Nm - 1})$ is potentially a series of lower dimensional estimation problems, which is easier than one estimation problem in a larger dimension?
 
 
 <!-- -------------------- END OF MAIN BODY OF DOCUMENT -------------------- -->
