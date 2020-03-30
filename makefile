@@ -3,6 +3,8 @@ PLOT_SETTINGS = scripts/common/plot-settings.R
 TEX_FILES = $(wildcard tex-input/*.tex) \
 	$(wildcard tex-input/*/*.tex) \
 	$(wildcard tex-input/*/*/*.tex)
+MCMC_UTIL = scripts/common/mcmc-util.R
+
 
 # useful compound make components
 PLOTS = plots
@@ -49,20 +51,62 @@ $(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/visualisation.R $(POOLING_SCRIPTS)/densit
 
 ALL_PLOTS += $(POOLED_PLOT_2D)
 
+################################################################################
 ## Owls example
 OWLS_BASENAME = owls-example
 OWLS_DATA = $(wildcard rds/owls-example/*-data.rds)
+OWLS_SCRIPTS = $(SCRIPTS)/$(OWLS_BASENAME)
+OWLS_RDS = $(RDS)/$(OWLS_BASENAME)
+OWLS_PLOTS = $(PLOTS)/$(OWLS_BASENAME)
+OWLS_POSTERIOR_SAMPLES = $(wildcard rds/owls-example/*-samples.rds)
 
-$(OWLS_DATA) : $(SCRIPTS)/$(OWLS_BASENAME)/load-and-write-data.R
+$(OWLS_DATA) : $(OWLS_SCRIPTS)/load-and-write-data.R
 	$(RSCRIPT) $<
 
-FECUNDITY_SUBPOSTERIOR = $(RDS)/$(OWLS_BASENAME)/fecundity-subposterior-samples.rds 
-$(FECUNDITY_SUBPOSTERIOR) : $(SCRIPTS)/$(OWLS_BASENAME)/fit-fecundity.R $(RDS)/$(OWLS_BASENAME)/models/fecundity-model.stan $(FECUNDITY_DATA)
+ORIG_IPM_SAMPLES = $(OWLS_RDS)/original-ipm-samples.rds
+$(ORIG_IPM_SAMPLES) : $(OWLS_SCRIPTS)/fit-original-ipm.R $(OWLS_SCRIPTS)/models/original-ipm.bug $(OWLS_DATA) $(MCMC_UTIL)
+	$(RSCRIPT) $<
+
+FECUNDITY_SUBPOSTERIOR = $(OWLS_RDS)/fecundity-subposterior-samples.rds 
+$(FECUNDITY_SUBPOSTERIOR) : $(OWLS_SCRIPTS)/fit-fecundity.R $(OWLS_SCRIPTS)/models/fecundity-model.stan $(FECUNDITY_DATA)
 	$(RSCRIPT) $< 
 
-ORIG_IPM_RESULTS = $(RDS)/$(OWLS_BASENAME)/original-ipm-results.rds
-$(ORIG_IPM_RESULTS) : $(SCRIPTS)/$(OWLS_BASENAME)/fit-original-ipm.R $(SCRIPTS)/$(OWLS_BASENAME)/models/original-ipm.bug $(OWLS_DATA)
+FECUNDITY_DIAGNOSTIC = $(OWLS_PLOTS)/stage-one-diagnostics-fecundity.pdf
+$(FECUNDITY_DIAGNOSTIC) : $(OWLS_SCRIPTS)/diagnostics-stage-one.R
 	$(RSCRIPT) $<
+
+CAPTURE_RECAPTURE_DIAGNOSTIC = $(OWLS_PLOTS)/stage-one-diagnostics-capture-recapture.pdf
+$(CAPTURE_RECAPTURE_DIAGNOSTIC) : $(FECUNDITY_DIAGNOSTIC)
+
+ALL_PLOTS += $(FECUNDITY_DIAGNOSTIC) $(CAPTURE_RECAPTURE_DIAGNOSTIC)
+
+CAPTURE_RECAPTURE_SUBPOSTERIOR = $(OWLS_RDS)/capture-recapture-subposterior-samples.rds
+$(CAPTURE_RECAPTURE_SUBPOSTERIOR) : $(OWLS_SCRIPTS)/fit-capture-recapture.R $(OWLS_SCRIPTS)/models/capture-recapture.bug $(OWLS_DATA) $(MCMC_UTIL)
+	$(RSCRIPT) $<
+
+COUNT_DATA_SUBPOSTERIOR = $(OWLS_RDS)/count-data-subposterior-samples.rds
+$(COUNT_DATA_SUBPOSTERIOR) : $(OWLS_SCRIPTS)/fit-count-data.R $(OWLS_SCRIPTS)/models/count-data.bug $(OWLS_DATA) $(MCMC_UTIL)
+	$(RSCRIPT) $<
+
+SUBPOSTERIOR_PLOT = $(OWLS_PLOTS)/subposteriors.pdf
+$(SUBPOSTERIOR_PLOT) : $(OWLS_SCRIPTS)/plot-subposteriors.R $(PLOT_SETTINGS) $(MCMC_UTIL) $(OWLS_POSTERIOR_SAMPLES)
+	$(RSCRIPT) $<
+
+ALL_PLOTS += $(SUBPOSTERIOR_PLOT)
+
+MELDED_POSTERIOR = $(OWLS_RDS)/melded-posterior-samples.rds
+$(MELDED_POSTERIOR) : $(OWLS_SCRIPTS)/mcmc-main-stage-two.R $(OWLS_SCRIPTS)/mcmc-nimble-functions.R $(MCMC_UTIL) $(FECUNDITY_SUBPOSTERIOR) $(CAPTURE_RECAPTURE_SUBPOSTERIOR) $(OWLS_DATA)
+	$(RSCRIPT) $<
+
+MELDED_DIAGNOSTIC_PLOT = $(OWLS_PLOTS)/stage-two-diagnostics.png
+$(MELDED_DIAGNOSTIC_PLOT) : $(OWLS_SCRIPTS)/diagnostics-stage-two.R $(MELDED_POSTERIOR) $(PLOT_SETTINGS)
+	$(RSCRIPT) $<
+
+MELDED_QQ_PLOT = $(OWLS_PLOTS)/orig-meld-qq-compare.pdf
+$(MELDED_QQ_PLOT) : $(OWLS_SCRIPTS)plot-qq-comparison.R $(MELDED_POSTERIOR) $(ORIG_IPM_SAMPLES) $(PLOT_SETTINGS)
+	$(RSCRIPT) $<
+
+ALL_PLOTS += $(MELDED_DIAGNOSTIC_PLOT) $(MELDED_QQ_PLOT)
 
 ################################################################################
 

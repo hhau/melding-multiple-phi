@@ -10,6 +10,7 @@
 % \linenumbers
 
 \usepackage{relsize}
+\usepackage{placeins}
 
 % required for landscape pages. beware, they back the build very slow.
 \usepackage{pdflscape}
@@ -25,9 +26,11 @@
 \definecolor{mymidblue}{RGB}{44, 127, 184}
 \definecolor{mylightblue}{RGB}{166, 233, 255}
 
+\usepackage{colortbl}
+
 \newcommand{\semitransp}[2][35]{\color{fg!#1}#2}
 
-\setcounter{secnumdepth}{4}
+\setcounter{secnumdepth}{3}
 
 \let\Oldcap\cap
 \renewcommand{\cap}{\mathrel{\mathsmaller{\Oldcap}}}
@@ -79,3 +82,7 @@
 \newcommand{\modelindex}{m}
 \newcommand{\stageindex}{s}
 \newcommand{\phiindex}{p}
+
+% independence symbol
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\setcomp}{\mathsf{c}}

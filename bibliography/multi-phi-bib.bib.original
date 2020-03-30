@@ -1,11 +1,63 @@
 @article{zipkin:saunders:18,
-  title         = "Synthesizing multiple data types for biological conservation using integrated population models",
-  journal       = "Biological Conservation",
-  volume        = "217",
-  pages         = "240--250",
-  year          = "2018",
-  issn          = "0006-3207",
-  doi           = "https://doi.org/10.1016/j.biocon.2017.10.017",
-  url           = "http://www.sciencedirect.com/science/article/pii/S0006320717305141",
-  author        = "Elise F. Zipkin and Sarah P. Saunders"
+  title         = {Synthesizing multiple data types for biological conservation using integrated population models},
+  journal       = {Biological Conservation},
+  volume        = {217},
+  pages         = {240--250},
+  year          = {2018},
+  issn          = {0006-3207},
+  doi           = {https://doi.org/10.1016/j.biocon.2017.10.017},
+  url           = {http://www.sciencedirect.com/science/article/pii/S0006320717305141},
+  author        = {Elise F. Zipkin and Sarah P. Saunders}
+}
+
+@article{lin:etal:14,
+  doi = {10.1186/2195-5832-1-14},
+  url = {https://doi.org/10.1186/2195-5832-1-14},
+  year = {2014},
+  publisher = {Springer Science and Business Media {LLC}},
+  volume = {1},
+  number = {1},
+  pages = {14},
+  author = {Gwo Lin and Xiaoling Dou and Satoshi Kuriki and Jin-Sheng Huang},
+  title = {Recent developments on the construction of bivariate distributions with fixed marginals},
+  journal = {Journal of Statistical Distributions and Applications}
+}
+
+@book{nelsen:06,
+  doi = {10.1007/0-387-28678-0},
+  url = {https://doi.org/10.1007/0-387-28678-0},
+  year = {2006},
+  publisher = {Springer New York},
+  title = {An Introduction to Copulas},
+  author = {Roger B. Nelsen},
+  edition = {2}
+}
+
+@incollection{massa:lauritzen:10,
+  title         = {Combining statistical models},
+  author        = {Massa, M. Sofia and Lauritzen, Steffen L.},
+  year          = {2010},
+  booktitle     = {Algebraic methods in statistics and probability {II}},
+  publisher     = {Amer. Math. Soc., Providence, RI},
+  series        = {Contemp. Math.},
+  volume        = {516},
+  pages         = {239--259},
+  doi           = {10.1090/conm/516/10179},
+  url           = {https://doi.org/10.1090/conm/516/10179},
+  mrclass       = {62H99 (68R99)},
+  mrnumber      = {2730753}
+}
+
+@article{finke:etal:19,
+  doi = {10.1007/s13253-018-00349-9},
+  url = {https://doi.org/10.1007/s13253-018-00349-9},
+  year = {2019},
+  month = jan,
+  publisher = {Springer Science and Business Media {LLC}},
+  volume = {24},
+  number = {2},
+  pages = {204--224},
+  author = {Axel Finke and Ruth King and Alexandros Beskos and Petros Dellaportas},
+  title = {Efficient sequential {M}onte {C}arlo algorithms for integrated population models},
+  journal = {Journal of Agricultural,  Biological and Environmental Statistics}
 }

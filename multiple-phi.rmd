@@ -208,7 +208,8 @@ It should instead read
 - The inner integral in Equation \eqref{eqn:int-pooled-prior-overall-corrected-2} is finite because we assumed the conditional was a proper distribution, it emits a finite constant $Z(\phi_{2 \cap 3})$
 - The interaction between $Z(\phi_{2 \cap 3})$ and the outer integrand could possibly result in a divergent outer integral.
     - This seems unlikely if we have already assumed that all prior marginal distributions are proper -- a product of proper distributions should be proper
-    - Is it possible to interpret this in a different way to find the minimal set of assumptions required for this to make sense 
+    - Is it possible to interpret this in a different way to find the minimal set of assumptions required for this to make sense?
+        - Not clear, probably enough that all distributions are integrable and that the support of $(\phi_{2 \cap 3})$ is not a set of measure zero.
 
 Logarithmic pooling has two immediate advantages over linear pooling. 
 Correlation present in $\pd_{2}$ will persist into $\pd_{\text{pool}}$, and we can use weighted-sample self-density ratio estimation when estimating the melded posterior.
@@ -238,34 +239,35 @@ knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
 The logarithmic pooled prior for $\Nm$ models in a chain is
 \input{tex-input/multiple-phi/0051-pooled-prior-overall-general.tex}
 
-# Ordering issues
+\newpage
 
-- [@massa:lauritzen:10] consider graphical Gaussian models
-- They express some concerns that the order of model composition influences the result.
-- I don't know how to resolve the tension between Example 5.6 and the stated incompatibility of Equation (4.1).
-    - The only way I could see both being true is if $h_{(A \cup B) \cap C} = h_{A \cap B}h_{B \cap C}$, which is making some kind of independence assumption. Exactly what kind I am unsure about.
-- The questions I think I should be asking and answering are:
-    1. _Is this any different from melding $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ together first, then melding the result with $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$?_
-        - Perhaps the distributed / parallel sampler makes the case for this to be different?
-            - No, the sampling process should not impact the model specification and combination process. Computation != specification.
-    2. _Does applying this operator to 2 $\Nm = 3$ chains of models (base case) result in the same thing as applying it to $\Nm = 6$ models at once?_
-        - This will depend on the relationship between the two groups of models? Assume it's a chain and check?
-        - We can probably just generalise the result from (1.) / the original melding operator?
+# Model ordering and commutativity 
 
-## Noncommutativity of the original Markov Melding operator
 
-- Let's check if the original melding process is commutative in the three model case.
-- ~~All pooling is done with logarithmic pooling: $\pd_{\text{pool}}(\phi_{1 \cap 2}) = \frac{1}{Z_{1 \cap 2}} \pd_{1}(\phi_{1 \cap 2})^{\lambda_{1, 12}} \pd_{2}(\phi_{1 \cap 2})^{\lambda_{2, 12}}$~~.
-    - Let's try and make this pooling agnostic
-    - $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$
-- Consider the same three model setup
-    1. Melding $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ produces a joint model that is the product of these two submodels, as there is no quantity in common.
-    2. Thus we must meld $\pd_{1}$ and $\pd_{2}$ or $\pd_{2}$ and $\pd_{3}$ together first, then the result with the remaining model.
-    3. We have two questions to answer here:
-        - Does applying the original melding operator twice give the same result as what I am suggesting in Equation \eqref{eqn:melded-model}?
-        - Is the original melding model operator commutative in this setting? I.e. if we denote the original melding operator with $\pd_{1} \circledast \pd_{2}$, does  $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$?
-- The notation is very hard and overloaded here.
-    - Sensibly distinguishing between different melding states and weights is a nightmare.
+1. _Is this any different from melding $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ together first, then melding the result with $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$?_
+    1. If it is different, why? When are they the same, and when not?
+        - @massa:lauritzen:10 note that in the case of Markov combination, this is not always true.
+    1. The previous two questions assume that melding $\pd_{1}$ with $\pd_{2}$ first, then the result with $\pd_{3}$ is commutative, i.e. melding $\pd_{2}$ with $\pd_{3}$ first, then the result with $\pd_{1}$ should be identical.
+        - Ignoring practical reasons why this may not be the case.
+2. _Does applying this operator to 2 $\Nm = 3$ chains of models (base case) result in the same thing as applying it to $\Nm = 6$ models at once?_
+    - This will depend on the relationship between the two groups of models? Assume it's a chain and check?
+    - We can probably just generalise the result from (1.) / the original melding operator?
+    - If we distinguish the new operator from the old one, then we should verify this.
+
+## Applying the original Markov Melding operator twice
+
+### Definitions
+
+- Denote the original melding operator with $\circledast$, and its output  
+\input{tex-input/noncommutativity/0005-def-usual-melded-model.tex}
+where $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$ for some pooling function $g^{12}$.
+- Denote the entire parameter space of $\pd_{\text{meld}}^{12}$ as $\Theta^{12} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$ .
+- Any marginal distribution of $\pd_{\text{meld}}^{12}$ can be derived in the usual way, for example 
+\input{tex-input/noncommutativity/0006-example-melded-marginal-definition.tex}
+- Define $\pd_{\text{meld}}^{(12)3}$ as 
+\input{tex-input/noncommutativity/0007-iterated-application-melding.tex}
+so that the parentheses in the superscript indicate the order in which the melding operator is applied.
+- Analogously, define $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$ for a potentially different choice of pooling function $g^{(12)3}$.
 
 ### $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}$: Step one
 
@@ -281,28 +283,78 @@ Next we compute $\pd_{\text{meld}}^{(12)3} = \pd_{\text{meld}}^{12} \circledast 
 with $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$.
 The difficult term here is $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$. Define $\Omega = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, then
 \input{tex-input/noncommutativity/0012-strange-marginal-definition.tex}
-In words, this is the marginal distribution for $\phi_{2 \cap 3}$ under the melded model $\pd_{1} \circledast \pd_{2}$, a strange distribution to be interested in.
+In words, this is the marginal distribution for $\phi_{2 \cap 3}$ under the melded model $\pd_{1} \circledast \pd_{2}$.
 Expanding Equation \eqref{eqn:double-melded-model} gives:
 \input{tex-input/noncommutativity/0013-expanded-double-melded-model.tex}
-For this to be equal to the model defined in Equation \eqref{eqn:melded-model} (ignoring all normalising constants for clarity), the following equalities must hold:
+
+### Is this the same as the proposed operator?
+
+For this to be equal to the model defined in Equation \eqref{eqn:melded-model} (ignoring all normalising constants for clarity), both the following equalities must hold:
 
 1. $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-    - This can only be true if $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are independent a priori in $\pd_{2}$, not true in general.
+    - This can only be true if $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are independent a priori in $\pd_{2}$.
+    - If they are independent then $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}) \pd_{2}(\phi_{2 \cap 3})$, and $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$ for the equality to hold.
+        - This is true when $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, which is dictatorial pooling.
+        - To verify:
+        \input{tex-input/noncommutativity/0015-verify-dictatorial-pooling.tex}
+        thus $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ in order for final integral to produce the desired marginal: $\pd_{2}(\phi_{2 \cap 3})$.
+
 2. $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$
-    - all the $g$'s must be logarithmic if we form the joint pooled prior via logarithmic pooling
-    - if we form the joint pooled prior via the strange form of linear pooling we define, then the joint has 4 terms. 
-        - As for the left hand side:
-            - $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ has 1 term (logarithmic) or 2 terms (linear).
-            - $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ has 1, 2 or 3 terms (if $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ is logarithmic or linear respectively -- due to the interaction with $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$). Hence, 
+    - All the $g$'s (pooling functions) must be logarithmic if we form the joint pooled prior (RHS) via logarithmic pooling
+        - Even then, we need independence in the second model for this to be true.
+    - _On term matching_: If we form the joint pooled prior via the strange form of linear pooling we define, then the joint has 4 terms. 
+    - As for the left hand side:
+        - $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ has 1 term (logarithmic) or 2 terms (linear).
+        - If $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ uses our form of logarithmic pooling, then it has 1 or 2 terms if $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ is logarithmic or linear respectively (due to the interaction with $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$).
+        - Alternatively, if $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ uses our form of linear pooling, then it has 4 or 8 terms (using the same reasoning).
         - So if we use linear pooling to form the joint pooled prior (RHS), then we must use logarithmic pooling for $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ and linear for $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ to result in the correct number of terms. This alone will not guarantee that the quantities are equal, but at least it may be possible.
 
-So in general, applying the original melding operator twice does __not__ result in the same model as \eqref{eqn:melded-model}.
+So in general, applying the original melding operator twice does not result in the same model as \eqref{eqn:melded-model}.
 
-### Is is commutative? Does $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$?
+### Is the original commutative? Does $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$?
 
-By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model}, we find that the original melding operator is only commutative if $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2}) \pd_{2}(\phi_{2 \cap 3})$, which implies the following equalities
+By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model}, we find that the original melding operator is only commutative if 
+\input{tex-input/noncommutativity/0016-commutativity-condition.tex}
+which implies the following equalities
 \input{tex-input/noncommutativity/0014-orig-melding-commutative-equalities.tex}
-I suspect that these equalities only hold when $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are independent in $\pd_{2}$.
+Showing one of the equalities in Equation \eqref{eqn:orig-melding-commutative-equalities-1} and \eqref{eqn:orig-melding-commutative-equalities-2} implies its partner equality is also true. 
+Consider the first equality
+\input{tex-input/noncommutativity/0017-pooling-equality.tex}
+Assume that $g^{12}$ and $g^{1(23)}$ are both linear or logarithmic pooling functions.
+For Equation \eqref{eqn:pooling-equality} to be true, $\pd_{2}(\phi_{1 \cap 2}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2})$, which is the same result we require in Equation \eqref{eqn:orig-melding-commutative-equalities-2}.
+We have already shown that this is only true when using dictatorial pooling.
+
+### Conditional commutativity
+
+- _Question_: Can we show that the original operator has a weaker form of commutativity if there exists a part of $\pd_{2}$, which we can temporarily call $A$, that renders $\phi_{1 \cap 2} \indep \phi_{2 \cap 3} \mid A$?
+- _TODO_: Need to make explicit how this argument goes through the pooled prior terms in Equation \eqref{eqn:expanded-double-melded-model}
+    - I think that Section \ref{is-the-original-commutative-does-pd_1-circledast-pd_2-circledast-pd_3-pd_1-circledast-pd_2-circledast-pd_3} shows that this is really the same question.
+
+Assume there exists an $A \subset \psi_{2}$, such that $\phi_{1 \cap 2} \indep \phi_{2 \cap 3} \mid A$, and $A' = \psi_{2} \setminus{A}$. 
+    <!-- - $A$ is sometimes known as the _d-separator_ of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$. -->
+The original melding operator is conditionally commutative, which is to say $(\pd_{1}(\cdot) \circledast \pd_{2}(\cdot \mid A)) \circledast \pd_{3}(\cdot) = \pd_{1}(\cdot) \circledast (\pd_{2}(\cdot \mid A) \circledast \pd_{3}(\cdot))$.
+To show this, it suffices to to show that 
+\input{tex-input/noncommutativity/00201-conditional-commutativity-target-equality.tex} 
+Symmetry in the indices implies that it is sufficient to show that $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3} \mid A) = \pd_{2}(\phi_{2 \cap 3} \mid A)$
+\input{tex-input/noncommutativity/0020-conditional-commutativity.tex}
+Noting that $\int \pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1}) \text{d}Y_{1} = \pd_{1}(\phi_{1 \cap 2}, \psi_{1})$ by definition, we can immediately integrate out $Y_{1}, \psi_{1}, Y_{2}$, and $A'$, leaving
+\input{tex-input/noncommutativity/0021-conditional-commutativity-two.tex}
+where we use the conditional independence property to pull $\pd_{2}(\phi_{2 \cap 3} \mid A)$ out of the integral, and the last step assumes that $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2} \mid A)$ is normalised.
+
+### Summary
+
+1. Original operator targets something different from the proposed operator.
+1. Original operator is generally noncommutative.
+
+Exceptions include: 
+
+- If $\phi_{1 \cap 2} \indep \phi_{2 \cap 3}$ in $\pd_{2}$, then both operators target the same thing, and the original operator is commutative.
+- If we use dictatorial pooling, i.e. set $\pd_{\text{pool}}^{23}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ and/or $\pd_{\text{pool}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, then the original operator is commutative, but still targets something different from the proposed operator.
+- If there exists an $A \subset \psi_{2}$ such that $\phi_{1 \cap 2} \indep \phi_{2 \cap 3} \mid A$, then the original operator has a weaker form of commutativity $(\pd_{1}(\cdot) \circledast \pd_{2}(\cdot \mid A)) \circledast \pd_{3}(\cdot) = \pd_{1}(\cdot) \circledast (\pd_{2}(\cdot \mid A) \circledast \pd_{3}(\cdot))$.
+
+#### Example {-}
+
+\input{tex-input/noncommutativity/0030-example-cond-comm.tex}
 
 # Multi-stage sampler 1: starting with $\modelindex = 1$
 
@@ -431,8 +483,15 @@ Note that these are _not_ the mean and variance of the truncated distribution.
 
 \input{tex-input/ex-three-gaussians/0030-model-3-specification.tex}
 
-## Owls
+## Integrated population models - Owls
 
+- _Q_: What are IPMs and why do ecologists use them?
+- Integrated population models (IPMs) allow ecologists to combine data on a population's abundance (how many), trajectory (birth / death / immigration / emigration rates), demography (juvenile / adult / sex), and spatial location (where).
+- The combination of these data allows ecologist to infer quantities that would be unidentifiable using a single source of data.
+- Additionally, IPMs make the model specification task is easier; data are modelled separately from one another, and the submodels are then combined to form the IPM.
+- This process is equivalent to Markov melding using product-of-experts to form the pooled prior.
+
+- Notes on this particular IPM
 - Notes from @finke:etal:19
 - There is no evidence to support the impact of Vole abundance on the immigration rate $\eta_{t}$. 
     - Hence we can assume that $\eta_{t} = \eta$ for all time points.
@@ -443,18 +502,48 @@ Note that these are _not_ the mean and variance of the truncated distribution.
         - $\alpha_{3} = 0$
             - This is also good, because $\boldsymbol{\alpha} = (\alpha_{0}, \alpha_{1}, \alpha_{2}, \alpha_{3})$ is another (sort of) melding parameter, so this reduces the dimensionality of the problem.
 
+### Submodels
+
+- @finke:etal:19 consider a number of variations on the original model of @schaub:etal:06 and @abadi:etal:10.
+- We use the variant of the model with highest reported marginal likelihood
+
+- Some notation is common to all submodels. Data and parameters are stratified into
+    - Two age-groups $a \in \{J, A\}$ ($J$: juvenile, $A$: adult),
+    - Two sexes $s \in \{M, F\}$,
+    - Time $t \in \{1, \ldots, T\}$, for $T = 25$.
+
+- parametrisation first:
+
+#### Capture recapture: $\pd_{1}$
+
+Capture-recapture data pertain to owls that are captured, tagged, and released at time $t$.
+These individuals are then recaptured at time $u$, for $t + 1 < u < T + 1$, or not recaptured before the conclusion of the study, in which case $u = T + 1$. 
+Define $M_{a, s, t, u}$ as the number of owls last observed at time $t$, recaptured at time $u$, of sex $s$, and age-group $a$.
+These observations are then aggregated into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows and $T + 1$ columns.
+Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls observed at time $t$ and then released, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
+The multinomial likelihood is
+\input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
+with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
+\input{tex-input/owls-example/0011-multinomial-probabilities.tex}
+
 - Denote the capture-recapture model as the first submodel $\pd_{1}$
     - $\phi_{1 \cap 2} = \phi_{a, g, t} = (\alpha_{0}, \alpha_{1}, \alpha_{2})$
+
+
+#### Abundance: $\pd_{2}$ 
 - The count data model is $\pd_{2}$ 
     - $\phi_{1 \cap 2} = \phi_{a, g, t} = (\alpha_{0}, \alpha_{1}, \alpha_{2})$
+        - Count data is female specific, and $\alpha_{2}$ is a male-specific term, so it doesn't exist in the count data model.
     - $\phi_{1 \cap 2} = \rho$
-- The fecundity model is $\pd_{3}$
-    - $\phi_{1 \cap 2} = \rho$
-    - The original paper puts a $\text{Unif}(0, 10)$ prior on $\rho_{t}$, and the -@finke:etal:19 paper doesn't specify what they do (their `c++` code suggests a flat prior -- they never seem to do anything with it)
-    - there is a conflict between the original paper and the Finke paper on what this model is exactly.
-    - the original BUGS code has a typo in it that invalidates the results (r vs rM), and is also not valid BUGS
 
+#### Fecundity: $\pd_{3}$
 
+The fecundity submodel considers the number of breeding females at time $t$, $N_{t}$, and the number of chicks produced that survive and leave the nest $n_{t}$.
+A simple Poisson models is employed, with fecundity rate $\rho$, as a model for these data
+\input{tex-input/owls-example/0030-fecundity-submodel.tex}
+<!-- Following @finke:etal:19 we specify a constant value for $\rho$ over all time points. -->
+Denote $\phi_{2 \cap 3} = \rho$, $\psi_{3} = \varnothing$, and $Y_{3} = \{(N_{t}, n_{t})\}_{t = 1}^{T}$ for consistency with the notation introduced in Section \ref{melded-model}.
+    
 ### Sampling
 
 - Compare
@@ -462,6 +551,16 @@ Note that these are _not_ the mean and variance of the truncated distribution.
         - The only important thing to check is the quantity with the minimum ESS (excluding Log prob) + divide by total time
     - D&C Melding algorithm (for truth + speed)
         - We can use parts of the original BUGS code + Nimble for this
+
+### Results
+
+```{r phi_subpost, fig.cap = "(sub)Posterior credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{1}, \\alpha_{2}, \\alpha_{3})$ and $\\phi_{2 \\cap 3} = \\rho$ from the original integrated population model $\\pd_{\\text{ipm}}$, as well as the submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 95\\% wide."}
+knitr::include_graphics("plots/owls-example/subposteriors.pdf")
+```
+
+```{r phi_qq_compare, fig.cap = "qq comparison between original model (ipm) and the melded model."}
+knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
+```
 
 
 # Conclusion
@@ -486,4 +585,24 @@ Note that these are _not_ the mean and variance of the truncated distribution.
 \renewcommand{\thesection}{\Alph{section}}
 \setcounter{section}{0}
 
-# Appendix 
+# Appendix: Owls example diagnostics
+
+## Stage one diagnostics
+
+### Numerical diagnostics
+
+\input{tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex}
+
+### Visual diagnostics
+
+## Stage two diagnostics
+
+### Numerical diagnostics
+
+\input{tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex}
+
+### Visual diagnostics
+
+```{r stage_two_mcmc_diags, fig.cap = "stage two visual diagnostics."}
+knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
+```

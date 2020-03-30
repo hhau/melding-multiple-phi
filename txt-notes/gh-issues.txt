@@ -1,0 +1,195 @@
+# Issue
+
+# Title: Slice sampler proposes and accepts out-of-support-values for discrete, non-negative, parameters. Modified slicer_sampler gives `samplerFunction .. unused arguments` error.
+
+Hello, Thanks for nimble!
+
+In my current model, some nodes have Poisson priors, hence discrete, non-negative supports. Here's a code snippet:
+
+```
+for (tt in 2 : ti) { 
+  N1[tt] ~ dpois(mean1[tt - 1])
+  mpo[tt - 1] <- Ntot[tt - 1] * im
+  NadSurv[tt] ~ dbin(phia, Ntot[tt - 1])
+  Nadimm[tt] ~ dpois(mpo[tt - 1])
+}
+```
+
+The default sampler configuration assigns these nodes a slice sampler. In some of my chains, this works fine:
+
+-- good-chain.png here --
+
+In other chains, this produces nonsensical results:
+
+-- bad-chain.png here --
+
+In particular, nodes `N1[2], N1[7], N1[10], Nadimm[4], Nadimm[6], Nadimm[10]` take on negative values _and move_ to other negative values. This should be impossible.
+
+When trying to rectify this issue, I adjusted `sampler_slice` [here](link-to-nimble-slice-sampler), modifying lines ** and ** to read: 
+```
+L <- x0 - runif(1, 0, 1) * width
+if (L < 0) {
+    L <- 0
+}
+```
+Otherwise it is identical to the source code. When I add this sampler to my MCMC configuration, I get an error
+
+```
+> count_model_mcmc <- buildMCMC(
++     count_model_config,
++     project = count_model
++ )
+Error in samplerFunction(model = model, mvSaved = mvSaved, target = target,  : 
+  unused arguments (model = model, mvSaved = mvSaved, target = target, control = control)
+```
+which I do not understand.
+
+I have tried to write a reprex for this, but cannot reproduce this behaviour in a simpler example. All my code is in this repo: (link to my repo)
+
+# issue: Indexing array by string in nimbleFunction emits indecipherable error
+
+This was pretty obvious in hindsight, but I couldn't find any documentation / anyone else reporting the error, so I'm putting it here in case anyone else is googling for it.
+
+Reprex:
+
+```
+library(nimble)
+
+# samples - to be used as a proposal
+proposal_samples <- array(
+  data = rnorm(n = 100 * 2),
+  dim = c(100, 2),
+  dimnames = list(
+    NULL,
+    c("mu", "theta")
+  )
+)
+
+# constants and data
+model_consts <- list(
+  n_data = 15
+)
+model_data <- list(
+  y = rnorm(n = model_consts$n_data, mean = 1, sd = 2)
+)
+
+# model code
+model_code <- nimbleCode({
+  mu ~ dnorm(0, sd = 2)
+  sigma_y ~ T(dnorm(0, sd = 1), 0, )
+
+  for (ii in 1 : n_data) {
+    y[ii] ~ dnorm(mu, sd = sigma_y)
+  }
+})
+
+model_inits <- list(
+  mu = rnorm(n = 1),
+  sigma_y = abs(rnorm(n = 1))
+)
+
+# proposal code
+mu_proposer <- nimbleFunction(
+  contains = sampler_BASE,
+  setup = function(model, mvSaved, target, control) {
+    calcNodes <- model$getDependencies(target)
+    internal_proposal_samples <- control$proposal_samples
+  },
+  run = function() {
+    model_log_prob_initial <- getLogProb(model, calcNodes)
+    
+    proposal_index <- rcat(
+      n = 1,
+      prob = nimRep(1, each = 100)
+    )
+    proposal <- internal_proposal_samples[
+      proposal_index, 
+      'mu' # I suspect this, change to numeric if doesn't work
+    ]
+    model[[target]] <<- proposal
+    model_log_prob_proposed <- calculate(model, calcNodes)
+    
+    log_MH_ratio <- model_log_prob_proposed - model_log_prob_initial
+
+    u <- runif(1, 0, 1)
+    if (u < exp(log_MH_ratio)) {
+      jump <- TRUE
+    } else { 
+      jump <- FALSE
+    }
+    if (jump) {
+      copy(from = model, to = mvSaved, row = 1, nodes = calcNodes, logProb = TRUE)
+    } else {
+      copy(from = mvSaved, to = model, row = 1, nodes = calcNodes, logProb = TRUE)
+    }
+  },
+  methods = list(
+    reset = function() {}
+  )
+)
+
+# compilation step
+model <- nimbleModel(
+  code = model_code,
+  name = "model",
+  constants = model_consts,
+  data = model_data,
+  inits = model_inits
+)
+compiled_model <- compileNimble(
+  model
+)
+
+# mcmc_config setup 
+model_config <- configureMCMC(
+  model
+)
+model_config$removeSampler(
+  "mu"
+)
+model_config$addSampler(
+  target = "mu",
+  type = "mu_proposer",
+  control = list(
+    proposal_samples = proposal_samples
+  )
+)
+new_mcmc <- buildMCMC(
+  model_config,
+  project = model
+)
+
+# error generating step
+compiled_model_new_mcmc <- compileNimble(
+  new_mcmc,
+  project = model,
+  showCompilerOutput = TRUE
+)
+
+```
+
+Error: 
+
+```
+
+```
+
+Changing 
+
+```
+proposal <- internal_proposal_samples[
+  proposal_index, 
+  'mu' # I suspect this, change to numeric if doesn't work
+]
+```
+to 
+
+```
+proposal <- internal_proposal_samples[
+  proposal_index, 
+  1 # I suspect this, change to numeric if doesn't work
+]
+```
+fixes the error.
+
+I don't know if you can catch this and emit a sensible error before the C++ stage. It would be nice to document this somewhere.

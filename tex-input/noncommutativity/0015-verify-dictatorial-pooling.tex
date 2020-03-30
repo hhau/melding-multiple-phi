@@ -1,0 +1,54 @@
+\begin{align}
+  \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) &=
+  \int 
+    \pd_{\text{meld}}^{12} (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2}) 
+  \text{d} Y_{1}
+  \text{d} \psi_{1} 
+  \text{d} Y_{2}
+  \text{d} \psi_{2}
+  \text{d} \phi_{1 \cap 2}
+  \\
+  &= 
+  \int
+    \pd_{\text{pool}}^{12}(\phi_{1 \cap 2})
+    \frac {
+      \pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})
+    } {
+      \pd_{1}(\phi_{1 \cap 2})
+    }
+    \frac {
+      \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})
+    } {
+      \pd_{2}(\phi_{1 \cap 2})
+    }
+  \text{d} Y_{1}
+  \text{d} \psi_{1} 
+  \text{d} Y_{2}
+  \text{d} \psi_{2}
+  \text{d} \phi_{1 \cap 2}
+  \\
+  &=
+  \int
+    \pd_{\text{pool}}^{12}(\phi_{1 \cap 2})
+    \frac {
+      \pd_{1}(\phi_{1 \cap 2})
+    } {
+      \pd_{1}(\phi_{1 \cap 2})
+    }
+    \frac {
+      \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})
+    } {
+      \pd_{2}(\phi_{1 \cap 2})
+    }
+  \text{d} \phi_{1 \cap 2} \\
+  &= 
+  \int
+    \frac {
+      \pd_{\text{pool}}^{12}(\phi_{1 \cap 2})
+    } {
+      \pd_{2}(\phi_{1 \cap 2})
+    }
+      \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})
+  \text{d} \phi_{1 \cap 2},
+  \label{eqn:verify-dictatorial-pooling}
+\end{align}

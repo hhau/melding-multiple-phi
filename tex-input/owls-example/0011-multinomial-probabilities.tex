@@ -1,0 +1,20 @@
+\begin{equation}
+  Q_{a, s, t, u} =
+    \left\{
+    \begin{array}{ll}
+      0, 
+      & 
+      \text{if} \,\, 1 < u \leq t \\
+      \phi_{a, s, t} 
+      \pi_{s, u} 
+      \prod_{r = t + 1}^{u - 1} 
+        \phi_{a, s, r} \left(1 - \pi_{s, r} \right),
+      & 
+      \text{if} \,\, t < u \leq T \\
+      1 - \sum_{r = 1}^{T} Q_{a, s, t, r},
+      &
+      \text{if} \,\, u = T+1.
+    \end{array}\right.
+  \label{eqn:multinomial-probabilities}
+\end{equation}
+  

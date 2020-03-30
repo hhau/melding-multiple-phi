@@ -1,0 +1,31 @@
+\begin{align}
+  &=
+    \int
+      \pd_{\text{pool}}^{12}(\phi_{1 \cap 2} \mid A)
+      \frac {
+        \pd_{1}(\phi_{1 \cap 2})
+      } {
+        \pd_{1}(\phi_{1 \cap 2})
+      }
+      \frac {
+        \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3} \mid A)
+      } {
+        \pd_{2}(\phi_{1 \cap 2} \mid A)
+      }
+    \text{d} \phi_{1 \cap 2} 
+    \\
+  &=
+    \pd_{2}(\phi_{2 \cap 3} \mid A)
+    \int
+       \pd_{\text{pool}}^{12}(\phi_{1 \cap 2} \mid A)
+       \frac {
+        \pd_{2}(\phi_{1 \cap 2} \mid A)
+       } {
+        \pd_{2}(\phi_{1 \cap 2} \mid A)
+       }
+    \text{d} \phi_{1 \cap 2}
+    \\
+  &= 
+    \pd_{2}(\phi_{2 \cap 3} \mid A),
+  \label{eqn:conditional-commutativity-two}
+\end{align}

@@ -1,0 +1,29 @@
+\begin{align}
+  \pd_{\text{meld}}^{12} (\phi_{2 \cap 3} \mid A) &= 
+    \int
+      \pd_{\text{meld}}^{12}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, A', Y_{1}, Y_{2} \mid A)
+    \text{d} Y_{1}
+    \text{d} \psi_{1}
+    \text{d} Y_{2}
+    \text{d} A'
+    \text{d} \phi_{1 \cap 2} \\
+  &= 
+    \int
+      \pd_{\text{pool}}^{12}(\phi_{1 \cap 2} \mid A)
+      \frac {
+        \pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})
+      } {
+        \pd_{1}(\phi_{1 \cap 2})
+      }
+      \frac {
+        \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, A', Y_{2} \mid A)
+      } {
+        \pd_{2}(\phi_{1 \cap 2} \mid A)
+      }
+    \text{d} Y_{1}
+    \text{d} \psi_{1}
+    \text{d} Y_{2}
+    \text{d} A'
+    \text{d} \phi_{1 \cap 2}
+  \label{eqn:conditional-commutativity}
+\end{align}

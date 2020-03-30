@@ -1,0 +1,53 @@
+\begin{figure}[!hb]
+  \centering
+  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.25cm}]
+  % Model 1 nodes
+  \node [state] (m1_psi_1) {$\psi_{1}$};
+  \node [state] [below of = m1_psi_1] (m1_phi_12) {$\phi_{1 \cap 2}$};
+  \node [state] [below of = m1_phi_12] (m1_Y_1) {$Y_{1}$};
+
+  % Model 2 nodes
+  \node [state] [right = 1.3cm of m1_psi_1] (m2_theta_1) {$\theta_{1}$};
+  \node [state] [below right = 1.25cm of m2_theta_1] (m2_phi_12) {$\phi_{1 \cap 2}$};
+  \node [state] [above right = 1.25cm of m2_phi_12] (m2_theta_2) {$\theta_{2}$};
+  \node [state] [below right = 1.25cm of m2_theta_2] (m2_phi_23) {$\phi_{2 \cap 3}$};
+  \node [state] [above right = 1.25cm of m2_phi_23] (m2_theta_3) {$\theta_{3}$};
+  \node [state] [below right = 1.25cm of m2_phi_12] (m2_Y_2) {$Y_{2}$};
+
+  % Model 3 nodes
+  \node [state] [right = 1.3cm of m2_theta_3](m3_psi_3) {$\psi_{3}$};
+  \node [state] [below of = m3_psi_3] (m3_phi_23) {$\phi_{2 \cap 3}$};
+  \node [state] [below of = m3_phi_23] (m3_Y_3) {$Y_{3}$};
+
+  % Model 1 edges
+  \path [->] (m1_psi_1) edge (m1_phi_12);
+  \path [->] (m1_phi_12) edge (m1_Y_1);
+
+  % Model 1 bounding box
+  \node (m1) [draw = black, fit = (m1_psi_1) (m1_phi_12) (m1_Y_1), dotted] {};
+  \node (m1-label) [yshift = -1.5ex] at (m1.south) {$\pd_{1}$};
+
+  % Model 2 edges
+  \path [->] (m2_theta_1) edge (m2_phi_12);
+  \path [->] (m2_theta_2) edge (m2_phi_12);
+  \path [->] (m2_theta_2) edge (m2_phi_23);
+  \path [->] (m2_theta_3) edge (m2_phi_23);
+  \path [->] (m2_phi_12) edge (m2_Y_2);
+  \path [->] (m2_phi_23) edge (m2_Y_2);
+
+  % Model 2 bounding box
+  \node (m2) [draw = black, fit = (m2_Y_2) (m2_theta_1) (m2_theta_3), dotted] {};
+  \node (m2-label) [yshift = -1.5ex] at (m2.south) {$\pd_{2}$};
+
+  % Model 3 edges
+  \path [->] (m3_psi_3) edge (m3_phi_23);
+  \path [->] (m3_phi_23) edge (m3_Y_3);
+
+  % Model 3 bounding box
+  \node (m3) [draw = black, fit = (m3_psi_3) (m3_phi_23) (m3_Y_3), dotted] {};
+  \node (m3-label) [yshift = -1.5ex] at (m3.south) {$\pd_{3}$};
+
+  \end{tikzpicture}
+  \caption{An example where the structure of $\pd_{2}$ is such that $\psi_{2} = (\theta_{1}, \theta_{2}, \theta_{3})$,  $A = (\theta_{2})$ and $A' = (\theta_{1}, \theta_{3}).$}
+  \label{fig:figure1}
+\end{figure}

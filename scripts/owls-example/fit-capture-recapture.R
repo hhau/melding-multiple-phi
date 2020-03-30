@@ -3,12 +3,8 @@ library(coda)
 
 source("scripts/common/mcmc-util.R")
 
-# read in the data
 model_data <- list(
   ti = 26,
-  nestlings = readRDS("rds/owls-example/fecundity-data.rds")[1 : 25,'N_offspring'],
-  sample.size = readRDS("rds/owls-example/fecundity-data.rds")[1 : 25, 'N_breeding_females'],
-  popcount = as.numeric(unlist(readRDS("rds/owls-example/count-data.rds"))),
   m = rbind(
     readRDS("rds/owls-example/capture-recapture-female-first-data.rds"),
     readRDS("rds/owls-example/capture-recapture-female-adult-data.rds")
@@ -25,9 +21,8 @@ model_data$rM <- rowSums(model_data$mM)
 n_chain <- 6
 n_iter <- 2e4
 
-# fit the model
-original_model <- jags.model(
-  file = "scripts/owls-example/models/original-ipm.bug",
+capture_recapture_submodel <- jags.model(
+  file = "scripts/owls-example/models/capture-recapture.bug",
   data = model_data,
   n.chains = n_chain,
   n.adapt = n_iter / 2
@@ -38,19 +33,14 @@ parameters <- c(
   "phia",
   "phijM",
   "phiaM",
-  "fec",
-  "im",
   "p",
   "pM",  
-  "NadSurv",
-  "Nadimm",
-  "Ntot",
   "v",
   "bp"
 )
 
 results <- coda.samples(
-  model = original_model,
+  model = capture_recapture_submodel,
   variable.names = parameters,
   n.iter = n_iter
 )
@@ -62,5 +52,5 @@ results_array <- mcmc_list_to_array(
 
 saveRDS(
   object = results_array,
-  file = "rds/owls-example/original-ipm-samples.rds"
+  file = "rds/owls-example/capture-recapture-subposterior-samples.rds"
 )
