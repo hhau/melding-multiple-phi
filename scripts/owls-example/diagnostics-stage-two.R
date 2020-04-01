@@ -1,4 +1,5 @@
 source("scripts/common/plot-settings.R")
+source("scripts/common/mcmc-util.R")
 
 library(dplyr)
 library(bayesplot)
@@ -29,12 +30,20 @@ diag_vars <- unique(c(vars, qois))
 stage_two_table <- as.data.frame(stage_two_diagnostics)[diag_vars, ] %>%
   tibble::rownames_to_column() %>%
   select(par = rowname, n_eff, Rhat, Bulk_ESS, Tail_ESS) %>%
+  rename(
+    "Parameter" = par,
+    "$N_{\\text{eff}}$" = n_eff,
+    "$\\widehat{R}$" = Rhat,
+    "Bulk ESS" = Bulk_ESS,
+    "Tail ESS" = Tail_ESS,
+  ) %>% 
   kable(
     format = "latex",
-    booktabs = TRUE
+    booktabs = TRUE,
+    escape = FALSE
   ) %>%  
-  kable_styling(latex_options = "striped") %>% 
-  column_spec(1, "1cm")
+  kable_styling(latex_options = c("striped",  "hold_position")) %>% 
+  column_spec(1, "2cm")
 
 cat(
   stage_two_table,
@@ -69,3 +78,19 @@ ggsave_fullpage(
   plot = res
 )
 
+discrete_pars <- c(
+  sprintf("N1[%d]", 1 : 26),
+  sprintf("Nadimm[%d]", 1 : 26),
+  sprintf("NadSurv[%d]", 1 : 26) 
+)
+
+discrete_trace <- mcmc_trace(
+  stage_two_samples[, , discrete_pars]
+)
+
+ggsave(
+  filename = "plots/owls-example/stage-two-diagnostics-discrete.png",
+  plot = discrete_trace,
+  height = 30,
+  width = 30
+)

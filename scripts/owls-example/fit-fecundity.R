@@ -3,9 +3,9 @@ library(rstan)
 data <- readRDS(file = "rds/owls-example/fecundity-data.rds")
 
 stan_data <- list(
-  "T" = nrow(data),
-  N_breeding_females = data$N_breeding_females,
-  N_offspring = data$N_offspring
+  "T" = nrow(data) - 1,
+  N_breeding_females = data$N_breeding_females[1 : 25],
+  N_offspring = data$N_offspring[1 : 25]
 )
 
 prefit <- stan_model(
@@ -28,3 +28,4 @@ saveRDS(
   object = samples,
   file = "rds/owls-example/fecundity-subposterior-samples.rds"
 )
+

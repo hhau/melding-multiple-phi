@@ -1,0 +1,23 @@
+\begin{gather}
+    x_{J, t} \mid \mathbf{x}_{t - 1}, \theta 
+    \,\, \sim \,\,
+    \text{Poisson}\left(
+      \left[x_{J, t - 1} + x_{A, t - 1}\right]
+      \, \rho / 2 \,
+      \phi_{1, F, t - 1} 
+    \right),
+    \quad 
+    x_{A, t} = \text{sur}_{t} + \text{imm}_{t}, \\
+    \text{sur}_{t} \mid \mathbf{x}_{t - 1}, \theta
+    \,\, \sim \,\,
+    \text{Binomial}\left(
+      x_{J, t - 1} + x_{\mathrm{A}, t - 1},
+      \phi_{\mathrm{A}, F, t - 1}
+    \right), \\
+    \text{imm}_{t} \mid \mathbf{x}_{t - 1}, \theta 
+    \,\, \sim\,\,
+    \text{Poisson}\left(
+      \left[x_{J, t - 1} + x_{\mathrm{A}, t - 1}\right] \eta\right
+    ).
+  \label{eqn:count-data-submodel}
+\end{gather}

@@ -134,6 +134,14 @@ _Integrated_, in that they integrate more than one source of data and an associa
 - https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.13538
     - This example seems simpler, but can't get at code + data?
 
+<!-- This should probably be in the introduction not the examples -->
+- _Q_: What are IPMs and why do ecologists use them?
+- Integrated population models (IPMs) allow ecologists to combine data on a population's abundance (how many), trajectory (birth / death / immigration / emigration rates), demography (juvenile / adult / sex), and spatial location (where).
+- The combination of these data allows ecologist to infer quantities that would be unidentifiable using a single source of data.
+- Additionally, IPMs make the model specification task is easier; data are modelled separately from one another, and the submodels are then combined to form the IPM.
+- This process is equivalent to Markov melding using product-of-experts to form the pooled prior.
+ 
+
 
 ## More thoughts on examples
 
@@ -419,6 +427,8 @@ which has an acceptance probability of
 
 ## Meet in the middle
 
+_Rewrite for $\Nm = 3$ models, pick a consistent name_.
+
 \input{tex-input/dc-sampler/0000-tikz-target.tex}
 
 Choose a specific model $k$.
@@ -434,6 +444,88 @@ with Gibbs updates
 and acceptance probabilities
 \input{tex-input/dc-sampler/0012-dc-acceptance-probabilities.tex}
 
+# Examples
+
+## Integrated population model -  Little Owls
+
+Integrated population models allow for precise estimation of population level quantities.
+@schaub:etal:06 and @abadi:etal:10 consider aim to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
+They collect three sources of data, namely nest-record, population count, and capture-recapture.
+Each of these data inform fecundity, immigration, and yearly survival rates respectively.
+Independent models are constructed for each source of data, and the IPM is the product of these independent models.
+Because the population count model includes a parameter also contained in the nest-record model, and has two parameters in common with the capture-recapture model, the IPM can be viewed as a melded model, as described in Section \ref{melded-model}.
+Viewing the IPM as a melded model allows us to use the split and recombine multi-stage sampler described in Section \ref{multi-stage-sampler-2-split-and-recombine}.
+
+### Submodels
+
+@finke:etal:19 consider a number of variations on the original model of @schaub:etal:06 and @abadi:etal:10.
+We use the variant of the model with highest reported marginal likelihood.
+Before we detail the specifics of our chosen model, we need to introduce some notation. 
+Data and parameters are stratified into Two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, Two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
+
+#### Capture recapture: $\pd_{1}$
+
+Capture-recapture data pertain to owls that are captured, tagged, and released at time $t$.
+These individuals are then recaptured at time $u$, for $t + 1 < u < T + 1$, or not recaptured before the conclusion of the study, in which case $u = T + 1$. 
+Define $M_{a, s, t, u}$ as the number of owls last observed at time $t$, recaptured at time $u$, of sex $s$, and age-group $a$.
+These observations are then aggregated into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows and $T + 1$ columns.
+Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls observed at time $t$ and then released, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
+The multinomial likelihood is
+\input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
+with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
+\input{tex-input/owls-example/0011-multinomial-probabilities.tex}
+
+#### Count data model: $\pd_{2}$ 
+
+To estimate population abundance, a two level model is used.
+One level models the observed (counted) number of females at each point in time, with a second, latent process modelling the total number of females in population.
+Denote the total number of juvenile and adult females in the population at time $t$ as $\mathbf{x}_{t} = \left[x_{J, t}, x_{A, t}\right]$.
+The latent, population level model is 
+\input{tex-input/owls-example/0020-count-data-submodel.tex}
+The initial population size $[x_{J, 1}, x_{A, 1}]$ is a priori uniformly distributed over $\{0, 1, \ldots, 50\}$.
+The observation level model is  
+\input{tex-input/owls-example/0021-observation-process.tex}
+
+#### Fecundity: $\pd_{3}$
+
+The fecundity submodel considers the number of breeding females at time $t$, $N_{t}$, and the number of chicks produced that survive and leave the nest $n_{t}$.
+A Poisson model is employed, with fecundity (reproductive) rate $\rho$
+\input{tex-input/owls-example/0030-fecundity-submodel.tex}
+Denote $\phi_{2 \cap 3} = \rho$, $\psi_{3} = \varnothing$, and $Y_{3} = \{(N_{t}, n_{t})\}_{t = 1}^{T}$ for consistency with the notation introduced in Section \ref{melded-model}.
+ 
+#### Parameterisation
+
+@abadi:etal:10 opt to parameterise the quantities via linear predictors, to minimise the number of parameters in the submodels.
+
+- $\text{logit}(\phi_{a, s, t}) = \alpha_{0} + \alpha_{1}\mathbb{I}(s = M) + \alpha_{2}\mathbb{I}(a = A)$
+- $\text{logit}(\pi_{s, t}) = \alpha_{4} \mathbb{I}(s = M) + \alpha_{5, t}$
+- $\log(\eta) = \alpha_{6}$
+
+The quantities common to the submodels are thus:
+
+- $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$,
+- $\phi_{2 \cap 3} = \rho$.
+
+Note that we do not include $\alpha_{1}$ as this is male specific, and hence does not exist in the count data model ($\pd_{2}$).
+
+### Sampling
+
+- We use the split and combine sampler.
+- Results are compared to a long run of the original IPM code, which we treat as a baseline truth.
+- Results obtained from this sampler are identical, see Figure \ref{fig:phi_subpost} for posterior credible intervals, and Figure \ref{fig:phi_qq_compare} for a QQ plot of the melded quantities.
+- Diagnostics are presented in Appendix \ref{appendix-owls-example-diagnostics}.
+
+### Results
+
+```{r phi_subpost, fig.cap = "(sub)Posterior credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{1}, \\alpha_{2}, \\alpha_{3})$ and $\\phi_{2 \\cap 3} = \\rho$ from the original integrated population model $\\pd_{\\text{ipm}}$, as well as the submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 95\\% wide."}
+knitr::include_graphics("plots/owls-example/subposteriors.pdf")
+```
+
+```{r phi_qq_compare, fig.cap = "qq comparison between original model (ipm) and the melded model."}
+knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
+```
+
+\newpage
 
 # Arbitrary graphs of models
 
@@ -455,112 +547,6 @@ and acceptance probabilities
 - We should the redraw the DAG such that things that could be done in parallel are on an equal level.
 
 \input{tex-input/arbitrary-graphs/0011-example-model-graph.tex}
-
-# Examples
-
-Define $\text{N}_{+}(\mu, \sigma^2)$ as the Gaussian distribution truncated to $[0, \infty)$ and normalised, with parameters $\mu$ and $\sigma^2$. 
-Note that these are _not_ the mean and variance of the truncated distribution.
-
-## 3 Gaussians?
-
-- Nice tikz plot?
-- Small noninvertibility of $\mu = \phi_{1 \cap 2} + \phi_{2 \cap 3}$ in model $\modelindex = 2$.
-    - This is problematic, requires rethinking.
-
-### Model 1
-
-\input{tex-input/ex-three-gaussians/0010-model-1-specification.tex}
-
-### Model 2
-
-\input{tex-input/ex-three-gaussians/0020-model-2-specification.tex}
-
-- What happens if $\pd_{2}$ is written in terms of $\mu = \phi_{1 \cap 2} + \phi_{2 \cap 3}$?
-    - What is $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$?
-    - What are the implications for the pooled prior
-
-### Model 3
-
-\input{tex-input/ex-three-gaussians/0030-model-3-specification.tex}
-
-## Integrated population models - Owls
-
-- _Q_: What are IPMs and why do ecologists use them?
-- Integrated population models (IPMs) allow ecologists to combine data on a population's abundance (how many), trajectory (birth / death / immigration / emigration rates), demography (juvenile / adult / sex), and spatial location (where).
-- The combination of these data allows ecologist to infer quantities that would be unidentifiable using a single source of data.
-- Additionally, IPMs make the model specification task is easier; data are modelled separately from one another, and the submodels are then combined to form the IPM.
-- This process is equivalent to Markov melding using product-of-experts to form the pooled prior.
-
-- Notes on this particular IPM
-- Notes from @finke:etal:19
-- There is no evidence to support the impact of Vole abundance on the immigration rate $\eta_{t}$. 
-    - Hence we can assume that $\eta_{t} = \eta$ for all time points.
-- The model with the highest log-evidence is model 4, so we should start with this one
-    - This model assumes that:
-        - $\rho_{t} = \rho$ for all time
-            - This is great, because we are melding over this parameter
-        - $\alpha_{3} = 0$
-            - This is also good, because $\boldsymbol{\alpha} = (\alpha_{0}, \alpha_{1}, \alpha_{2}, \alpha_{3})$ is another (sort of) melding parameter, so this reduces the dimensionality of the problem.
-
-### Submodels
-
-- @finke:etal:19 consider a number of variations on the original model of @schaub:etal:06 and @abadi:etal:10.
-- We use the variant of the model with highest reported marginal likelihood
-
-- Some notation is common to all submodels. Data and parameters are stratified into
-    - Two age-groups $a \in \{J, A\}$ ($J$: juvenile, $A$: adult),
-    - Two sexes $s \in \{M, F\}$,
-    - Time $t \in \{1, \ldots, T\}$, for $T = 25$.
-
-- parametrisation first:
-
-#### Capture recapture: $\pd_{1}$
-
-Capture-recapture data pertain to owls that are captured, tagged, and released at time $t$.
-These individuals are then recaptured at time $u$, for $t + 1 < u < T + 1$, or not recaptured before the conclusion of the study, in which case $u = T + 1$. 
-Define $M_{a, s, t, u}$ as the number of owls last observed at time $t$, recaptured at time $u$, of sex $s$, and age-group $a$.
-These observations are then aggregated into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows and $T + 1$ columns.
-Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls observed at time $t$ and then released, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
-The multinomial likelihood is
-\input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
-with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
-\input{tex-input/owls-example/0011-multinomial-probabilities.tex}
-
-- Denote the capture-recapture model as the first submodel $\pd_{1}$
-    - $\phi_{1 \cap 2} = \phi_{a, g, t} = (\alpha_{0}, \alpha_{1}, \alpha_{2})$
-
-
-#### Abundance: $\pd_{2}$ 
-- The count data model is $\pd_{2}$ 
-    - $\phi_{1 \cap 2} = \phi_{a, g, t} = (\alpha_{0}, \alpha_{1}, \alpha_{2})$
-        - Count data is female specific, and $\alpha_{2}$ is a male-specific term, so it doesn't exist in the count data model.
-    - $\phi_{1 \cap 2} = \rho$
-
-#### Fecundity: $\pd_{3}$
-
-The fecundity submodel considers the number of breeding females at time $t$, $N_{t}$, and the number of chicks produced that survive and leave the nest $n_{t}$.
-A simple Poisson models is employed, with fecundity rate $\rho$, as a model for these data
-\input{tex-input/owls-example/0030-fecundity-submodel.tex}
-<!-- Following @finke:etal:19 we specify a constant value for $\rho$ over all time points. -->
-Denote $\phi_{2 \cap 3} = \rho$, $\psi_{3} = \varnothing$, and $Y_{3} = \{(N_{t}, n_{t})\}_{t = 1}^{T}$ for consistency with the notation introduced in Section \ref{melded-model}.
-    
-### Sampling
-
-- Compare
-    - Original BUGS + Long run MCMC as baseline truth (+ also get ESS/second + check if everything converges)
-        - The only important thing to check is the quantity with the minimum ESS (excluding Log prob) + divide by total time
-    - D&C Melding algorithm (for truth + speed)
-        - We can use parts of the original BUGS code + Nimble for this
-
-### Results
-
-```{r phi_subpost, fig.cap = "(sub)Posterior credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{1}, \\alpha_{2}, \\alpha_{3})$ and $\\phi_{2 \\cap 3} = \\rho$ from the original integrated population model $\\pd_{\\text{ipm}}$, as well as the submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 95\\% wide."}
-knitr::include_graphics("plots/owls-example/subposteriors.pdf")
-```
-
-```{r phi_qq_compare, fig.cap = "qq comparison between original model (ipm) and the melded model."}
-knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
-```
 
 
 # Conclusion
@@ -589,20 +575,28 @@ knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 
 ## Stage one diagnostics
 
-### Numerical diagnostics
+#### Numerical diagnostics
 
 \input{tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex}
 
-### Visual diagnostics
+#### Visual diagnostics
+
+```{r stage_one_mcmc_trace_capture_recapture, fig.cap = "Stage one trace plot of the important parameters in the capture recapture model."}
+knitr::include_graphics("plots/owls-example/stage-one-diagnostics-capture-recapture.png")
+```
+
+```{r stage_one_mcmc_trace_fecundity, fig.cap = "Stage one trace plot of the parameter in the fecundity model."}
+knitr::include_graphics("plots/owls-example/stage-one-diagnostics-fecundity.png")
+```
 
 ## Stage two diagnostics
 
-### Numerical diagnostics
+#### Numerical diagnostics
 
 \input{tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex}
 
-### Visual diagnostics
+#### Visual diagnostics
 
-```{r stage_two_mcmc_diags, fig.cap = "stage two visual diagnostics."}
+```{r stage_two_mcmc_diags, fig.cap = "stage two trace and rank plots of the melded quantities."}
 knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
 ```

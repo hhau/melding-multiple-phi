@@ -45,7 +45,7 @@ res <- lapply(vars, function(a_var) {
   bind_rows()
 
 p1 <- ggplot(data = res, aes(x = meld_quantile, y = orig_quantile)) +
-  geom_point() +
+  geom_point(pch = 3) +
   geom_abline(slope = 1, intercept = 0) +
   facet_wrap(vars(param), ncol = 1, scales = "free")
 

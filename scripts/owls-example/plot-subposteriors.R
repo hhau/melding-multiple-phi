@@ -21,18 +21,19 @@ count_data_submodel_samples <- readRDS("rds/owls-example/count-data-subposterior
 # try to include rho as well
 fecunditiy_submodel_samples <- readRDS("rds/owls-example/fecundity-subposterior-samples.rds")
 
+melded_model_samples <- readRDS("rds/owls-example/melded-posterior-samples.rds")
+
 # a tidybayes multiple-interval approach
 original_model_tidybayes_tbl <- original_model_samples %>%
   array_to_mcmc_list() %>%
   gather_draws(v[i], fec) %>%
-  filter(i %in% c(1, 2, 3) || .variable == "fec") %>%
+  filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
   mutate(model_type = "original-ipm-model")
 
 recode_vec <- c(
   "1" = "alpha[1]",
-  "2" = "alpha[2]",
-  "3" = "alpha[3]"
+  "2" = "alpha[2]"
 )
 
 original_model_tidybayes_tbl$orig_par <- original_model_tidybayes_tbl$i %>%
@@ -41,7 +42,7 @@ original_model_tidybayes_tbl$orig_par <- original_model_tidybayes_tbl$i %>%
 capture_recapture_tidybayes_tbl <- capture_recapture_submodel_samples %>%
   array_to_mcmc_list() %>%
   gather_draws(v[i]) %>%
-  filter(i %in% c(1, 2, 3)) %>%
+  filter(i %in% c(1, 2)) %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
   mutate(model_type = "capture-recapture-submodel")
 
@@ -51,11 +52,21 @@ capture_recapture_tidybayes_tbl$orig_par <- capture_recapture_tidybayes_tbl$i %>
 count_data_tidybayes_tbl <- count_data_submodel_samples %>%
   array_to_mcmc_list() %>%
   gather_draws(v[i], fec) %>%
-  filter(i %in% c(1, 2, 3) || .variable == "fec") %>%
+  filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
   mutate(model_type = "count-data-submodel")
 
 count_data_tidybayes_tbl$orig_par <- count_data_tidybayes_tbl$i %>%
+  recode(!!!recode_vec)
+
+melded_model_tidybayes_tbl <- melded_model_samples %>%
+  array_to_mcmc_list() %>%
+  gather_draws(v[i], fec) %>%
+  filter(i %in% c(1, 2) || .variable == "fec") %>%
+  median_qi(.width = c(.5, .8, .95, .99)) %>%
+  mutate(model_type = "melded-model")  
+
+melded_model_tidybayes_tbl$orig_par <- melded_model_tidybayes_tbl$i %>%
   recode(!!!recode_vec)
 
 # Try to wrangle the fecundity samples into the same form
@@ -83,7 +94,8 @@ plot_tbl <- bind_rows(
   original_model_tidybayes_tbl,
   capture_recapture_tidybayes_tbl,
   count_data_tidybayes_tbl,
-  fecundity_tidybayes_tbl
+  fecundity_tidybayes_tbl,
+  melded_model_tidybayes_tbl
 )
 
 plot_tbl$orig_par <- plot_tbl$orig_par %>%  
@@ -104,7 +116,7 @@ p_2 <- ggplot(
   ) +
   geom_intervalh(
     alpha = rescale(1 - plot_tbl$.width, to = c(0.1, 1)),
-    size = 12
+    size = 9
   ) +
   scale_size_continuous(range = c(12, 20)) +
   scale_color_manual(
@@ -114,13 +126,15 @@ p_2 <- ggplot(
       "original-ipm-model" = blues[2],
       "capture-recapture-submodel" = highlight_col,
       "count-data-submodel" = greens[2],
-      "fecundity-submodel" = "#EE3377"
+      "fecundity-submodel" = "#EE3377",
+      "melded-model" = "#666666"
     ),
     labels = c(
-      "original-ipm-model" = expression("p"['ipm']),
+      "original-ipm-model" = expression("p"["ipm"]),
       "capture-recapture-submodel" = expression("p"[1]),
       "count-data-submodel" = expression("p"[2]),
-      "fecundity-submodel" = expression("p"[3])
+      "fecundity-submodel" = expression("p"[3]),
+      "melded-model" = expression("p"["meld"])
     ),
     guide = guide_legend(
       reverse = TRUE,

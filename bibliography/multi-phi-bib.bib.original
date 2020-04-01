@@ -1,38 +1,27 @@
-@article{zipkin:saunders:18,
-  title         = {Synthesizing multiple data types for biological conservation using integrated population models},
-  journal       = {Biological Conservation},
-  volume        = {217},
-  pages         = {240--250},
-  year          = {2018},
-  issn          = {0006-3207},
-  doi           = {https://doi.org/10.1016/j.biocon.2017.10.017},
-  url           = {http://www.sciencedirect.com/science/article/pii/S0006320717305141},
-  author        = {Elise F. Zipkin and Sarah P. Saunders}
+@article{finke:etal:19,
+  doi           = {10.1007/s13253-018-00349-9},
+  url           = {https://doi.org/10.1007/s13253-018-00349-9},
+  year          = {2019},
+  publisher     = {Springer Science and Business Media {LLC}},
+  volume        = {24},
+  number        = {2},
+  pages         = {204--224},
+  author        = {Axel Finke and Ruth King and Alexandros Beskos and Petros Dellaportas},
+  title         = {Efficient sequential {M}onte {C}arlo algorithms for integrated population models},
+  journal       = {Journal of Agricultural,  Biological and Environmental Statistics}
 }
-
 @article{lin:etal:14,
-  doi = {10.1186/2195-5832-1-14},
-  url = {https://doi.org/10.1186/2195-5832-1-14},
-  year = {2014},
-  publisher = {Springer Science and Business Media {LLC}},
-  volume = {1},
-  number = {1},
-  pages = {14},
-  author = {Gwo Lin and Xiaoling Dou and Satoshi Kuriki and Jin-Sheng Huang},
-  title = {Recent developments on the construction of bivariate distributions with fixed marginals},
-  journal = {Journal of Statistical Distributions and Applications}
+  doi           = {10.1186/2195-5832-1-14},
+  url           = {https://doi.org/10.1186/2195-5832-1-14},
+  year          = {2014},
+  publisher     = {Springer Science and Business Media {LLC}},
+  volume        = {1},
+  number        = {1},
+  pages         = {14},
+  author        = {Gwo Lin and Xiaoling Dou and Satoshi Kuriki and Jin-Sheng Huang},
+  title         = {Recent developments on the construction of bivariate distributions with fixed marginals},
+  journal       = {Journal of Statistical Distributions and Applications}
 }
-
-@book{nelsen:06,
-  doi = {10.1007/0-387-28678-0},
-  url = {https://doi.org/10.1007/0-387-28678-0},
-  year = {2006},
-  publisher = {Springer New York},
-  title = {An Introduction to Copulas},
-  author = {Roger B. Nelsen},
-  edition = {2}
-}
-
 @incollection{massa:lauritzen:10,
   title         = {Combining statistical models},
   author        = {Massa, M. Sofia and Lauritzen, Steffen L.},
@@ -47,17 +36,53 @@
   mrclass       = {62H99 (68R99)},
   mrnumber      = {2730753}
 }
-
-@article{finke:etal:19,
-  doi = {10.1007/s13253-018-00349-9},
-  url = {https://doi.org/10.1007/s13253-018-00349-9},
-  year = {2019},
-  month = jan,
-  publisher = {Springer Science and Business Media {LLC}},
-  volume = {24},
-  number = {2},
-  pages = {204--224},
-  author = {Axel Finke and Ruth King and Alexandros Beskos and Petros Dellaportas},
-  title = {Efficient sequential {M}onte {C}arlo algorithms for integrated population models},
-  journal = {Journal of Agricultural,  Biological and Environmental Statistics}
+@book{nelsen:06,
+  doi           = {10.1007/0-387-28678-0},
+  url           = {https://doi.org/10.1007/0-387-28678-0},
+  year          = {2006},
+  publisher     = {Springer New York},
+  title         = {An Introduction to Copulas},
+  author        = {Roger B. Nelsen},
+  edition       = {2}
 }
+@article{zipkin:saunders:18,
+  title         = {Synthesizing multiple data types for biological conservation using integrated population models},
+  journal       = {Biological Conservation},
+  volume        = {217},
+  pages         = {240--250},
+  year          = {2018},
+  issn          = {0006-3207},
+  doi           = {https://doi.org/10.1016/j.biocon.2017.10.017},
+  url           = {http://www.sciencedirect.com/science/article/pii/S0006320717305141},
+  author        = {Elise F. Zipkin and Sarah P. Saunders}
+}
+
+@article{schaub:etal:06,
+author = {Schaub, Michael and Ullrich, Bruno and Knötzsch, Gerhard and Albrecht, Patrick and Meisser, Christian},
+title = {Local population dynamics and the impact of scale and isolation: a study on different little owl populations},
+journal = {Oikos},
+volume = {115},
+number = {3},
+pages = {389-400},
+doi = {10.1111/j.2006.0030-1299.15374.x},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/j.2006.0030-1299.15374.x},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.2006.0030-1299.15374.x},
+abstract = {The understanding of how variation of demographic rates translates into variation of population growth is a central aim in population ecology. Besides stochastic and deterministic factors, the spatial extent and the isolation of a local population may have an impact on the contribution of the different demographic components. Using long-term demographic data we performed retrospective population analyses of four little owl (Athene noctua) populations with differential spatial extent and degree of isolation to assess the contribution of demographic rates to the variation of the growth rate (λ) of each local population and to the difference of λ among populations. In all populations variation of fecundity contributed least to variation of λ, and variation of adult survival contributed most to variation of λ in three of four populations. Between population comparisons revealed that differences mainly stem from differences of immigration and juvenile local survival. The relative importance of immigration to λ tended to decrease with increasing spatial extent and isolation of the local populations. None of the four local populations was self-sustainable. Because the local populations export and import individuals, they can be considered as open recruitment systems in which part of the recruited breeding birds are not produced locally. The spatial extent and the degree of isolation of a local population have an impact on local population dynamics; hence these factors need to be considered in studies about local population dynamics and for deriving conservation measures.},
+year = {2006}
+}
+
+@article{abadi:etal:10,
+author = {Abadi, Fitsum and Gimenez, Olivier and Ullrich, Bruno and Arlettaz, Raphaël and Schaub, Michael},
+title = {Estimation of immigration rate using integrated population models},
+journal = {Journal of Applied Ecology},
+volume = {47},
+number = {2},
+pages = {393-400},
+keywords = {Athene noctua, Bayesian, capture–recapture, identifiability, population counts, reproductive success, survival, state-space model},
+doi = {10.1111/j.1365-2664.2010.01789.x},
+url = {https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/j.1365-2664.2010.01789.x},
+eprint = {https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-2664.2010.01789.x},
+abstract = {Summary 1. The dynamics of many populations is strongly affected by immigrants. However, estimating and modelling immigration is a real challenge. In the past, several methods have been developed to estimate immigration rate but they either require strong assumptions or combine in a piecewise manner the results from separate analyses. In most methods the effects of covariates cannot be modelled formally. 2. We developed a Bayesian integrated population model which combines capture–recapture data, population counts and information on reproductive success into a single model that estimates and models immigration rate, while directly assessing the impact of environmental covariates. 3. We assessed parameter identifiability by comparing posterior distributions of immigration rates under varying priors, and illustrated the application of the model with long term demographic data of a little owl Athene noctua population from Southern Germany. We further assessed the impact of environmental covariates on immigration. 4. The resulting posterior distributions were insensitive to different prior distributions and dominated by the observed data, indicating that the immigration rate was identifiable. Average yearly immigration into the little owl population was 0·293 (95\% credible interval 0·183–0·418), which means that ca 0·3 female per resident female entered the population every year. Immigration rate tended to increase with increasing abundance of voles, the main prey of little owls. 5. Synthesis and applications. The means to estimate and model immigration is an important step towards a better understanding of the dynamics of geographically open populations. The demographic estimates obtained from the developed integrated population model facilitate population diagnoses and can be used to assess population viability. The structural flexibility of the model should constitute a useful tool for wildlife managers and conservation ecologists.},
+year = {2010}
+}
+

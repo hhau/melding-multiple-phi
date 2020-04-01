@@ -16,6 +16,7 @@ count_model_data <- readRDS("rds/owls-example/count-data.rds")
 
 # Set up top level parameters
 n_iter <- 2e4
+# n_iter <- 1e3
 
 # nimble setup
 count_model_consts <- list(
@@ -62,7 +63,7 @@ count_model_code <- nimbleCode({
   }
 })
 
-source("scripts/owls-example/mcmc-nimble-functions.R")
+  source("scripts/owls-example/mcmc-nimble-functions.R")
 
 count_model <- nimbleModel( 
   code = count_model_code, 
