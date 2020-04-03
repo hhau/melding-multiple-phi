@@ -28,4 +28,3 @@ saveRDS(
   object = samples,
   file = "rds/owls-example/fecundity-subposterior-samples.rds"
 )
-
