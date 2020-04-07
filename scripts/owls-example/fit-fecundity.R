@@ -2,6 +2,8 @@ library(rstan)
 
 data <- readRDS(file = "rds/owls-example/fecundity-data.rds")
 
+# The original IPM only uses the first 25 data points, so we do
+# the same here.
 stan_data <- list(
   "T" = nrow(data) - 1,
   N_breeding_females = data$N_breeding_females[1 : 25],

@@ -21,3 +21,5 @@ multiple-phi.tex
 # sometimes these don't get cleaned up properly
 *.aux
 *.out
+
+.DS_Store
