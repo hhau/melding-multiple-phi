@@ -32,7 +32,7 @@ original_model_tidybayes_tbl <- original_model_samples %>%
   mutate(model_type = "original-ipm-model")
 
 recode_vec <- c(
-  "1" = "alpha[1]",
+  "1" = "alpha[0]",
   "2" = "alpha[2]"
 )
 

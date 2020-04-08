@@ -449,9 +449,8 @@ and acceptance probabilities
 ## Integrated population model -  Little Owls
 
 Integrated population models allow for precise estimation of population level quantities.
-@schaub:etal:06 and @abadi:etal:10 consider aim to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
-They collect three sources of data, namely nest-record, population count, and capture-recapture.
-Each of these data inform fecundity, immigration, and yearly survival rates respectively.
+@schaub:etal:06 and @abadi:etal:10 aim to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
+They collect three sources of data; nest-record, population count, and capture-recapture, which inform fecundity, immigration, and yearly survival rates respectively.
 Independent models are constructed for each source of data, and the IPM is the product of these independent models.
 Because the population count model includes a parameter also contained in the nest-record model, and has two parameters in common with the capture-recapture model, the IPM can be viewed as a melded model, as described in Section \ref{melded-model}.
 Viewing the IPM as a melded model allows us to use the split and recombine multi-stage sampler described in Section \ref{multi-stage-sampler-2-split-and-recombine}.
@@ -463,7 +462,7 @@ We use the variant of the model with highest reported marginal likelihood.
 Before we detail the specifics of our chosen model, we need to introduce some notation. 
 Data and parameters are stratified into Two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, Two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
 
-#### Capture recapture: $\pd_{1}$
+#### Capture recapture: $\pd_{1`'}$
 
 Capture-recapture data pertain to owls that are captured, tagged, and released at time $t$.
 These individuals are then recaptured at time $u$, for $t + 1 < u < T + 1$, or not recaptured before the conclusion of the study, in which case $u = T + 1$. 
@@ -482,7 +481,7 @@ One level models the observed (counted) number of females at each point in time,
 Denote the total number of juvenile and adult females in the population at time $t$ as $\mathbf{x}_{t} = \left[x_{J, t}, x_{A, t}\right]$.
 The latent, population level model is 
 \input{tex-input/owls-example/0020-count-data-submodel.tex}
-The initial population size $[x_{J, 1}, x_{A, 1}]$ is a priori uniformly distributed over $\{0, 1, \ldots, 50\}$.
+Initial population sizes $[x_{J, 1}, x_{A, 1}]$ are a priori uniformly distributed over $\{0, 1, \ldots, 50\}$.
 The observation level model is  
 \input{tex-input/owls-example/0021-observation-process.tex}
 
@@ -491,31 +490,34 @@ The observation level model is
 The fecundity submodel considers the number of breeding females at time $t$, $N_{t}$, and the number of chicks produced that survive and leave the nest $n_{t}$.
 A Poisson model is employed, with fecundity (reproductive) rate $\rho$
 \input{tex-input/owls-example/0030-fecundity-submodel.tex}
-Denote $\phi_{2 \cap 3} = \rho$, $\psi_{3} = \varnothing$, and $Y_{3} = \{(N_{t}, n_{t})\}_{t = 1}^{T}$ for consistency with the notation introduced in Section \ref{melded-model}.
  
-#### Parameterisation
+#### Parameterisation and melding quantities
 
-@abadi:etal:10 opt to parameterise the quantities via linear predictors, to minimise the number of parameters in the submodels.
+@abadi:etal:10 opt to parameterise the time dependent quantities via linear predictors, to minimise the number of parameters in the submodels.
+However, our choice to use the 'best' model of @finke:etal:19 renders many of the quantities independent of time.
+The specific parameterisation we employ is
+\input{tex-input/owls-example/0040-parameterisation-info.tex}
+Hence, the melding quantities, that is the quantities common to the submodels, are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
+Note that we do not include $\alpha_{1}$ as it is male specific, thus does not exist in the count data model ($\pd_{2}$).
+To completely align the notation used in this example with our melding notation, we define
 
-- $\text{logit}(\phi_{a, s, t}) = \alpha_{0} + \alpha_{1}\mathbb{I}(s = M) + \alpha_{2}\mathbb{I}(a = A)$
-- $\text{logit}(\pi_{s, t}) = \alpha_{4} \mathbb{I}(s = M) + \alpha_{5, t}$
-- $\log(\eta) = \alpha_{6}$
-
-The quantities common to the submodels are thus:
-
-- $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$,
-- $\phi_{2 \cap 3} = \rho$.
-
-Note that we do not include $\alpha_{1}$ as this is male specific, and hence does not exist in the count data model ($\pd_{2}$).
+- $Y_{1} = \{\boldsymbol{M}_{a, s}\}$, $\psi_{1} = \{\pi_{s, t}\}$,
+- $Y_{2} = \{y_{t}\}$, $\psi_{2} = \{\boldsymbol{x}_{t}, \eta, \text{sur}_{t}, \text{imm}_{t}\}$,
+- $Y_{3} = \{(N_{t}, n_{t})\}_{t = 1}^{T}$, $\psi_{3} = \varnothing$.
 
 ### Sampling
 
-- We use the split and combine sampler.
-- Results are compared to a long run of the original IPM code, which we treat as a baseline truth.
-- Results obtained from this sampler are identical, see Figure \ref{fig:phi_subpost} for posterior credible intervals, and Figure \ref{fig:phi_qq_compare} for a QQ plot of the melded quantities.
-- Diagnostics are presented in Appendix \ref{appendix-owls-example-diagnostics}.
+<!-- Make this explicit,  -->
 
-### Results
+- We use the split and combine sampler.
+- This allows us to combine implementations of the submodels.
+- Specifically, the capture-recapture and count data submodels are written in BUGS (bugs paper / book?), and the subposterior of the former is sampled via `rjags` [@plummer:19]. 
+- The fecundity submodel is written in Stan (cite JSS paper) and sampled via `rstan` (cite package).
+- We reuse the count data BUGS implementation for stage two of the multi-stage sampler, and implement the Metropolis-within-Gibbs sampler specified in Section \ref{multi-stage-sampler-2-split-and-recombine} via Nimble (cite JSS paper and package?)
+
+- Code and for this example is available at https://github.com/hhau/multiple-phi-maybe-check-this-url?
+
+### Results and discussion
 
 ```{r phi_subpost, fig.cap = "(sub)Posterior credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{1}, \\alpha_{2}, \\alpha_{3})$ and $\\phi_{2 \\cap 3} = \\rho$ from the original integrated population model $\\pd_{\\text{ipm}}$, as well as the submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 95\\% wide."}
 knitr::include_graphics("plots/owls-example/subposteriors.pdf")
@@ -524,6 +526,15 @@ knitr::include_graphics("plots/owls-example/subposteriors.pdf")
 ```{r phi_qq_compare, fig.cap = "qq comparison between original model (ipm) and the melded model."}
 knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 ```
+
+- Results are compared to a long run of the original IPM code, which we treat as the truth.
+- Results obtained from our sampler are indistinguishable, see Figure \ref{fig:phi_subpost} for posterior credible intervals [@kay:20], and Figure \ref{fig:phi_qq_compare} for a QQ plot of the melded quantities.
+- Diagnostics are presented in Appendix \ref{appendix-owls-example-diagnostics}.
+
+- Our sampling process gives back identical results to that of the original IPM.
+- It does so whilst combining a number of different Bayesian inference methods and implementations.
+- By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here. That is, we can use the output from one model to target some larger model, without needing to reimplement the model in a different language / framework.
+- It is another example of targeting a larger model without ever needing to evaluate the larger model, a useful property for large, complicated models.
 
 \newpage
 
@@ -535,6 +546,7 @@ knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 - Lets look an an example DAG, we can also introduce the arrow notation for noninvertible link functions, Figure \ref{fig:example-model-graph}.
 
 \input{tex-input/arbitrary-graphs/0010-example-model-graph.tex}
+
 
 - We can come up with a sampling strategy for this, partially determined by the arrows
     - $s_{1} = \{\pd_{4}\}, s_{1}' = \{\pd_{2}\}$
