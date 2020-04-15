@@ -22,6 +22,14 @@
   title         = {Efficient sequential {M}onte {C}arlo algorithms for integrated population models},
   journal       = {Journal of Agricultural,  Biological and Environmental Statistics}
 }
+@manual{kay:20,
+  title         = {{tidybayes}: Tidy Data and Geoms for {Bayesian} Models},
+  author        = {Matthew Kay},
+  year          = {2020},
+  note          = {R package version 2.0.2},
+  url           = {http://mjskay.github.io/tidybayes/},
+  doi           = {10.5281/zenodo.1308151}
+}
 @article{lin:etal:14,
   doi           = {10.1186/2195-5832-1-14},
   url           = {https://doi.org/10.1186/2195-5832-1-14},
@@ -57,6 +65,13 @@
   author        = {Roger B. Nelsen},
   edition       = {2}
 }
+@manual{plummer:19,
+  title         = {rjags: {B}ayesian Graphical Models using {MCMC}},
+  author        = {Martyn Plummer},
+  year          = {2019},
+  note          = {R package version 4-10},
+  url           = {https://CRAN.R-project.org/package=rjags}
+}
 @article{schaub:etal:06,
   author        = {Schaub, Michael and Ullrich, Bruno and Kn\"{o}tzsch, Gerhard and Albrecht, Patrick and Meisser, Christian},
   title         = {Local population dynamics and the impact of scale and isolation: a study on different little owl populations},
@@ -79,21 +94,4 @@
   doi           = {https://doi.org/10.1016/j.biocon.2017.10.017},
   url           = {http://www.sciencedirect.com/science/article/pii/S0006320717305141},
   author        = {Elise F. Zipkin and Sarah P. Saunders}
-}
-
-@Manual{kay:20,
-  title = {{tidybayes}: Tidy Data and Geoms for {Bayesian} Models},
-  author = {Matthew Kay},
-  year = {2020},
-  note = {R package version 2.0.2},
-  url = {http://mjskay.github.io/tidybayes/},
-  doi = {10.5281/zenodo.1308151},
-}
-
-@Manual{plummer:19,
-  title = {rjags: Bayesian Graphical Models using MCMC},
-  author = {Martyn Plummer},
-  year = {2019},
-  note = {R package version 4-10},
-  url = {https://CRAN.R-project.org/package=rjags},
 }

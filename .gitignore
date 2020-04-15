@@ -23,3 +23,4 @@ multiple-phi.tex
 *.out
 
 .DS_Store
+bibliography/multi-phi-bib.bib.original
