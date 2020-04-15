@@ -23,20 +23,23 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "95%", fig.align =
 
 # Introduction
 
-Simple case: we have three models:
+- Developing models for numerous, disparate data sources is challenging.
+- An easier strategy may be to model each data source individually, then coherently combine these models.
+- @goudie:etal:18 propose Markov melding, a method for combining submodels that share a single common quantity $\phi$.
+- We extend Markov melding to allow us to compose submodels that have quantities in common in a pairwise manner.
 
-- $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$
-- $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$
-- $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$
+- The simplest example is the 3 submodel case (ILLUSTRATED IN FIG TBA), where $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, retaining submodel specific parameters and data $(\psi_{1}, Y_{1})$ respectively.
+- The additional third submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ shares $\phi_{2 \cap 3}$ with the second submodel, whilst also having submodel specific parameters and data.
 
-How do we construct the melded model such that we don't have an over/under specified model for any of the $\phi$s.
-Are there other kinds of model joining situations?
+<!-- This need refining -->
+- thinking of melding in the manner we propose is coherent, in contrast to applying melding twice (execpt in cases of independence).
+- It also enables a more parallelised sampling process.
 
 ## Chains of models
 
 \input{tex-input/multiple-phi/0040-model-ex-dag.tex}
 
-## Rings of models?
+<!-- ## Rings of models?
 
 - Rings are very similar to chains
     - Just have to be a bit careful in stage one of the sampler.
@@ -51,7 +54,7 @@ Are there other kinds of model joining situations?
 - Look at the spatial statistics literature for neighbour notation? $y \sim y'$
     - Not sure I like this because it assumes things are gridded. (GMRF)
 - Graph / Bishop book $\text{N}(n)$ - things that are connected to node $n$
-
+ -->
 
 ## Notation
 
@@ -546,7 +549,6 @@ knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 - Lets look an an example DAG, we can also introduce the arrow notation for noninvertible link functions, Figure \ref{fig:example-model-graph}.
 
 \input{tex-input/arbitrary-graphs/0010-example-model-graph.tex}
-
 
 - We can come up with a sampling strategy for this, partially determined by the arrows
     - $s_{1} = \{\pd_{4}\}, s_{1}' = \{\pd_{2}\}$

@@ -28,3 +28,11 @@
   Stan's doc is also vast, but perhaps less so than TF's. It was incredibly difficult to use when it was in one big pdf, and is still not searchable in any kind of usable way (bookdown's search is terrible), and I'm never sure if I should be looking which of the three sections I should be looking in.
 
 2. researcher DFs mean I can always make the speed test say whatever I want it to.
+
+
+Two regimes for Bayesian inference:
+
+1. Posterior distribution has good geometric properties + computable in <2 seconds 
+1. Either of the properties are not true, and you need a specific technique to deal with it.
+
+- techniques are no good without an implementation; the speed at which you can learn the implementation is also important, and can dominate the time to finale usable sample.
