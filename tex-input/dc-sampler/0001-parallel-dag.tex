@@ -1,0 +1,26 @@
+\begin{figure}[htb]
+  \centering
+  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.25cm}]
+  % nodes 
+  \node [state] (model-1) {$\pd_{1}$};
+  \node [state] [right = of model-1](model-2) {$\pd_{2}$};
+  \node [state] [right = of model-2](model-3) {$\pd_{3}$};
+
+  % edges
+  \path[-] (model-1) edge node[above] (phi-12) {$\phi_{1 \cap 2}$} (model-2);
+  \path[-] (model-2) edge node[above] (phi-23) {$\phi_{2 \cap 3}$} (model-3);
+
+  % stage one - blue
+  \node (stage-1) [draw = mymidblue, fit = (model-1) (phi-12), inner sep = 0.05cm, dotted] {};
+  \node (stage-1-label) [yshift = 1.5ex, mymidblue] at (stage-1.north) {$s_{1}$};
+
+  \node (stage-1-prime) [draw = mymidblue, fit = (model-3) (phi-23), inner sep = 0.05cm, dotted] {};
+  \node (stage-1-prime-label) [yshift = 1.5ex, mymidblue] at (stage-1-prime.north) {$s_{1}'$};
+
+  % stage two - red  
+  \node (stage-2) [draw = myredhighlight, fit = (model-1) (model-2) (model-3) (phi-12) (phi-23) (stage-1-prime-label) (stage-1-prime-label), inner sep = 0.15cm, dotted] {};
+  \node (stage-2-label) [yshift = 1.5ex, myredhighlight] at (stage-2.north) {$s_{2}$};
+  \end{tikzpicture}
+  \caption{The same DAG as Figure \ref{fig:intro-dag}, with the parallel sampling strategy overlaid.}
+  \label{fig:parallel-dag}
+\end{figure}

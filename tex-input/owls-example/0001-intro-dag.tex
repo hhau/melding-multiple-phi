@@ -1,0 +1,15 @@
+\begin{figure}[tb]
+  \centering
+  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.25cm}]
+  % nodes 
+  \node [state] (model-1) {$\pd_{1}$};
+  \node [state] [right = of model-1](model-2) {$\pd_{2}$};
+  \node [state] [right = of model-2](model-3) {$\pd_{3}$};
+
+  % edges
+  \path[-] (model-1) edge node[above] {$\phi_{1 \cap 2}$} (model-2);
+  \path[-] (model-2) edge node[above] {$\phi_{2 \cap 3}$} (model-3);
+  \end{tikzpicture}
+  \caption{A DAG of the simplest example of interest. Here nodes represent submodels $\pd_{\modelindex}$, with labelled edges representing common quantities between submodels $\phi_{\modelindex \cap \modelindex'}$.}
+  \label{fig:intro-dag}
+\end{figure}
