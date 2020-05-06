@@ -44,6 +44,9 @@
 There is a huge number of examples in Ecology of _integrated population models_.
 _Integrated_, in that they integrate more than one source of data and an associated model, with the overall focus being on estimating the dynamics of a _population_ (birth, death, reproduction, and migration rates) and temporal abundance (how many of them are there at a point in time.)
 
+- https://projecteuclid.org/euclid.ba/1551949261
+    - If we decide to go to BA?
+
 - https://www.sciencedirect.com/science/article/pii/S0006320717305141?via%3Dihub
     - Figure 1 in here is _exactly_ what I was thinking of in Section \ref{arbitrary-graphs-of-models}
         - The process they describe is:

@@ -80,7 +80,7 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "95%", fig.align =
 The melded model for the $\Nm = 3$ case is
 \input{tex-input/multiple-phi/0010-melded-model.tex}
 Note that we cannot necessarily factorise $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2})\pd_{2}(\phi_{2 \cap 3})$, as this falsely assumes independence.
-The corresponding melded posteioris proportional to the melded model defined in Equation \eqref{eqn:melded-model}
+The corresponding melded posterior is proportional to 
 \input{tex-input/multi-stage-sampler/0010-melded-posterior.tex}
 
 ## Pooled prior
@@ -88,13 +88,14 @@ The corresponding melded posteioris proportional to the melded model defined in 
 # Posterior estimation
 
 We now present two multi-stage MCMC methods for generating samples from the melded posterior.
-By employing a multi-stage strategy we can avoid evaluating all models simultaneously.
-The first sampler operates sequentially, accruing and refining samples whilst considering one submodel at a time.
+By employing a multi-stage strategy we can avoid evaluating all submodels simultaneously.
+This is desirable in situations where simultaneously evaluating the subposterior terms, $\pd_{\modelindex}(\phi_{\modelindex \cap \modelindex'}, \psi_{\modelindex} \mid Y_{\modelindex})$ for $\modelindex = 1, \ldots, \Nm$, is computationally infeasible or otherwise undesirable, whilst evaluating the prior marginal distributions $\pd_{\modelindex}(\phi_{\modelindex \cap \modelindex'})$ is feasible and relatively inexpensive.
+The first sampler operates sequentially, accruing and refining samples by considering one submodel at a time.
 The second parallelises parts of the sampling process, and has the potential to produce a sample, usable for inference, from the melded posterior in less time than the sequential method.
 
 ## Sequential sampler
 
-This sampler is sequential; it first targets terms from  submodel $\pd_{1}$, then the target is expanded to also include $\pd_{2}$ terms, finally to include the $\pd_{3}$ terms and $\pd_\text{pool}$.
+This sampler is sequential; it first targets terms from submodel $\pd_{1}$, then the target is expanded to also include $\pd_{2}$ terms, finally to include the $\pd_{3}$ terms and $\pd_\text{pool}$.
 An overview of this target broadening process is displayed in Figure \ref{fig:seq-sampler-dag}
 \input{tex-input/multi-stage-sampler/0001-seq-sampler-dag.tex}
 
@@ -128,22 +129,50 @@ which leads to acceptance probabilities of
 \input{tex-input/multi-stage-sampler/0046-stage-three-acceptance-probabilities.tex}
 The informed choice of proposal distribution for ($\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}$) has allowed us to target the full melded posterior without needing to evaluate all submodels simultaneously.  
 
-
 ## Parallel sampler
 
-- Here, we build a MH-within-gibbs sampler so that we can sample models 1 and 3 in parallel.
-
-- Overview in Figure \ref{fig:parallel-dag}.
+We now devise a parallel sampling strategy, such that stage one samples submodels 1 and 3 in parallel. Stage two reuses these samples in a Metropolis-within-Gibbs sampler, which targets the full melded posterior.
+The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
 
 \input{tex-input/dc-sampler/0001-parallel-dag.tex}
+
+#### Stage one
+
+Two independent, parallel sampling processes occur in stage one.
+Submodels one and three are targeted
+\input{tex-input/dc-sampler/0021-stage-one-targets.tex}
+using submodel-specific transition kernels, leading to acceptance probabilities of
+\input{tex-input/dc-sampler/0022-stage-one-acceptance-probs.tex}
+
+#### Stage two
+
+Stage two targets the melded posterior of Equation \eqref{eqn:melded-posterior} using a Metropolis-within-Gibbs sampler, where the proposals are distributed according to
+\input{tex-input/dc-sampler/0031-stage-two-proposals.tex}
+The acceptance probabilities for these updates are
+\input{tex-input/dc-sampler/0032-stage-two-acceptance.tex}
+Note that all stage two acceptance probabilities only contain terms from the second submodel and the pooled prior.
 
 # Examples
 
 ## Owls
 
+### Submodels
+
+### Diagnostics
+
+### Results
+
 ## other-tba
 
+### Submodels
+
+### Diagnostics
+
+### Results
+
 # Discussion
+
+## Sequential vs parallel sampler
 
 ## Advantages
 
@@ -163,6 +192,10 @@ The informed choice of proposal distribution for ($\phi_{1 \cap 2}, \phi_{2 \cap
 
 - Only the same if phis are independent in p2 
     - > see appendix
+
+## Conflict
+
+- Hopefully I'll address this in the next chapter
 
 # Conclusion 
 
