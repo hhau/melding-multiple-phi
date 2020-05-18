@@ -17,7 +17,8 @@ bayesplot_theme_replace(
   panel.grid.major = element_line(),
   panel.grid.minor = element_line(linetype = "dashed", size = rel(2/3)),
   legend.text = element_text(size = rel(1.1)),
-  legend.title = element_text(size = rel(1.1))
+  legend.title = element_text(size = rel(1.1)),
+  strip.background = element_rect(fill = "#dee1e0"),
 )
 
 # Colours - should all be darkest[1] to lightest[n] 

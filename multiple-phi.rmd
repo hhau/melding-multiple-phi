@@ -7,7 +7,7 @@ fontsize: 10pt
 papersize: a4
 geometry: margin=2.25cm
 bibliography: bibliography/multi-phi-bib.bib
-csl: bibliography/american-statistical-association.csl
+csl: bibliography/journal-of-the-royal-statistical-society.csl
 output: 
   pdf_document:
     includes:
@@ -346,7 +346,7 @@ Results are compared to a long run, 6 chains of $2 \times 10^5$ iterations each,
 The results obtained from our sampler are indistinguishable from the original IPM.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@kay:20] for the melded quantities, and we are particular interested in the agreement between $\pd_{\text{meld}}$ $\pd_{\text{IPM}}$.
 We further compare the IPM and melded posteriors via the QQ plots in Figure \ref{fig:phi_qq_compare}, and again see near identical results.
-Diagnostics for both stages of the parallel sampling process are presented in Appendix \ref{appendix-owls-example-diagnostics}.
+Trace plots, rank plots, and numerical convergence measures [@vehtari:etal:diagnostics:19] for both stages of the parallel sampling process are presented in Appendix \ref{appendix-owls-example-diagnostics}.
 
 Our sampling process gives back identical results to that of the original IPM.
 It does so whilst combining a number of different Bayesian inference methods and implementations.
@@ -438,6 +438,8 @@ knitr::include_graphics("plots/owls-example/stage-one-diagnostics-fecundity.png"
 #### Numerical diagnostics
 
 \input{tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex}
+
+We include $\alpha_{5}$ as it is the parameter with the maximum $\widehat{R}$ and minimum Bulk ESS.
 
 #### Visual diagnostics
 

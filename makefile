@@ -71,17 +71,22 @@ FECUNDITY_SUBPOSTERIOR = $(OWLS_RDS)/fecundity-subposterior-samples.rds
 $(FECUNDITY_SUBPOSTERIOR) : $(OWLS_SCRIPTS)/fit-fecundity.R $(OWLS_SCRIPTS)/models/fecundity-model.stan $(FECUNDITY_DATA)
 	$(RSCRIPT) $< 
 
-FECUNDITY_DIAGNOSTIC = $(OWLS_PLOTS)/stage-one-diagnostics-fecundity.png
-$(FECUNDITY_DIAGNOSTIC) : $(OWLS_SCRIPTS)/diagnostics-stage-one.R
-	$(RSCRIPT) $<
-
-CAPTURE_RECAPTURE_DIAGNOSTIC = $(OWLS_PLOTS)/stage-one-diagnostics-capture-recapture.png
-$(CAPTURE_RECAPTURE_DIAGNOSTIC) : $(FECUNDITY_DIAGNOSTIC)
-
-ALL_PLOTS += $(FECUNDITY_DIAGNOSTIC) $(CAPTURE_RECAPTURE_DIAGNOSTIC)
-
 CAPTURE_RECAPTURE_SUBPOSTERIOR = $(OWLS_RDS)/capture-recapture-subposterior-samples.rds
 $(CAPTURE_RECAPTURE_SUBPOSTERIOR) : $(OWLS_SCRIPTS)/fit-capture-recapture.R $(OWLS_SCRIPTS)/models/capture-recapture.bug $(OWLS_DATA) $(MCMC_UTIL)
+	$(RSCRIPT) $<
+
+FECUNDITY_DIAGNOSTIC_PLOT = $(OWLS_PLOTS)/stage-one-diagnostics-fecundity.png
+$(FECUNDITY_DIAGNOSTIC_PLOT) : $(OWLS_SCRIPTS)/diagnostics-stage-one-fecundity-plot.R $(PLOT_SETTINGS) $(FECUNDITY_SUBPOSTERIOR)
+	$(RSCRIPT) $<
+
+CAPTURE_RECAPTURE_DIAGNOSTIC_PLOT = $(OWLS_PLOTS)/stage-one-diagnostics-capture-recapture.png
+$(CAPTURE_RECAPTURE_DIAGNOSTIC_PLOT) : $(OWLS_SCRIPTS)/diagnostics-stage-one-capture-recapture-plot.R $(PLOT_SETTINGS) $(CAPTURE_RECAPTURE_SUBPOSTERIOR)
+	$(RSCRIPT) $<
+
+ALL_PLOTS += $(FECUNDITY_DIAGNOSTIC_PLOT) $(CAPTURE_RECAPTURE_DIAGNOSTIC_PLOT)
+
+STAGE_ONE_DIAGNOSTIC_TABLE = tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex
+$(STAGE_ONE_DIAGNOSTIC_TABLE) : $(OWLS_SCRIPTS)/diagnostics-stage-one-table.R $(FECUNDITY_SUBPOSTERIOR) $(CAPTURE_RECAPTURE_SUBPOSTERIOR)
 	$(RSCRIPT) $<
 
 COUNT_DATA_SUBPOSTERIOR = $(OWLS_RDS)/count-data-subposterior-samples.rds
@@ -98,8 +103,12 @@ MELDED_POSTERIOR = $(OWLS_RDS)/melded-posterior-samples.rds
 $(MELDED_POSTERIOR) : $(OWLS_SCRIPTS)/mcmc-main-stage-two.R $(OWLS_SCRIPTS)/mcmc-nimble-functions.R $(MCMC_UTIL) $(FECUNDITY_SUBPOSTERIOR) $(CAPTURE_RECAPTURE_SUBPOSTERIOR) $(OWLS_DATA)
 	$(RSCRIPT) $<
 
+MELDED_DIAGNOSTIC_TABLE = tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex
+$(MELDED_DIAGNOSTIC_TABLE) : $(OWLS_SCRIPTS)/diagnostics-stage-two-table.R $(MELDED_POSTERIOR) 
+	$(RSCRIPT) $<
+
 MELDED_DIAGNOSTIC_PLOT = $(OWLS_PLOTS)/stage-two-diagnostics.png
-$(MELDED_DIAGNOSTIC_PLOT) : $(OWLS_SCRIPTS)/diagnostics-stage-two.R $(MELDED_POSTERIOR) $(PLOT_SETTINGS)
+$(MELDED_DIAGNOSTIC_PLOT) : $(OWLS_SCRIPTS)/diagnostics-stage-two-plot.R $(MELDED_POSTERIOR) $(PLOT_SETTINGS)
 	$(RSCRIPT) $<
 
 MELDED_QQ_PLOT = $(OWLS_PLOTS)/orig-meld-qq-compare.pdf
