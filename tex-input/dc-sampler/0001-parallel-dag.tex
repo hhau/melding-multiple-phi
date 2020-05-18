@@ -11,14 +11,14 @@
   \path[-] (model-2) edge node[above] (phi-23) {$\phi_{2 \cap 3}$} (model-3);
 
   % stage one - blue
-  \node (stage-1) [draw = mymidblue, fit = (model-1) (phi-12), inner sep = 0.05cm, dotted] {};
+  \node (stage-1) [draw = mymidblue, fit = (model-1) (phi-12), inner sep = 0.05cm, dashed] {};
   \node (stage-1-label) [yshift = 1.5ex, mymidblue] at (stage-1.north) {$s_{1}$};
 
-  \node (stage-1-prime) [draw = mymidblue, fit = (model-3) (phi-23), inner sep = 0.05cm, dotted] {};
+  \node (stage-1-prime) [draw = mymidblue, fit = (model-3) (phi-23), inner sep = 0.05cm, dashed] {};
   \node (stage-1-prime-label) [yshift = 1.5ex, mymidblue] at (stage-1-prime.north) {$s_{1}$};
 
   % stage two - red  
-  \node (stage-2) [draw = myredhighlight, fit = (model-1) (model-2) (model-3) (phi-12) (phi-23) (stage-1-prime-label) (stage-1-prime-label), inner sep = 0.15cm, dotted] {};
+  \node (stage-2) [draw = myredhighlight, fit = (model-1) (model-2) (model-3) (phi-12) (phi-23) (stage-1-prime-label) (stage-1-prime-label), inner sep = 0.15cm, dashed] {};
   \node (stage-2-label) [yshift = 1.5ex, myredhighlight] at (stage-2.north) {$s_{2}$};
   \end{tikzpicture}
   \caption{The same DAG as Figure \ref{fig:intro-dag}, with the parallel sampling strategy overlaid. The stage one ($s_{1}$) targets are in blue; stage two ($s_{2}$) target is in red.}

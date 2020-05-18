@@ -1,0 +1,32 @@
+\begin{figure}[tb]
+  \centering
+  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.5cm}]
+  % nodes
+  \node [state] (y-2) {$Y_{2}$};
+  \node [state] [above = of y-2] (psi-2) {$\psi_{2}$};
+  \node [state] [right = of psi-2] (phi-23) {$\phi_{2 \cap 3}$};
+  \node [state] [left = of psi-2] (phi-12) {$\phi_{1 \cap 2}$};
+
+  \node [state] [right = of phi-23] (psi-3) {$\psi_{3}$};
+  \node [state] [below = of psi-3] (y-3) {$Y_{3}$};
+
+  \node [state] [left = of phi-12] (psi-1) {$\psi_{1}$};
+  \node [state] [below = of psi-1] (y-1) {$Y_{1}$};
+
+  % edges (arrows)
+  \path [->] (psi-1) edge (y-1);
+  \path [->] (psi-2) edge (y-2);
+  \path [->] (psi-3) edge (y-3);
+  \path [->] (phi-12) edge (y-1);
+  \path [->] (phi-12) edge (y-2);
+  \path [->] (phi-23) edge (y-2);
+  \path [->] (phi-23) edge (y-3);
+
+  % bounding boxes
+  \node (model-1) [draw = mymidblue, fit = (psi-1) (y-1) (phi-12), inner sep = 0.05cm, dotted] {};
+  \node (model-1) [draw = black, fit = (phi-12) (psi-2) (phi-23) (y-2), inner sep = 0.25cm, dashed] {};
+  \node (model-1) [draw = myredhighlight, fit = (phi-23) (psi-3) (y-3), inner sep = 0.05cm, solid] {};
+  \end{tikzpicture}
+  \caption{A DAG representation of the integrated population model (IPM) for the little owls. The capture-recapture submodel is surrounded by the blue dotted line, the population count submodel by the black dashed line, and the fecundity submodel by the red solid line. The combination of all the submodels forms the IPM.}
+  \label{fig:owls-simple-dag}
+\end{figure}

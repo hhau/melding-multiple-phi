@@ -1,3 +1,7 @@
+# Thu 14 May 17:17:55 2020 - this file is poor because it does 2 things, and it
+# shouldn't. Also the `monitor` call takes for ever, and should be saved out
+# as a separate rds file.
+
 source("scripts/common/plot-settings.R")
 source("scripts/common/mcmc-util.R")
 
@@ -19,7 +23,6 @@ fecunditiy_submodel_samples <- readRDS("rds/owls-example/fecundity-subposterior-
 pars <- sprintf("v[%d]", 1 : 2)
 
 # model 3
-fecundity_diagnostics <- monitor(fecunditiy_submodel_samples)
 fecundity_traceplot <- mcmc_combo(
   fecunditiy_submodel_samples,
   combo = c("trace", "rank_overlay")
@@ -29,6 +32,8 @@ ggsave_halfheight(
   filename = "plots/owls-example/stage-one-diagnostics-fecundity.png",
   plot = fecundity_traceplot
 )
+
+fecundity_diagnostics <- monitor(fecunditiy_submodel_samples)
 
 capture_recapture_diagnostics <- mclapply(
   1 : dim(capture_recapture_submodel_samples)[3],
@@ -61,6 +66,12 @@ phi_capture_recapture_diagnostics <- monitor(
   print = FALSE
 )
 
+parameter_recode_vector <- c(
+  'v[1]' = '$\\alpha_{0}$',
+  'v[2]' = '$\\alpha_{2}$',
+  'rho' = '$\\rho$'
+) 
+
 res <- dplyr::bind_rows(
   rownames_to_column(as.data.frame(phi_capture_recapture_diagnostics)),
   rownames_to_column(as.data.frame(fecundity_diagnostics))
@@ -74,7 +85,10 @@ res <- dplyr::bind_rows(
     "Tail ESS" = Tail_ESS,
   )
 
-res <- kable(
+res$Parameter <- res$Parameter %>%
+  recode(!!!parameter_recode_vector) 
+
+kable_res <- kable(
   x = res,
   format = "latex",
   booktabs = TRUE,
@@ -84,6 +98,6 @@ res <- kable(
   column_spec(1, "2cm")
 
 cat(
-  res,
+  kable_res,
   file = "tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex" 
 )

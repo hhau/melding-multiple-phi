@@ -54,6 +54,7 @@ p_1 <- ggplot(res, aes(x = x, y = y, z = f_val)) +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0)) +
   theme(panel.spacing = unit(1, "lines")) +
+  labs(fill = expression(italic("f"))) +
   NULL
 
 ggsave_halfheight(

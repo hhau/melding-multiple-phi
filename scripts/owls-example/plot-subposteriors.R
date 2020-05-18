@@ -110,8 +110,8 @@ p_2 <- ggplot(
   facet_wrap(
     vars(orig_par),
     scales = "free",
-    ncol = 2,
-    nrow = 2,
+    ncol = 3,
+    nrow = 1,
     labeller = label_parsed
   ) +
   geom_intervalh(
@@ -150,7 +150,8 @@ p_2 <- ggplot(
   ylab("") 
 
 
-ggsave_halfheight(
+ggsave_fullpage(
   filename = "plots/owls-example/subposteriors.pdf",
-  plot = p_2
+  plot = p_2,
+  adjust_height = -15
 )

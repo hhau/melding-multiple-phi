@@ -4,7 +4,7 @@ TEX_FILES = $(wildcard tex-input/*.tex) \
 	$(wildcard tex-input/*/*.tex) \
 	$(wildcard tex-input/*/*/*.tex)
 MCMC_UTIL = scripts/common/mcmc-util.R
-
+BIBLIOGRAPHY = bibliography/multi-phi-bib.bib
 
 # useful compound make components
 PLOTS = plots
@@ -111,5 +111,5 @@ ALL_PLOTS += $(MELDED_DIAGNOSTIC_PLOT) $(MELDED_QQ_PLOT)
 ################################################################################
 
 # knitr is becoming more picky about encoding, specify UTF-8 input
-$(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS) $(OWLS_DATA)
+$(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS) $(OWLS_DATA) $(BIBLIOGRAPHY)
 	$(RSCRIPT) -e "rmarkdown::render(input = Sys.glob('*.rmd'), encoding = 'UTF-8')"

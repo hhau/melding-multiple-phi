@@ -36,8 +36,21 @@ stage_two_table <- as.data.frame(stage_two_diagnostics)[diag_vars, ] %>%
     "$\\widehat{R}$" = Rhat,
     "Bulk ESS" = Bulk_ESS,
     "Tail ESS" = Tail_ESS,
-  ) %>% 
-  kable(
+  ) 
+
+parameter_recode_vector <- c(
+  'v[1]' = '$\\alpha_{0}$',
+  'v[2]' = '$\\alpha_{2}$',
+  'v[6]' = '$\\alpha_{5}$',
+  'rho' = '$\\rho$',
+  'fec' = '$\\rho$'
+) 
+
+stage_two_table$Parameter <- stage_two_table$Parameter %>%
+  recode(!!!parameter_recode_vector)
+
+res <- kable(
+    x = stage_two_table, 
     format = "latex",
     booktabs = TRUE,
     escape = FALSE
@@ -46,7 +59,7 @@ stage_two_table <- as.data.frame(stage_two_diagnostics)[diag_vars, ] %>%
   column_spec(1, "2cm")
 
 cat(
-  stage_two_table,
+  res,
   file = "tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex" 
 )
 

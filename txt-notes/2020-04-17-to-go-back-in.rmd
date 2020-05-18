@@ -111,76 +111,7 @@ _Integrated_, in that they integrate more than one source of data and an associa
 
 # The pooled prior and pooling weights
 
-Appropriately forming the pooled prior is necessary to ensure the validity of the melded model. 
-Consider the $\Nm = 3$ case.
-Forming $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ requires us to coherently combine $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$, with corresponding weights $\lambda_{1}, \lambda_{2}, \lambda_{3} \geq 0$.
-Throughout this section we assume that $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are normalised, integrable probability density functions, that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ admits proper marginals for $\pd_{2}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{2 \cap 3})$, and proper conditionals for $\pd_{2}(\phi_{1 \cap 2} \mid \phi_{2 \cap 3})$ and $\pd_{2}(\phi_{2 \cap 3} \mid \phi_{1 \cap 2})$.
-We now investigate extensions to the typical univariate pooling methods -- linear and logarithmic pooling.
 
-## Linear pooling
-
-Naively employing linear pooling produces nonsensical results.
-If $\phi_{1 \cap 2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2 \cap 3} \in \mathbb{R}^{d_{2}}$, then the supports of $\pd_{1}, \pd_{2}$, and $\pd_{3}$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1} \times d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively.
-Consider the natural extension to linear pooling
-\input{tex-input/multiple-phi/0052-linear-pooling.tex}
-The different supports imply that \eqref{eqn:linear-pooling} is not normalised by construction, unlike typical mixture densities.
-If all the constituent densities of \eqref{eqn:linear-pooling} are normalised, then it seems reasonable to assume that a  combination of them should also be normalisable.
-Consider integrating $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$
-\input{tex-input/multiple-phi/00521-int-linear-pooling.tex}
-The first term of this integral
-\input{tex-input/multiple-phi/00522-int-linear-pooling.tex}
-is clearly divergent due to the $\int_{\mathbb{R}^{d_{2}}}\text{d}\phi_{2 \cap 3}$ term.
-Hence, the naive extension to linear pooling does not admit a valid probability density function.
-
-One possible solution is to consider forming intermediary pooling densities via linear pooling
-\input{tex-input/multiple-phi/0054-silly-linear-solution.tex}
-then form the pooled prior
-\input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
-We do not need any weights in Equation \eqref{eqn:silly-linear-overall}, as $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are independent of each other, and  that $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are appropriate marginal distributions for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ by construction.
-However, this process will always produce a pooled prior with no correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, which may be undesirable.
-It is possible to induce correlation between independent marginal distributions via copulas [@nelsen:06] and other techniques [@lin:etal:14], but they are less intuitively appealing than capturing dependence in the pooling process.
-
-## Logarithmic pooling.
-
-Logarithmic pooling captures correlation between common quantities.
-We define the logarithmically pooled prior to be 
-\input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-This is a coherent probability density function for $\phi_{1 \cap 2}, \phi_{2 \cap 3}$, conditional on $\pd_{\text{pool}}$ being integrable.
-To verify that this is indeed the case, consider computing the normalising constant
-\input{tex-input/multiple-phi/00501-int-pooled-prior-overall.tex}
-~~All density functions in Equation \eqref{eqn:int-pooled-prior-overall-2} are proper, thus both integrals are finite, and the pooled prior defined in Equation \eqref{eqn:pooled-prior-overall} is valid.~~
-__Equation \eqref{eqn:int-pooled-prior-overall-2} is obviously rubbish - can't move conditionals outside of the integrals like that.__
-It should instead read
-\input{tex-input/multiple-phi/00502-int-pooled-prior-overall-corrected.tex}
-
-- The inner integral in Equation \eqref{eqn:int-pooled-prior-overall-corrected-2} is finite because we assumed the conditional was a proper distribution, it emits a finite constant $Z(\phi_{2 \cap 3})$
-- The interaction between $Z(\phi_{2 \cap 3})$ and the outer integrand could possibly result in a divergent outer integral.
-    - This seems unlikely if we have already assumed that all prior marginal distributions are proper -- a product of proper distributions should be proper
-    - Is it possible to interpret this in a different way to find the minimal set of assumptions required for this to make sense?
-        - Not clear, probably enough that all distributions are integrable and that the support of $(\phi_{2 \cap 3})$ is not a set of measure zero.
-
-Logarithmic pooling has two immediate advantages over linear pooling. 
-Correlation present in $\pd_{2}$ will persist into $\pd_{\text{pool}}$, and we can use weighted-sample self-density ratio estimation when estimating the melded posterior.
-
-## Pooling weights
-
-Choosing values for $\lambda = (\lambda_{1}, \lambda_{2}, \lambda_{3})$ that produce an appropriate $\pd_{\text{pool}}$ is difficult.
-The components of $\lambda$ are not interpretable as weights (in the usual, mixture distribution sense) when $d_{1}$ and $d_{2}$ are not equal to 1, but are still weights in some manner.
-
-For example, consider pooling the following marginal distributions
-\input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
-where $f(\phi; \mu, \sigma^2)$ is a density function with location parameter $\mu$ and scale parameter $\sigma$, and $f$ is an appropriate dimension Gaussian or Student t density function.
-To assess the impact of the weights on the pooled prior consider two different values for $\lambda$.
-The first is an equal apportionment $\lambda = (\frac{1}{3}, \frac{1}{3}, \frac{1}{3})$, whilst the second is an unequal distribution $\lambda = (\frac{1}{9}, \frac{7}{9}, \frac{1}{9})$ meant to account for the higher dimensional nature of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-The resulting pooled priors are displayed in Figure \ref{fig:pooled_densities_plot}.
-
-```{r pooled_densities_plot, fig.cap = "The logarithmic pooled prior. Marginal distributions are Gaussian (left column) and Student t (right column). Weights are equal (top row, $\\lambda = (\\frac{1}{3}, \\frac{1}{3}, \\frac{1}{3})$) and unequal (bottom row, $\\lambda = (\\frac{1}{9}, \\frac{7}{9}, \\frac{1}{9})$)"}
-knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
-```
-
-- The only surprising thing in \ref{fig:pooled_densities_plot} is that the `equal_weights`/`student_t` case is as quite as asymmetric as it is (although thinking about this, i'm not sure its so surprising).
-- We could distribute weight between $(p_{1}(\phi_{1 \cap 2}) p_{3}(\phi_{2 \cap 3}))$ and $\pd_{2}(\phi_{1 \cap 2}), \phi_{2 \cap 3})$, as these are equal dimensional objects.
-    - This doesn't work for $\Nm = 4$ models. 
 
 ## General case
 
@@ -388,93 +319,27 @@ and acceptance probabilities
 
 ## Integrated population model -  Little Owls
 
-Integrated population models allow for precise estimation of population level quantities.
-@schaub:etal:06 and @abadi:etal:10 aim to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
-They collect three sources of data; nest-record, population count, and capture-recapture, which inform fecundity, immigration, and yearly survival rates respectively.
-Independent models are constructed for each source of data, and the IPM is the product of these independent models.
-Because the population count model includes a parameter also contained in the nest-record model, and has two parameters in common with the capture-recapture model, the IPM can be viewed as a melded model, as described in Section \ref{melded-model}.
-Viewing the IPM as a melded model allows us to use the split and recombine multi-stage sampler described in Section \ref{multi-stage-sampler-2-split-and-recombine}.
+
+
+
 
 ### Submodels
 
-@finke:etal:19 consider a number of variations on the original model of @schaub:etal:06 and @abadi:etal:10.
-We use the variant of the model with highest reported marginal likelihood.
-Before we detail the specifics of our chosen model, we need to introduce some notation. 
-Data and parameters are stratified into Two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, Two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
 
-#### Capture recapture: $\pd_{1`'}$
 
-Capture-recapture data pertain to owls that are captured, tagged, and released at time $t$.
-These individuals are then recaptured at time $u$, for $t + 1 < u < T + 1$, or not recaptured before the conclusion of the study, in which case $u = T + 1$. 
-Define $M_{a, s, t, u}$ as the number of owls last observed at time $t$, recaptured at time $u$, of sex $s$, and age-group $a$.
-These observations are then aggregated into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows and $T + 1$ columns.
-Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls observed at time $t$ and then released, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
-The multinomial likelihood is
-\input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
-with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
-\input{tex-input/owls-example/0011-multinomial-probabilities.tex}
 
-#### Count data model: $\pd_{2}$ 
-
-To estimate population abundance, a two level model is used.
-One level models the observed (counted) number of females at each point in time, with a second, latent process modelling the total number of females in population.
-Denote the total number of juvenile and adult females in the population at time $t$ as $\mathbf{x}_{t} = \left[x_{J, t}, x_{A, t}\right]$.
-The latent, population level model is 
-\input{tex-input/owls-example/0020-count-data-submodel.tex}
-Initial population sizes $[x_{J, 1}, x_{A, 1}]$ are a priori uniformly distributed over $\{0, 1, \ldots, 50\}$.
-The observation level model is  
-\input{tex-input/owls-example/0021-observation-process.tex}
-
-#### Fecundity: $\pd_{3}$
-
-The fecundity submodel considers the number of breeding females at time $t$, $N_{t}$, and the number of chicks produced that survive and leave the nest $n_{t}$.
-A Poisson model is employed, with fecundity (reproductive) rate $\rho$
-\input{tex-input/owls-example/0030-fecundity-submodel.tex}
- 
-#### Parameterisation and melding quantities
-
-@abadi:etal:10 opt to parameterise the time dependent quantities via linear predictors, to minimise the number of parameters in the submodels.
-However, our choice to use the 'best' model of @finke:etal:19 renders many of the quantities independent of time.
-The specific parameterisation we employ is
-\input{tex-input/owls-example/0040-parameterisation-info.tex}
-Hence, the melding quantities, that is the quantities common to the submodels, are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
-Note that we do not include $\alpha_{1}$ as it is male specific, thus does not exist in the count data model ($\pd_{2}$).
-To completely align the notation used in this example with our melding notation, we define
-
-- $Y_{1} = \{\boldsymbol{M}_{a, s}\}$, $\psi_{1} = \{\pi_{s, t}\}$,
-- $Y_{2} = \{y_{t}\}$, $\psi_{2} = \{\boldsymbol{x}_{t}, \eta, \text{sur}_{t}, \text{imm}_{t}\}$,
-- $Y_{3} = \{(N_{t}, n_{t})\}_{t = 1}^{T}$, $\psi_{3} = \varnothing$.
 
 ### Sampling
 
 <!-- Make this explicit,  -->
 
-- We use the split and combine sampler.
-- This allows us to combine implementations of the submodels.
-- Specifically, the capture-recapture and count data submodels are written in BUGS (bugs paper / book?), and the subposterior of the former is sampled via `rjags` [@plummer:19]. 
-- The fecundity submodel is written in Stan (cite JSS paper) and sampled via `rstan` (cite package).
-- We reuse the count data BUGS implementation for stage two of the multi-stage sampler, and implement the Metropolis-within-Gibbs sampler specified in Section \ref{multi-stage-sampler-2-split-and-recombine} via Nimble (cite JSS paper and package?)
 
-- Code and for this example is available at https://github.com/hhau/multiple-phi-maybe-check-this-url?
 
 ### Results and discussion
 
-```{r phi_subpost, fig.cap = "(sub)Posterior credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{1}, \\alpha_{2}, \\alpha_{3})$ and $\\phi_{2 \\cap 3} = \\rho$ from the original integrated population model $\\pd_{\\text{ipm}}$, as well as the submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 95\\% wide."}
-knitr::include_graphics("plots/owls-example/subposteriors.pdf")
-```
 
-```{r phi_qq_compare, fig.cap = "qq comparison between original model (ipm) and the melded model."}
-knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
-```
 
-- Results are compared to a long run of the original IPM code, which we treat as the truth.
-- Results obtained from our sampler are indistinguishable, see Figure \ref{fig:phi_subpost} for posterior credible intervals [@kay:20], and Figure \ref{fig:phi_qq_compare} for a QQ plot of the melded quantities.
-- Diagnostics are presented in Appendix \ref{appendix-owls-example-diagnostics}.
 
-- Our sampling process gives back identical results to that of the original IPM.
-- It does so whilst combining a number of different Bayesian inference methods and implementations.
-- By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here. That is, we can use the output from one model to target some larger model, without needing to reimplement the model in a different language / framework.
-- It is another example of targeting a larger model without ever needing to evaluate the larger model, a useful property for large, complicated models.
 
 \newpage
 
@@ -508,32 +373,3 @@ knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 
 
 
-# Appendix: Owls example diagnostics
-
-## Stage one diagnostics
-
-#### Numerical diagnostics
-
-\input{tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex}
-
-#### Visual diagnostics
-
-```{r stage_one_mcmc_trace_capture_recapture, fig.cap = "Stage one trace plot of the important parameters in the capture recapture model."}
-knitr::include_graphics("plots/owls-example/stage-one-diagnostics-capture-recapture.png")
-```
-
-```{r stage_one_mcmc_trace_fecundity, fig.cap = "Stage one trace plot of the parameter in the fecundity model."}
-knitr::include_graphics("plots/owls-example/stage-one-diagnostics-fecundity.png")
-```
-
-## Stage two diagnostics
-
-#### Numerical diagnostics
-
-\input{tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex}
-
-#### Visual diagnostics
-
-```{r stage_two_mcmc_diags, fig.cap = "stage two trace and rank plots of the melded quantities."}
-knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
-```
