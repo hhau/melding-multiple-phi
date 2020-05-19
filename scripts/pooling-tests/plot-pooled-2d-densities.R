@@ -1,12 +1,12 @@
-source("scripts/common/plot-settings.R")
-source("scripts/pooling-tests/density-functions.R")
-
 library(tibble)
 library(mvtnorm)
 library(cubature)
 library(pbapply)
 library(parallel)
 library(dplyr)
+
+source("scripts/common/plot-settings.R")
+source("scripts/pooling-tests/density-functions.R")
 
 # going to do 2D
 phi_12_vals <- seq(from = -5, to = 5, length.out = 250)
@@ -61,37 +61,3 @@ ggsave_halfheight(
   filename = "plots/pooling-tests/pooled-densities-2d.pdf",
   plot = p_1
 )
-
-
-library(rstan)
-
-# model_fit <- stan(
-#   file = "scripts/pooling-tests/log-normal-pooling.stan",
-#   data = list(
-#     sigma_mat = matrix(
-#       c(1, 0.8, 0.8, 1),
-#       nrow = 2,
-#       ncol = 2,
-#       byrow = TRUE
-#     )
-#   ),
-#   iter = 2e5,
-#   cores = 6
-# )
-
-# samples <- extract(model_fit, pars = "phi")
-
-# plot_tibble <- tibble(
-#   x = samples$phi[, 1],
-#   y = samples$phi[, 2]
-# )
-
-# ggplot(plot_tibble, aes(x = x, y = y)) +
-#   geom_density_2d()
-# # 
-# cor(samples$phi)
-# cov(samples$phi) # variance > 1 means this has become non-Gaussian? Unless 
-# 
-# library(MVN)
-# 
-# MVN::mvn(samples$phi)

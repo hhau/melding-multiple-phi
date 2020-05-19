@@ -46,7 +46,7 @@ POOLING_TESTS = pooling-tests
 POOLING_SCRIPTS = scripts/$(POOLING_TESTS)
 
 POOLED_PLOT_2D = plots/pooling-tests/pooled-densities-2d.pdf
-$(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/visualisation.R $(POOLING_SCRIPTS)/density-functions.R $(PLOT_SETTINGS)
+$(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/plot-pooled-2d-densities.R $(POOLING_SCRIPTS)/density-functions.R $(PLOT_SETTINGS)
 	$(RSCRIPT) $<
 
 ALL_PLOTS += $(POOLED_PLOT_2D)

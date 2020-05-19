@@ -10,6 +10,35 @@
   eprint        = {https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-2664.2010.01789.x},
   year          = {2010}
 }
+@article{carpenter:etal:17,
+  author        = {Bob Carpenter and Andrew Gelman and Matthew Hoffman and Daniel Lee and Ben Goodrich and Michael Betancourt and Marcus Brubaker and Jiqiang Guo and Peter Li and Allen Riddell},
+  title         = {Stan: A Probabilistic Programming Language},
+  journal       = {Journal of Statistical Software, Articles},
+  volume        = {76},
+  number        = {1},
+  year          = {2017},
+  issn          = {1548-7660},
+  pages         = {1--32},
+  doi           = {10.18637/jss.v076.i01},
+  url           = {https://www.jstatsoft.org/v076/i01}
+}
+@article{devalpine:etal:2017,
+  author        = {{de Valpine}, P. and Turek, D. and Paciorek, C.J. and Anderson-Bergman, C. and {Temple Lang}, D. and Bodik, R.},
+  title         = {Programming with models: writing statistical algorithms for general model structures with {NIMBLE}},
+  year          = {2017},
+  journal       = {Journal of Computational and Graphical Statistics},
+  volume        = {26},
+  pages         = {403--417},
+  doi           = {10.1080/10618600.2016.1172487}
+}
+@book{everitt:hand:81,
+  author        = {Everitt, Brian and Hand, David J.},
+  title         = {Finite mixture distributions},
+  publisher     = {Chapman and Hall},
+  year          = {1981},
+  address       = {London New York},
+  isbn          = {0412224208}
+}
 @article{finke:etal:19,
   doi           = {10.1007/s13253-018-00349-9},
   url           = {https://doi.org/10.1007/s13253-018-00349-9},
@@ -21,6 +50,18 @@
   author        = {Axel Finke and Ruth King and Alexandros Beskos and Petros Dellaportas},
   title         = {Efficient sequential {M}onte {C}arlo algorithms for integrated population models},
   journal       = {Journal of Agricultural,  Biological and Environmental Statistics}
+}
+@article{genest:mcconway:90,
+  author        = {Genest, Christian and McConway, Kevin J.},
+  title         = {Allocating the weights in the linear opinion pool},
+  journal       = {Journal of Forecasting},
+  volume        = {9},
+  number        = {1},
+  pages         = {53--73},
+  doi           = {10.1002/for.3980090106},
+  url           = {https://onlinelibrary.wiley.com/doi/abs/10.1002/for.3980090106},
+  eprint        = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/for.3980090106},
+  year          = {1990}
 }
 @manual{kay:20,
   title         = {{tidybayes}: Tidy Data and Geoms for {Bayesian} Models},
@@ -41,6 +82,31 @@
   author        = {Gwo Lin and Xiaoling Dou and Satoshi Kuriki and Jin-Sheng Huang},
   title         = {Recent developments on the construction of bivariate distributions with fixed marginals},
   journal       = {Journal of Statistical Distributions and Applications}
+}
+@article{lunn:etal:09,
+  author        = {Lunn, David and Spiegelhalter, David and Thomas, Andrew and Best, Nicky},
+  title         = {The BUGS project: Evolution, critique and future directions},
+  journal       = {Statistics in Medicine},
+  volume        = {28},
+  number        = {25},
+  pages         = {3049--3067},
+  doi           = {10.1002/sim.3680},
+  url           = {https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.3680},
+  eprint        = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.3680},
+  year          = {2009}
+}
+@article{manderson:goudie:20,
+  author        = {{Manderson}, Andrew A. and {Goudie}, Robert J.~B.},
+  title         = {{A numerically stable algorithm for integrating Bayesian models using Markov melding}},
+  journal       = {arXiv e-prints},
+  year          = {2020},
+  eid           = {arXiv:2001.08038},
+  pages         = {arXiv:2001.08038},
+  archiveprefix = {arXiv},
+  eprint        = {2001.08038},
+  primaryclass  = {stat.ME},
+  adsurl        = {https://ui.adsabs.harvard.edu/abs/2020arXiv200108038M},
+  adsnote       = {Provided by the SAO/NASA Astrophysics Data System}
 }
 @incollection{massa:lauritzen:10,
   title         = {Combining statistical models},
@@ -65,12 +131,28 @@
   author        = {Roger B. Nelsen},
   edition       = {2}
 }
+@misc{nimble:package:19,
+  title         = {{NIMBLE}: {MCMC}, Particle Filtering, and Programmable Hierarchical Modeling},
+  author        = {{NIMBLE Development Team}},
+  url           = {https://r-nimble.org},
+  year          = {2019},
+  version       = {0.9.0},
+  note          = {{R} package manual version 0.9.0},
+  doi           = {10.5281/zenodo.1211190}
+}
 @manual{plummer:19,
   title         = {rjags: {B}ayesian Graphical Models using {MCMC}},
   author        = {Martyn Plummer},
   year          = {2019},
   note          = {R package version 4-10},
   url           = {https://CRAN.R-project.org/package=rjags}
+}
+@misc{rstan:pacakge:20,
+  title         = {{RStan}: the {R} interface to {Stan}},
+  author        = {{Stan Development Team}},
+  note          = {R package version 2.19.3},
+  year          = {2020},
+  url           = {http://mc-stan.org/}
 }
 @article{schaub:etal:06,
   author        = {Schaub, Michael and Ullrich, Bruno and Kn\"{o}tzsch, Gerhard and Albrecht, Patrick and Meisser, Christian},
@@ -96,99 +178,19 @@
   author        = {Elise F. Zipkin and Sarah P. Saunders}
 }
 
-@article{lunn:etal:09,
-author = {Lunn, David and Spiegelhalter, David and Thomas, Andrew and Best, Nicky},
-title = {The BUGS project: Evolution, critique and future directions},
-journal = {Statistics in Medicine},
-volume = {28},
-number = {25},
-pages = {3049-3067},
-keywords = {BUGS, WinBUGS, OpenBUGS, Bayesian modelling, graphical models},
-doi = {10.1002/sim.3680},
-url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.3680},
-eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.3680},
-abstract = {Abstract BUGS is a software package for Bayesian inference using Gibbs sampling. The software has been instrumental in raising awareness of Bayesian modelling among both academic and commercial communities internationally, and has enjoyed considerable success over its 20-year life span. Despite this, the software has a number of shortcomings and a principal aim of this paper is to provide a balanced critical appraisal, in particular highlighting how various ideas have led to unprecedented flexibility while at the same time producing negative side effects. We also present a historical overview of the BUGS project and some future perspectives. Copyright © 2009 John Wiley \& Sons, Ltd.},
-year = {2009}
-}
-@article{carpenter:etal:17,
-   author = {Bob Carpenter and Andrew Gelman and Matthew Hoffman and Daniel Lee and Ben Goodrich and Michael Betancourt and Marcus Brubaker and Jiqiang Guo and Peter Li and Allen Riddell},
-   title = {Stan: A Probabilistic Programming Language},
-   journal = {Journal of Statistical Software, Articles},
-   volume = {76},
-   number = {1},
-   year = {2017},
-   keywords = {probabilistic programming; Bayesian inference; algorithmic differentiation; Stan},
-   issn = {1548-7660},
-   pages = {1--32},
-   doi = {10.18637/jss.v076.i01},
-   url = {https://www.jstatsoft.org/v076/i01}
-}
-
-@Misc{rstan:pacakge:20,
-  title = {{RStan}: the {R} interface to {Stan}},
-  author = {{Stan Development Team}},
-  note = {R package version 2.19.3},
-  year = {2020},
-  url = {http://mc-stan.org/},
-}
-
-@article{devalpine:etal:2017, 
-  author = {{de Valpine}, P. and Turek, D. and Paciorek, C.J. and Anderson-Bergman, C. and {Temple Lang}, D. and Bodik, R.}, 
-  title = {Programming with models: writing statistical algorithms for general model structures with {NIMBLE}},
-  year = {2017}, 
-  journal = {Journal of Computational and Graphical Statistics},
-  volume = 26,
-  pages = {403-417},
-  doi = {10.1080/10618600.2016.1172487}
-}
-
-@Misc{nimble:package:19,
-  title = {{NIMBLE}: {MCMC}, Particle Filtering, and Programmable Hierarchical Modeling},
-  author = {{NIMBLE Development Team}},
-  url = {https://r-nimble.org},
-  year = {2019},
-  version = {0.9.0},
-  note = {{R} package manual version 0.9.0},
-  doi = {10.5281/zenodo.1211190},
-}
-
-@Book{everitt:hand:81,
-  author = {Everitt, Brian and Hand, David J.},
-  title = {Finite mixture distributions},
-  publisher = {Chapman and Hall},
-  year = {1981},
-  address = {London New York},
-  isbn = {0412224208}
-}
-
-@article{genest:mcconway:90,
-author = {Genest, Christian and McConway, Kevin J.},
-title = {Allocating the weights in the linear opinion pool},
-journal = {Journal of Forecasting},
-volume = {9},
-number = {1},
-pages = {53-73},
-keywords = {Combining opinions, Consensus, Expert resolution, Linear opinion pool, Weights},
-doi = {10.1002/for.3980090106},
-url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/for.3980090106},
-eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/for.3980090106},
-abstract = {Abstract A standard approach to the combination of probabilistic opinions involves taking a weighted linear average of the individuals distributions. This paper reviews some of the possible interpretations that have been proposed for these weights in the literature on expert use. Several paradigms for selecting weights are also considered. Special attention is devoted to the Bayesian mechanism used for updating expert weights in the face of new information. An asymptotic result is proved which highlights the importance of choosing the initial weights carefully.},
-year = {1990}
-}
-
-@ARTICLE{manderson:goudie:20,
-       author = {{Manderson}, Andrew A. and {Goudie}, Robert J.~B.},
-        title = "{A numerically stable algorithm for integrating Bayesian models using Markov melding}",
+@ARTICLE{vehtari:etal:diagnostics:19,
+       author = {{Vehtari}, Aki and {Gelman}, Andrew and {Simpson}, Daniel and
+         {Carpenter}, Bob and {B{\"u}rkner}, Paul-Christian},
+        title = "{Rank-normalization, folding, and localization: An improved $\widehat{R}$ for assessing convergence of MCMC}",
       journal = {arXiv e-prints},
-     keywords = {Statistics - Methodology, Statistics - Applications, Statistics - Computation},
-         year = 2020,
-        month = jan,
-          eid = {arXiv:2001.08038},
-        pages = {arXiv:2001.08038},
+     keywords = {Statistics - Computation, Statistics - Methodology},
+         year = 2019,
+        month = mar,
+          eid = {arXiv:1903.08008},
+        pages = {arXiv:1903.08008},
 archivePrefix = {arXiv},
-       eprint = {2001.08038},
- primaryClass = {stat.ME},
-       adsurl = {https://ui.adsabs.harvard.edu/abs/2020arXiv200108038M},
+       eprint = {1903.08008},
+ primaryClass = {stat.CO},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2019arXiv190308008V},
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
-
