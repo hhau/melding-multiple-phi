@@ -1,9 +1,7 @@
 library(tibble)
-library(mvtnorm)
-library(cubature)
-library(pbapply)
 library(parallel)
 library(dplyr)
+library(scico)
 
 source("scripts/common/plot-settings.R")
 source("scripts/pooling-tests/density-functions.R")
@@ -41,20 +39,22 @@ res <- mclapply(X = base_dists, mc.cores = 2, function(a_base_dist) {
 }) %>% 
   bind_rows()
 
-# facisnating! 
 p_1 <- ggplot(res, aes(x = x, y = y, z = f_val)) +
   geom_raster(aes(fill = f_val)) +
-  scale_fill_gradientn(colours = c(blues[1], blues[2], blues[3])) +
+  scale_fill_scico(palette = "oslo") +
   geom_contour(colour = "white", alpha = 0.2, bins = 8) +
   facet_grid(rows = vars(weight_case), cols = vars(base_dist)) +
   xlab(expression(phi["1:2"])) + 
   ylab(expression(phi["2:3"])) +
-  geom_hline(yintercept = 0, colour = highlight_col, alpha = 0.5) +  
-  geom_vline(xintercept = 0, colour = highlight_col, alpha = 0.5) +
+  geom_hline(yintercept = 0, colour = "white", alpha = 0.5) +  
+  geom_vline(xintercept = 0, colour = "white", alpha = 0.5) +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0)) +
-  theme(panel.spacing = unit(1, "lines")) +
-  labs(fill = expression(italic("f"))) +
+  theme(
+    panel.spacing = unit(1, "lines"),
+    axis.title.y = element_text(angle = 0, vjust = 0.5)
+  ) +
+  labs(fill = expression("p"["pool"])) +
   NULL
 
 ggsave_halfheight(

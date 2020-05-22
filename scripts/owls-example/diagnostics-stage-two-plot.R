@@ -10,11 +10,25 @@ stage_two_samples <- readRDS("rds/owls-example/melded-posterior-samples.rds")
  
 vars <- c("fec", "v[1]", "v[2]")
 
+stage_two_plot_labeler <- as_labeller(
+  x = c(
+    'fec' = 'rho',
+    'v[1]' = 'alpha[0]',
+    'v[2]' = 'alpha[2]'
+  ),
+  default = label_parsed
+)
+
 # we have to force draw these for patchwork to function correctly
 p1 <- mcmc_trace(
   x = stage_two_samples[, , vars]
 ) +
-  facet_wrap("parameter", ncol = 1, scales = "free_y") +
+  facet_wrap(
+    "parameter",
+    ncol = 1,
+    scales = "free_y",
+    labeller = stage_two_plot_labeler
+  ) +
   xlab("Iteration") + 
   theme(
     legend.position = 'none'
@@ -25,9 +39,10 @@ p1
 
 p2 <- mcmc_rank_overlay(
   x = stage_two_samples[, , vars],
-  ref_line = TRUE
+  ref_line = TRUE,
+  n_bins = 20
 ) +
-  facet_wrap("parameter", ncol = 1)
+  facet_wrap("parameter", ncol = 1, labeller = stage_two_plot_labeler)
 
 p2
 

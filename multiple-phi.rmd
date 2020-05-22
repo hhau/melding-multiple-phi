@@ -72,16 +72,6 @@ We will show that this example, and IPMs in general, can be expressed in the Mar
 
 ## other-tba
 
-# Why can't we do melding twice (need better name for section)
-
-- Astute reader may ask why we cannot apply Markov melding twice - the answer is that ordering matters.
-
-    <!-- 
-    - This relies on too much notation for an introduction, also needs more explaining. 
-    - Put in the main text.
-    -->
-    - A possible solution is to apply Markov melding twice. First meld $\pd_{1}$ and $\pd_{2}$, taking $\phi = \phi_{1 \cap 2}$; the result is then melded with $\pd_{3}$, with $\phi = \phi_{1 \cap 3}$. We show in Section SOMETHING that melding $\pd_{1}$ and $\pd_{2}$ in the first step produces a different model than melding $\pd_{2}$ and $\pd_{3}$ in the second step, unless $\phi_{1 \cap 2} \indep \phi_{2 \cap 3}$ in $\pd_{2}$.
-
 # Model specification
 
 - Let us now formalise the kinds of submodels, and their relations, that are of interest.
@@ -106,34 +96,17 @@ The corresponding melded posterior is proportional to
 
 ## Pooled prior
 
-- Need to form pooled prior - remind why
-- This presents a problem, that isn't addressed in the current literature.
-- Problem is that pooling methods, and mixture models in general, are constituted by densities that have the same support -- we are in a different setting.
-    - Products of densities that have different supports are well defined, additions are not.
-    - To rectify, we compute quantities that have the same support, then add them, then take the product of them.
-
-- Maths to show proposed pooling techniques (General case in appendix?)
-
-- What synthetic examples should we look at here?
-    - Gaussians, where we can do maths?
-        - Issue of interpreting model weights becomes apparent
-        - How do we gain an understanding of what the weight values mean when combining densities of different dimension?
-            - What are we looking to set? A principled way of setting weights in real use cases?
-        - Maybe independent prior in submodel 2?
-    - Correlated submodel 2 prior
-    - Differing supports
-
 Appropriately forming the pooled prior is necessary to ensure the validity of the melded model. 
 Our focus is still the $\Nm = 3$ case, where forming $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ requires us to coherently combine $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$, with corresponding weights $\lambda_{1}, \lambda_{2}, \lambda_{3} \geq 0$.
 
-
 Throughout this section we assume that $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are normalised, integrable probability density functions, that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ admits proper marginals for $\pd_{2}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{2 \cap 3})$, and proper conditionals for $\pd_{2}(\phi_{1 \cap 2} \mid \phi_{2 \cap 3})$ and $\pd_{2}(\phi_{2 \cap 3} \mid \phi_{1 \cap 2})$.
+For simplicity we will also assume that $\phi_{1 \cap 2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2 \cap 3} \in \mathbb{R}^{d_{2}}$, and the supports of $\pd_{1}, \pd_{2}$, and $\pd_{3}$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1} \times d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively, however none of our results are specific to marginals defined on these exact supports.
+
 We now investigate extensions to the typical univariate pooling methods -- linear and logarithmic pooling.
 
-## Linear pooling
+### Linear pooling
 
 Naively employing linear pooling produces nonsensical results.
-If $\phi_{1 \cap 2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2 \cap 3} \in \mathbb{R}^{d_{2}}$, then the supports of $\pd_{1}, \pd_{2}$, and $\pd_{3}$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1} \times d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively.
 Consider the natural extension to linear pooling
 \input{tex-input/multiple-phi/0052-linear-pooling.tex}
 The different supports imply that \eqref{eqn:linear-pooling} is not normalised by construction, unlike typical mixture densities.
@@ -154,7 +127,7 @@ Because $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are independent of eac
 The linear pooling process will always produce a pooled prior with no correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, which may be undesirable.
 It is possible to induce correlation between independent marginal distributions via copulas [@nelsen:06] and other techniques [@lin:etal:14], but these methods are less intuitive than capturing dependence in the pooling process.
 
-## Logarithmic pooling.
+### Logarithmic pooling.
 
 Products of densities with different supports are natural and common, which suggests a logarithmic pooling function may be more appropriate.
 We define the logarithmically pooled prior to be 
@@ -163,30 +136,71 @@ This is a coherent probability density function for $\pd_{\text{pool}}(\phi_{1 \
 Logarithmic pooling has two immediate advantages over linear pooling. 
 Correlation present in $\pd_{2}$ will persist into $\pd_{\text{pool}}$, and we can use weighted-sample self-density ratio estimation [@manderson:goudie:20] when estimating the melded posterior.
 
-## Pooling weights
+### Pooling weights
 
-Choosing values for $\lambda = (\lambda_{1}, \lambda_{2}, \lambda_{3})$ that produce an appropriate $\pd_{\text{pool}}$ is a challenging problem [@genest:mcconway:90].
-The components of $\lambda$ are not interpretable as weights (in the usual, mixture distribution sense) when $d_{1}$ and $d_{2}$ are unequal, but are still weights in some guise.
-We would like to build intuition about the influence of $\lambda$ on $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, so that our choice of $\lambda$ appropriately reflects prior information.
-Recasting $\lambda$ as a parameter and estimating the corresponding melded posterior is beyond the scope of this work. 
+Specifying values for $\lambda = (\lambda_{1}, \lambda_{2}, \lambda_{3})$ that produce an appropriate $\pd_{\text{pool}}$ is a challenging problem [@genest:mcconway:90].
+Using linear pooling to construct $\pd_{\text{pool}}$ allows us to interpret $\lambda$ as a vector that weights the contribution of each marginal density.
+Interpreting the components of $\lambda$ as relative weights is standard when constructing mixture distributions[@everitt:hand:81]; often these weights are constrained to sum to 1, ensuring that the mixture density is normalised.
+However, when employing logarithmic pooling, the components of $\lambda$ are not interpretable as weights in the usual, mixture distribution sense. 
+This lack of interpretability is particularly apparent when $d_{1}$ and $d_{2}$ differ.
+We would like to develop our intuition about the influence of $\lambda$ on $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, when using logarithmic pooling, so that our choice of $\lambda$ appropriately reflects prior information.
+ 
+<!-- [^scope]: Recasting $\lambda$ as a parameter and estimating the corresponding melded posterior is (currently!) beyond the scope of this work. -->
 
-For example, consider pooling the following distributions
+#### Gaussian and student-t example
+
+Consider combining the following distributions using logarithmic pooling
 \input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
-where $\text{f}(\phi; \mu, \sigma^2)$ is a density function with location parameter $\mu$ and scale parameter $\sigma$, and $f$ is an appropriate dimension Gaussian or Student-$t$ density function.
+where $f(\phi; \mu, \sigma^2)$ is a density function with location parameter $\mu$ and scale parameter $\sigma$, and $f$ is an appropriate dimension Gaussian or Student-$t_{4}$ density function.
 To assess the impact of the weights on the pooled prior we consider two different values for $\lambda$.
 The first is an equal apportionment $\lambda = (\frac{1}{3}, \frac{1}{3}, \frac{1}{3})$; the second an unequal distribution $\lambda = (\frac{1}{9}, \frac{7}{9}, \frac{1}{9})$, intended to account for the higher dimensional nature of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 The resulting pooled priors are displayed in Figure \ref{fig:pooled_densities_plot}.
+We see that logarithmic pooling has given us reasonable pooled priors for both values of $\lambda$. 
+However it is difficult to understand the precise impact of the choice of $\lambda$ from these plots alone.
+
+An analytic approach to understanding $\lambda$ may be more insightful.
+We can precisely compute $\pd_{\text{pool}}$ in the Gaussian case, for arbitrary $\lambda$.
+Noting that $f(\phi; \mu, \sigma^2)^{\lambda_{\modelindex}} = f(\phi; \mu, \frac{\sigma^2}{\lambda_{\modelindex}})$, we can write
+\input{tex-input/multiple-phi/0070-log-pooling-gaussian.tex}
+hence $]pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = f(\left[\phi_{1 \cap 2} \,\, \phi_{2 \cap 3}\right]^{\top}\hspace{-0.5em};\, \mu_{\text{log}}, \, \Sigma_{\text{log}})$.
+This result aligns with the pooled densities shown in the left column of Figure \ref{fig:pooled_densities_plot}.
+Correlation present in $\pd_{2}$ has changed the effect of $\lambda$.
+In uncorrelated settings it only rescales marginal distributions; here we see it affecting the trade-off between $\pd_{2}$, and $\pd_{1}$ and $\pd_{3}$.
 
 ```{r pooled_densities_plot, fig.cap = "The logarithmic pooled prior. Marginal distributions are Gaussian (left column) and Student t (right column). Weights are equal (top row, $\\lambda = (\\frac{1}{3}, \\frac{1}{3}, \\frac{1}{3})$) and unequal (bottom row, $\\lambda = (\\frac{1}{9}, \\frac{7}{9}, \\frac{1}{9})$)"}
 knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
 ```
 
-- I'm not sure what I learnt from Figure \ref{fig:pooled_densities_plot}.
-    - What situations should I consider to learn something?
-    - Sounds like I should be doing some maths, not experiments.
+- I'm still not sure what I learnt from Figure \ref{fig:pooled_densities_plot}.
+    - Densities move and concentrate when you pool them? Not hugely surprising?
+
 - We could distribute weights between $(p_{1}(\phi_{1 \cap 2}) p_{3}(\phi_{2 \cap 3}))$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, as these are equal dimensional objects.
     - This doesn't work for $\Nm = 4$ models, but do we really care?
-    - If we equally divide weights in this way, we have $\lambda_{1} + \lambda_{2} + \lambda_{3} > 1$, which is fine, but not intuative
+    - If we equally divide weights in this way, we have $\lambda_{1} + \lambda_{2} + \lambda_{3} > 1$, which is fine, but not exactly intuitive.
+
+
+#### Pooling density and dimension
+
+```{r pooling_dimension_tests, fig.cap = "tba"}
+knitr::include_graphics("plots/pooling-tests/densities-vs-dimension.pdf")
+```
+- The results in Equation \eqref{eqn:log-pooling-gaussian} are useful in 2 dimension, but what happens as $d_{1}$ and $d_{2}$ change, and grow further apart? 
+- I think I want to find out how different density functions change as the dimension of their input increases
+- To do so, we must evaluate $f(x; \mu, \sigma^2)$ for $x \in \mathbb{R}^{d}$ for increasing $d$.
+- Denote the $d$-dimensional vector of zeros as $0_{d}$, and similarly vector of twos $2_{d}$.
+- Figure \ref{fig:pooling_dimension_tests} shows the log of the density function, evaluate at these two values of $x_{d}$, as $d$ increases.
+- In the Gaussian case, the density function decreases at an exponential rate.
+    - The decrease occurs faster for a point further in the tails.
+- In the Student-$t_{4}$ case, the density decreases exponentially for $x_{d} = 2_{d}$, i.e. a point sufficiently far in the tail of the distribution.
+- However, for $x_{d} = 0_{d}$, the density function decreases, reaches a minimum, and then increases at a faster-than-exponential rate.
+    - This behaviour makes it difficult to state the general impact of $\lambda$ in the pooled prior if one of the marginal densities is non-Gaussian / heavy tailed.
+
+- _What do we learn here_:
+- Choosing pooling weights in logarithmic pooling depends on:
+    - Dimension of $\phi_{1 \cap 2}$ and $\phi_{1 \cap 3}$
+    - Range of values of $\phi_{1 \cap 2}$ and $\phi_{1 \cap 3}$ that one intends to evaluate $\pd_{\text{pool}}$ over
+    - Marginal density functions, in a way that is hard to generalise ($t_{\nu}$-distribution explodes in a  neighbourhood $0_{d}$ for certain $\nu, d$)
+    - So really we're more certain that the only possible answer is 'it depends'?
 
 # Posterior estimation
 
@@ -350,7 +364,7 @@ Trace plots, rank plots, and numerical convergence measures [@vehtari:etal:diagn
 
 Our sampling process gives back identical results to that of the original IPM.
 It does so whilst combining a number of different Bayesian inference methods and implementations.
-By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here: we can use the output from one model to target some larger model, without needing to reimplement the model in a different language or framework.
+By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here: we can use the output from one model to target some larger model, without needing to reimplement said model in a different language or framework.
 It is also an example of estimating an intricate model without ever simultaneously evaluating all components of the model, a useful property for large, complicated models.
 
 ## other-tba
@@ -359,8 +373,9 @@ Some desirable properties of the second example.
 
 - simultaneously evaluating $\pd_{\text{meld}}$ is undesirable
 - The melded quantities are not all root nodes in the DAG of the submodels
-    - The
+    - Need this for the suggested melded model here to be different from applying original melding twice
 - Using PoE leads to an overconcentrated posterior
+    - Would just be nice? Not required.
 
 ### Submodels
 
@@ -386,10 +401,15 @@ Some desirable properties of the second example.
 - submodels may be practically unidentifiable
 - Not all intermediary distributions/outputs are meaningful, depends on what we choose to sample at what stage. 
 
-## Differentiate from applying melding twice
+## Why can't we do melding twice (need better name for section)
 
-- Only the same if phis are independent in p2 
-    - > see appendix
+- Astute reader may ask why we cannot apply Markov melding twice - the answer is that ordering matters.   
+    - Explaining why relies on too much notation for an introduction, and requires us to have introduced the new melded model.
+    - It feels like a very weird detour to take before looking at examples, so I guess this has to go in the discussion? 
+    - Maybe it should just be an appendix, with a brief note in the main text 
+   
+    - Get text tidy from earlier version.
+
 
 ## Conflict
 
@@ -439,7 +459,7 @@ knitr::include_graphics("plots/owls-example/stage-one-diagnostics-fecundity.png"
 
 \input{tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex}
 
-We include $\alpha_{5}$ as it is the parameter with the maximum $\widehat{R}$ and minimum Bulk ESS.
+We include $\alpha_{5}$ because it has the maximum $\widehat{R}$ and minimum Bulk ESS.
 
 #### Visual diagnostics
 

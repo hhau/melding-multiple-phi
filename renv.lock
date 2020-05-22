@@ -639,6 +639,11 @@
       "Repository": "CRAN",
       "Hash": "a1c68369c629ea3188d0676e37069c65"
     },
+    "scico": {
+      "Package": "scico",
+      "Version": "1.1.0",
+      "Source": "Repository"
+    },
     "selectr": {
       "Package": "selectr",
       "Version": "0.4-2",

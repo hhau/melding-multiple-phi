@@ -44,12 +44,17 @@ MODEL_2_DATA : scripts/$(EX_THREE_GAUSSIANS)/data-generation-2.R $(MODEL_1_DATA)
 ## Pooling visualisation tests
 POOLING_TESTS = pooling-tests
 POOLING_SCRIPTS = scripts/$(POOLING_TESTS)
+POOLING_PLOTS = plots/pooling-tests
 
-POOLED_PLOT_2D = plots/pooling-tests/pooled-densities-2d.pdf
+POOLED_PLOT_2D = $(POOLING_PLOTS)/pooled-densities-2d.pdf
 $(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/plot-pooled-2d-densities.R $(POOLING_SCRIPTS)/density-functions.R $(PLOT_SETTINGS)
 	$(RSCRIPT) $<
 
-ALL_PLOTS += $(POOLED_PLOT_2D)
+POOLED_DENSITY_DIMENSION = $(POOLING_PLOTS)/densities-vs-dimension.pdf
+$(POOLED_DENSITY_DIMENSION) : $(POOLING_SCRIPTS)/plot-densities-vs-dimension.R $(PLOT_SETTINGS)
+	$(RSCRIPT) $<
+
+ALL_PLOTS += $(POOLED_PLOT_2D) $(POOLED_DENSITY_DIMENSION)
 
 ################################################################################
 ## Owls example

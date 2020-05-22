@@ -1,0 +1,34 @@
+\begin{equation}
+  \Sigma_{\text{log}} = 
+  \left(
+    \left(
+      \begin{bmatrix}
+        \lambda_{2}^{-1} & 0 \\
+        0 & \lambda_{2}^{-1}
+      \end{bmatrix}
+      \begin{bmatrix}
+        1 & 0.8 \\
+        0.8 & 1
+      \end{bmatrix}
+    \right)^{-1}
+    + 
+    \begin{bmatrix}
+      \lambda_{1}^{-1} & 0 \\
+      0 & \lambda_{3}^{-1}
+    \end{bmatrix}^{-1}
+  \right)^{-1}
+  \quad
+  \mu_{\text{log}} = 
+  \Sigma_{\text{log}} 
+  \left(
+    \begin{bmatrix}
+      \lambda_{1}^{-1} & 0 \\
+      0 & \lambda_{3}^{-1}
+    \end{bmatrix}^{-1}
+    \begin{bmatrix}
+    -2 \\
+    2
+    \end{bmatrix}
+  \right),
+  \label{eqn:log-pooling-gaussian}
+\end{equation}
