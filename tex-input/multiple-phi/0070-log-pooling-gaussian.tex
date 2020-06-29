@@ -1,4 +1,4 @@
-\begin{equation}
+\begin{gather}
   \Sigma_{\text{log}} = 
   \left(
     \left(
@@ -7,28 +7,55 @@
         0 & \lambda_{2}^{-1}
       \end{bmatrix}
       \begin{bmatrix}
-        1 & 0.8 \\
-        0.8 & 1
+        \sigma_{2}^{2} & \rho\sigma_{2}^{2} \\
+        \rho\sigma_{2}^{2} & \sigma_{2}^{2}
       \end{bmatrix}
     \right)^{-1}
-    + 
-    \begin{bmatrix}
-      \lambda_{1}^{-1} & 0 \\
-      0 & \lambda_{3}^{-1}
-    \end{bmatrix}^{-1}
+    +
+    \left(
+        \begin{bmatrix}
+          \lambda_{1}^{-1} & 0 \\
+          0 & \lambda_{3}^{-1}
+        \end{bmatrix}
+        \begin{bmatrix}
+          \sigma_{1}^{2} & 0 \\
+          0 & \sigma_{3}^{2}
+        \end{bmatrix}
+    \right)^{-1} 
   \right)^{-1}
-  \quad
+  \label{eqn:log-pooling-gaussian-one} \\
   \mu_{\text{log}} = 
   \Sigma_{\text{log}} 
   \left(
+    \left(
+      \begin{bmatrix}
+        \lambda_{2}^{-1} & 0 \\
+        0 & \lambda_{2}^{-1}
+      \end{bmatrix}
+      \begin{bmatrix}
+        \sigma_{2}^{2} & \rho\sigma_{2}^{2} \\
+        \rho\sigma_{2}^{2} & \sigma_{2}^{2}
+      \end{bmatrix}
+    \right)^{-1}
     \begin{bmatrix}
-      \lambda_{1}^{-1} & 0 \\
-      0 & \lambda_{3}^{-1}
-    \end{bmatrix}^{-1}
+    \mu_{2, 1} \\
+    \mu_{2, 1}
+    \end{bmatrix}
+    +
+    \left(
+        \begin{bmatrix}
+          \lambda_{1}^{-1} & 0 \\
+          0 & \lambda_{3}^{-1}
+        \end{bmatrix}
+        \begin{bmatrix}
+          \sigma_{1}^{2} & 0 \\
+          0 & \sigma_{3}^{2}
+        \end{bmatrix}
+    \right)^{-1}
     \begin{bmatrix}
-    -2 \\
-    2
+    \mu_{1} \\
+    \mu_{3}
     \end{bmatrix}
   \right),
-  \label{eqn:log-pooling-gaussian}
-\end{equation}
+  \label{eqn:log-pooling-gaussian-two}
+\end{gather}

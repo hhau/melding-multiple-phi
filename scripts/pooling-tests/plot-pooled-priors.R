@@ -20,6 +20,7 @@ p_1 <- ggplot(plot_data, aes(x = x, y = y, z = f_val)) +
     legend.text.align = 0,
     panel.spacing.x = unit(1.5, "lines"),
     panel.spacing.y = unit(1, "lines"),
+    strip.text.y = element_text(angle = 0, size = rel(0.8), margin = margin(r = 2, l = 2)),
     axis.title.y = element_text(angle = 0, vjust = 0.5)
   ) +
   scale_colour_manual(
@@ -39,5 +40,6 @@ p_1 <- ggplot(plot_data, aes(x = x, y = y, z = f_val)) +
 
 ggsave_fullpage(
   filename = "plots/pooling-tests/pooled-densities-2d.pdf",
-  plot = p_1
+  plot = p_1,
+  adjust_height = -4
 )

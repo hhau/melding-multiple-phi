@@ -24,7 +24,7 @@ weight_cases <- list(
   "lambda[1]~'='~0.00" = c(outer_lambda_1 = 0.00, outer_lambda_2 = 1 - 2 * 0.00),
   "lambda[1]~'='~0.10" = c(outer_lambda_1 = 0.10, outer_lambda_2 = 1 - 2 * 0.10),
   "lambda[1]~'='~0.20" = c(outer_lambda_1 = 0.20, outer_lambda_2 = 1 - 2 * 0.20),
-  "lambda[1]~'='~0.33" = c(outer_lambda_1 = 0.33333, outer_lambda_2 = 1 - 2 * 0.33333),
+  "lambda[1]~'='~0.33" = c(outer_lambda_1 = 1/3, outer_lambda_2 = 1 - 2 * 1/3),
   "lambda[1]~'='~0.45" = c(outer_lambda_1 = 0.45, outer_lambda_2 = 1 - 2 * 0.45),
   "lambda[1]~'='~0.50" = c(outer_lambda_1 = 0.50, outer_lambda_2 = 1 - 2 * 0.50)
 )
@@ -46,8 +46,14 @@ res <- mclapply(X = base_dists, mc.cores = 2, function(a_base_dist) {
         c("f", a_base_dist, a_pooling_type, "generator"),
         collapse = "_"
       )
-      density_fuction <- do.call(generator_name, args = as.list(weight_cases[[a_weight_case]]))
-      f_val <- do.call(density_fuction, list(phi = rbind(plot_tbl$phi_12, plot_tbl$phi_23)))
+      density_fuction <- do.call(
+        generator_name,
+        args = as.list(weight_cases[[a_weight_case]])
+      )
+      f_val <- do.call(
+        density_fuction, 
+        list(phi = rbind(plot_tbl$phi_12, plot_tbl$phi_23))
+      )
       sub_res <- tibble(
         x = plot_tbl$phi_12,
         y = plot_tbl$phi_23,

@@ -9,13 +9,13 @@ f_normal_log_generator <- function(outer_lambda_1, outer_lambda_2) {
     lambda_2
   ) {
     res <- 
-      lambda_1 * dnorm(t(phi)[, 1, drop = FALSE], mean = mean_p1, log = T) + 
+      lambda_1 * dnorm(t(phi)[, 1, drop = FALSE], mean = mean_p1, log = TRUE) + 
       lambda_2 * dmvnorm(
         x = t(phi),
         sigma = sigma_mat,
-        log = T
+        log = TRUE
       ) +
-      lambda_1 * dnorm(t(phi)[, 2, drop = FALSE], mean = mean_p3, log = T)
+      lambda_1 * dnorm(t(phi)[, 2, drop = FALSE], mean = mean_p3, log = TRUE)
     return(exp(res))
   }
 
@@ -88,14 +88,14 @@ f_student_t_log_generator <- function(outer_lambda_1, outer_lambda_2) {
     lambda_2 = outer_lambda_2
   ) {
     res <- 
-      lambda_1 * dt(x = t(phi)[, 1, drop = FALSE] - mean_p1, df = t_df, log = T) + 
+      lambda_1 * dt(x = t(phi)[, 1, drop = FALSE] - mean_p1, df = t_df, log = TRUE) + 
       lambda_2 * dmvt(
         x = t(phi),
         sigma = sigma_mat,
         df = t_df,
-        log = T
+        log = TRUE
       ) +
-      lambda_1 * dt(x = t(phi)[, 2, drop = FALSE] - mean_p3, df = t_df, log = T)
+      lambda_1 * dt(x = t(phi)[, 2, drop = FALSE] - mean_p3, df = t_df, log = TRUE)
     return(exp(res))
   }
 
