@@ -84,12 +84,12 @@ We will show that this example, and IPMs in general, can be expressed in the Mar
 
 The melded model for the $\Nm = 3$ case is
 \input{tex-input/multiple-phi/0010-melded-model.tex}
-Rewriting the conditional distributions yields
+Rewriting the conditional distributions in terms of submodel joint densities and marginals yields
 \input{tex-input/multiple-phi/0012-melded-model-full.tex}
 which we will refer to as the melded model.
 Note that we cannot necessarily factorise $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2})\pd_{2}(\phi_{2 \cap 3})$, as this falsely assumes independence.
-The corresponding melded posterior is proportional to 
-\input{tex-input/multi-stage-sampler/0010-melded-posterior.tex}
+The corresponding melded posterior $\pd_{\text{meld}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, \psi_{3} \mid Y_{1}, Y_{2}, Y_{3})$ is proportional to Equation \eqref{eqn:melded-model-full}.
+
 
 - what are the modifications here and why.
 - What is important to understand in this section
@@ -147,7 +147,16 @@ We would like to develop our intuition about the influence of $\lambda$ on $\pd_
  
 <!-- [^scope]: Recasting $\lambda$ as a parameter and estimating the corresponding melded posterior is (currently!) beyond the scope of this work. -->
 
-#### Gaussian and student-t example
+## Pooled prior examples 
+
+Specifying the type of pooling and values for the pooling weights is a subjective process.
+The choices are sensitive to the availability of prior information, and the specifics of the marginals being pooled; providing  submodel-agnostic advice about the specification process is challenging.
+The examples in this section demonstrate common challenges encountered when constructing the pooled prior, such as discovering which pooling method produces the desired pooled prior, and addressing the mismatch in supports between the marginals.
+Our examples are necessarily simple, so that we can understand the impact of our choices on the pooled prior and provide generalisable advice on the specification process.
+
+### Pooling Gaussian and Student-$t$ densities
+
+#### Choosing relative values for the weights
 
 Consider combining the following distributions using logarithmic pooling
 \input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
@@ -179,7 +188,7 @@ knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
     - If we equally divide weights in this way, we have $\lambda_{1} + \lambda_{2} + \lambda_{3} > 1$, which is fine, but not exactly intuitive.
 
 
-#### Pooling density and dimension
+#### Varying the dimension
 
 ```{r pooling_dimension_tests, fig.cap = "tba"}
 knitr::include_graphics("plots/pooling-tests/densities-vs-dimension.pdf")
@@ -323,13 +332,12 @@ A Poisson model is employed, with fecundity (reproductive) rate $\rho$
 However, our choice to use the 'best' model of @finke:etal:19 renders many of the quantities independent of time.
 The specific parameterisation we employ is
 \input{tex-input/owls-example/0040-parameterisation-info.tex}
-Hence, the melding quantities, that is the quantities common to the submodels, are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
-Note that our definition of $\phi_{1 \cap 2}$ does not include $\alpha_{1}$ as it is male specific, thus does not exist in the count data model ($\pd_{2}$).
-To completely align the notation used in this example with our melding notation, we define (for all permitted values of $a, s$ and $t$): $Y_{1} = \boldsymbol{M}_{a, s}$, $\psi_{1} = \pi_{s, t}$; $Y_{2} = y_{t}$, $\psi_{2} = (\boldsymbol{x}_{t}, \eta, \text{sur}_{t}, \text{imm}_{t})$; and $Y_{3} = (N_{t}, n_{t})$, $\psi_{3} = \varnothing$.
-
-- With all submodels appropriately parameterised, we can specify priors for the parameters.
-- The priors come from @finke:etal:19? Need to look up.
-- Write down what they are and for what model. (Table?)
+thus the quantities common to the submodels are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
+Our definition of $\phi_{1 \cap 2}$ does not include $\alpha_{1}$ as it is male specific, and does not exist in $\pd_{2}$.
+To align the notation of this example with the melding notation we define, for all permitted values of $a, s$ and $t$, $Y_{1} = \boldsymbol{M}_{a, s}$, $\psi_{1} = \pi_{s, t}$; $Y_{2} = y_{t}$, $\psi_{2} = (\boldsymbol{x}_{t}, \eta, \text{sur}_{t}, \text{imm}_{t})$; and $Y_{3} = (N_{t}, n_{t})$, $\psi_{3} = \varnothing$.
+We use the priors of @abadi:etal:10 for the parameters in each submodel.
+The components of $\alpha$ present in $\pd_{1}$ and $\pd_{2}$ are assigned independent $\text{N}(0, 100^2)$ priors which are truncated to $[-10, 10]$. 
+A $\text{U}(0, 10)$ prior is assigned to $\rho$ in $\pd_{2}$ and $\pd_{3}$.
 
 Completing the specification of $\pd_{\text{meld}}$ requires us to choose $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 To align $\pd_{\text{meld}}$ with the IPM, we opt for product-of-experts pooling: $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \propto \pd_{1}(\phi_{1 \cap 2}) \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \pd_{3}(\phi_{2 \cap 3})$.
@@ -358,7 +366,7 @@ knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 We empirically validate our methodology and sampler by comparing the melded posterior samples to the original IPM posterior.
 Results are compared to a long run, 6 chains of $2 \times 10^5$ iterations each, of the original IPM code which we treat as the 'truth'.
 The results obtained from our sampler are indistinguishable from the original IPM.
-Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@kay:20] for the melded quantities, and we are particular interested in the agreement between $\pd_{\text{meld}}$ $\pd_{\text{IPM}}$.
+Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry:etal:19; @kay:20] for the melded quantities, and we are particular interested in the agreement between $\pd_{\text{meld}}$ $\pd_{\text{IPM}}$.
 We further compare the IPM and melded posteriors via the QQ plots in Figure \ref{fig:phi_qq_compare}, and again see near identical results.
 Trace plots, rank plots, and numerical convergence measures [@vehtari:etal:diagnostics:19] for both stages of the parallel sampling process are presented in Appendix \ref{appendix-owls-example-diagnostics}.
 
@@ -434,6 +442,7 @@ Some desirable properties of the second example.
 <!-- Now switch to alphabetical numbering for the appendix, and reset the counter. -->
 \renewcommand{\thesection}{\Alph{section}}
 \setcounter{section}{0}
+
 
 # Appendix: Owls example diagnostics
 

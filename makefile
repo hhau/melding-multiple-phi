@@ -17,37 +17,32 @@ ALL_PLOTS =
 # if you wildcard the all-target, then nothing will happen if the target doesn't
 # exist (no target). hard code the target.
 # CHANGE THIS:
-WRITEUP = multiple-phi.pdf
+BASENAME = multiple-phi
+WRITEUP = $(BASENAME).pdf
 
 all : $(WRITEUP)
 
 clean : 
-	trash *.aux *.out
-
-## Three Gaussian example basenames
-EX_THREE_GAUSSIANS = ex-three-gaussians
-
-### data
-MODEL_1_DATA = $(RDS)/$(EX_THREE_GAUSSIANS)/model-1-data.rds
-MODEL_1_DATA : scripts/$(EX_THREE_GAUSSIANS)/data-generation-1.R
-	$(RSCRIPT) $<
-
-MODEL_3_DATA = $(RDS)/$(EX_THREE_GAUSSIANS)/model-3-data.rds
-MODEL_3_DATA : scripts/$(EX_THREE_GAUSSIANS)/data-generation-3.R
-	$(RSCRIPT) $<
-
-MODEL_2_DATA = $(RDS)/$(EX_THREE_GAUSSIANS)/model-2-data.rds
-MODEL_2_DATA : scripts/$(EX_THREE_GAUSSIANS)/data-generation-2.R $(MODEL_1_DATA) $(MODEL_3_DATA)
-	$(RSCRIPT) $<
-
+	trash \
+		$(BASENAME).aux \
+		$(BASENAME).out \
+		$(BASENAME).pdf \
+		$(BASENAME).tex \
+		Rplots.pdf
 
 ## Pooling visualisation tests
 POOLING_TESTS = pooling-tests
 POOLING_SCRIPTS = scripts/$(POOLING_TESTS)
+POOLING_OUTPUTS = rds/$(POOLING_TESTS)
 POOLING_PLOTS = plots/pooling-tests
 
+POOLED_PLOT_2D_DATA = $(POOLING_OUTPUTS)/pooling-types-weights-results.rds
 POOLED_PLOT_2D = $(POOLING_PLOTS)/pooled-densities-2d.pdf
-$(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/plot-pooled-2d-densities.R $(POOLING_SCRIPTS)/density-functions.R $(PLOT_SETTINGS)
+
+$(POOLED_PLOT_2D_DATA) : $(POOLING_SCRIPTS)/simulate-pooled-priors.R $(POOLING_SCRIPTS)/density-functions.R
+	$(RSCRIPT) $<
+
+$(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/plot-pooled-priors.R  $(PLOT_SETTINGS) $(POOLED_PLOT_2D_DATA)
 	$(RSCRIPT) $<
 
 POOLED_DENSITY_DIMENSION = $(POOLING_PLOTS)/densities-vs-dimension.pdf

@@ -20,6 +20,7 @@ generate_plot_value <- function(point, dimension, dens_obj) {
     dens_obj$density_f_args,
     list(x = rep(point, dimension))
   )
+  
   value <- do.call(dens_obj$density_f_name, f_args)
   res <- tibble(
     d = dimension,
@@ -29,7 +30,6 @@ generate_plot_value <- function(point, dimension, dens_obj) {
   )
 
   return(res)
-  
 }
 
 # plot arguments
