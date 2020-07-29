@@ -39,14 +39,17 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
     - We are presenting a more formal, general form of the things that are done already
 
 - Markov melding introduction
-    - The aforementioned applied research does not always fit into the Markov melding methodology. (why)
-    - however, it considers $\Nm$ submodels that have the _same_ quantity $\phi$ in common. 
-    - In several applied settings, we will have a number of submodels that share quantities in a pair wise manner.
-    - For example we may have 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$; where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$. Figure \ref{fig:intro-dag} contains a DAG representation of the relationship between submodels, where nodes in the DAG are submodels, and edges are quantities common to the submodels. they connect.
+    - @goudie:etal:18 introduced Markov melding, a methodology for combining probabilistic models in a principled way. 
+    - The aforementioned applied research does not always fit into the Markov melding methodology, which explicitly requires all $\Nm$ submodels to have the same quantity $\phi$ in common. 
+    - In the applications we consider, we have a number of submodels that share quantities in a pair wise manner. <!-- Not clear what this means, cut straight to next sentence -->
+    - Specifically, our examples contain 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$; where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$. 
+    - We will demonstrate that Markov melding, as introduced in @goudie:etal:18, is not always appropriate for joining submodels related in this way, and we devise an extension to the melded model that permits the desired model combination.
 
-    \input{tex-input/introduction/0001-intro-dag.tex}
+    <!-- Figure \ref{fig:intro-dag} contains a DAG representation of the relationship between submodels, where nodes in the DAG are submodels, and edges are quantities common to the submodels. they connect.
 
-- Why do we need new methodology? What problem are we solving.
+    \input{tex-input/introduction/0001-intro-dag.tex} -->
+
+<!-- - Why do we need new methodology? What problem are we solving. -->
 
 - Other advantages to modularised inference
     - understand submodels
@@ -55,13 +58,13 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
 
 # Example introduction
 
-- We will now outline some applied analyses that will hopefully convince you that this is way of thinking that is already being employed, and practitioners are finding useful.
+- We will now outline two applications that combine three submodels in the manner described in the introduction.
 
 ## An Integrated population model for little owls
 
-Integrated population models [@zipkin:saunders:18] allow for precise estimation of population level quantities.
-@schaub:etal:06 and @abadi:etal:10 aim to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
-They collect three sources of data; nest-record, population count, and capture-recapture, which inform fecundity, immigration, and yearly survival rates respectively.
+Integrated population models (IPMs) [@zipkin:saunders:18] allow for precise estimation of population level quantities.
+@schaub:etal:06 and @abadi:etal:10 use an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
+They collect three types of data: nest-record, population count, and capture-recapture, which collectively inform fecundity, immigration, and yearly survival rates.
 Independent submodels are constructed for each source of data, and the IPM is the product of these independent submodels.
 This model combination step is prudent; no single source of data is sufficient to estimate all quantities of interest.
 The population count submodel informs quantities in both the nest-record submodel and the capture-recapture submodel, but the latter two submodels share nothing in common.
@@ -74,144 +77,132 @@ We will show that this example, and IPMs in general, can be expressed in the Mar
 
 # Model specification
 
-- Let us now formalise the kinds of submodels, and their relations, that are of interest.
-- First we introduce some notation:
-    - notation goes here
-- For pedagogical purposes we choose to study the $\Nm = 3$ case
-- The appendix contains the more general $\Nm$-model case.
+Our intention is to combine submodels into an appropriate joint model, which we call the melded model.
+Explicitly, we consider $\modelindex = 1, \ldots, \Nm$ submodels each with distinct data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
+Additionally, each submodel shares some quantity in common with another submodel $\phi_{\modelindex \cap \modelindex'}$, where $\modelindex \neq \modelindex'$.
+<!-- We denote the $\modelindex^{\text{th}}$ submodel as $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}, \psi_{\modelindex}, Y_{\modelindex})$. -->
+Our particular interest is in the $\Nm = 3$ submodel case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$.
+<!-- TODO: -->The appendix contains the more general $\Nm$-model case.
+Each submodel is assumed to be a valid joint density function over all relevant quantities, and all submodel conditionals exist with appropriate support.
 
 ## Melded model
 
-The melded model for the $\Nm = 3$ case is
-\input{tex-input/multiple-phi/0010-melded-model.tex}
-Rewriting the conditional distributions in terms of submodel joint densities and marginals yields
+<!-- Do we need to call this model something else? It's quite confusing having both this model and the original paper's model be called the 'melded model'. -->
+
+The joint model under investigation here is an extension the melded model introduced in @goudie:etal:18.
+To emphasise that we are interested in a valid joint density, we first express the melded model in terms of submodel specific conditional distributions
+\input{tex-input/multiple-phi/0010-melded-model-cond.tex}
+By conditioning on the common quantities in each submodel, and assuming that the prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ is proper, we are sure that the joint density is a valid joint density function.
+We will return to the prior on $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ in Section \ref{pooled-prior}.
+
+The conditional distributions of Equation \eqref{eqn:melded-model-cond} are not always available.
+However, each conditional distribution can be written in terms of the submodel joint density and appropriate marginal, and we rewrite the right hand side of Equation \eqref{eqn:melded-model-cond} as
 \input{tex-input/multiple-phi/0012-melded-model-full.tex}
-which we will refer to as the melded model.
-Note that we cannot necessarily factorise $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2})\pd_{2}(\phi_{2 \cap 3})$, as this falsely assumes independence.
-The corresponding melded posterior $\pd_{\text{meld}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, \psi_{3} \mid Y_{1}, Y_{2}, Y_{3})$ is proportional to Equation \eqref{eqn:melded-model-full}.
-
-
-- what are the modifications here and why.
-- What is important to understand in this section
+We refer to Equation \eqref{eqn:melded-model-full} as the melded model, and note that it is proportional to the melded posterior $\pd_{\text{meld}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, \psi_{3} \mid Y_{1}, Y_{2}, Y_{3})$.
 
 ## Pooled prior
 
-Appropriately forming the pooled prior is necessary to ensure the validity of the melded model. 
-Our focus is still the $\Nm = 3$ case, where forming $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ requires us to coherently combine $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$, with corresponding weights $\lambda_{1}, \lambda_{2}, \lambda_{3} \geq 0$.
+Obtaining posterior estimates of the parameters requires us to specify a prior distribution for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+Specifying joint priors is difficult, and we have the additional complication that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ may have different supports.
+However, because we are combining submodels we can use the prior information available in each submodel.
+We form our joint prior by _pooling_ [@ohagan:06] together the relevant submodel prior marginal distributions: $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$, and denote the result as the _pooled prior_ $\pd_{\text{pool}}$.
+In this section we apply, and where necessary extend, linear and logarithmic pooling for use in the melded model.
 
-Throughout this section we assume that $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are normalised, integrable probability density functions, that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ admits proper marginals for $\pd_{2}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{2 \cap 3})$, and proper conditionals for $\pd_{2}(\phi_{1 \cap 2} \mid \phi_{2 \cap 3})$ and $\pd_{2}(\phi_{2 \cap 3} \mid \phi_{1 \cap 2})$.
-For simplicity we will also assume that $\phi_{1 \cap 2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2 \cap 3} \in \mathbb{R}^{d_{2}}$, and the supports of $\pd_{1}, \pd_{2}$, and $\pd_{3}$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1} \times d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively, however none of our results are specific to marginals defined on these exact supports.
-
-We now investigate extensions to the typical univariate pooling methods -- linear and logarithmic pooling.
+Throughout we assume that $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are normalised, integrable probability density functions, that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ admits proper marginals for $\pd_{2}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{2 \cap 3})$, and proper conditionals for $\pd_{2}(\phi_{1 \cap 2} \mid \phi_{2 \cap 3})$ and $\pd_{2}(\phi_{2 \cap 3} \mid \phi_{1 \cap 2})$.
+For simplicity we will also assume that $\phi_{1 \cap 2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2 \cap 3} \in \mathbb{R}^{d_{2}}$, and the supports of $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1}} \times \mathbb{R}^{d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively.
 
 ### Linear pooling
 
-Naively employing linear pooling produces nonsensical results.
-Consider the natural extension to linear pooling
+Linear pooling typically proceeds by taking a linear combination of submodel prior marginal densities.
+However, linearly pooling densities with different supports can produce invalid pooled priors.
+Specifically, consider the naive extension to linear pooling
 \input{tex-input/multiple-phi/0052-linear-pooling.tex}
-The different supports imply that \eqref{eqn:linear-pooling} is not normalised by construction, unlike typical mixture densities.
-If all the constituent densities of \eqref{eqn:linear-pooling} are normalised, then it seems reasonable to assume that a combination of them should also be normalisable.
-Consider normalising $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$
+where each $\lambda_{\modelindex} \in \mathbb{R}^{+}$ is a submodel specific pooling weight, however we do not require that the weights sum to 1. 
+These weights are used when we believe the submodel prior marginal densities are not equally informative.
+It is not obvious that this density is normalisable.
+Indeed when integrating $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$
 \input{tex-input/multiple-phi/00521-int-linear-pooling.tex}
-The first term of this integral
+we find that the first term of this integral
 \input{tex-input/multiple-phi/00522-int-linear-pooling.tex}
-is clearly divergent due to the $\int_{\mathbb{R}^{d_{2}}}\text{d}\phi_{2 \cap 3}$ term.
-Hence, the naive extension to linear pooling does not admit a valid probability density function.
+is divergent due to the $\int_{\mathbb{R}^{d_{2}}}\text{d}\phi_{2 \cap 3}$ term.
+Hence, the naive extension to linear pooling does not admit a proper probability density function, due to the different supports for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
 
-Our solution proceeds by forming intermediary pooling densities via linear pooling
+We propose the following strategy, which is a two-step linear pooling approach.
+The first step forms intermediary pooling densities via standard linear pooling, using appropriate marginals with common support
 \input{tex-input/multiple-phi/0054-silly-linear-solution.tex}
-then forms the pooled prior as the product of the intermediaries
+Because we do not require that $\lambda_{1, 1} + \lambda_{2, 1} = 1$, $\pd_{\text{pool}, 1}$ is not necessarily normalised by construction; likewise for $\pd_{\text{pool}, 2}$.
+In step two we form the pooled prior as the product of the intermediaries
 \input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
-Because $\pd_{\text{pool}, 1}$ and $\pd_{\text{pool}, 2}$ are independent of each other, and Equations \eqref{eqn:silly-linear-solution-1} and \eqref{eqn:silly-linear-solution-2} are constructed to be appropriate marginal distributions for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, we do not need any weights in Equation \eqref{eqn:silly-linear-overall}.
-
-The linear pooling process will always produce a pooled prior with no correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, which may be undesirable.
+Equation \eqref{eqn:silly-linear-overall} implies that our linear pooling process will always produce a pooled prior with no correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, which may be undesirable.
 It is possible to induce correlation between independent marginal distributions via copulas [@nelsen:06] and other techniques [@lin:etal:14], but these methods are less intuitive than capturing dependence in the pooling process.
 
 ### Logarithmic pooling.
 
-Products of densities with different supports are natural and common, which suggests a logarithmic pooling function may be more appropriate.
+A multiplicative alternative to linear pooling is logarithmic pooling.
+Products of densities with different supports are common in statistical modelling, and typically result in proper density functions.
 We define the logarithmically pooled prior to be 
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-This is a coherent probability density function for $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, due to our assumption that all prior marginal distributions are proper and finitely integrable. 
-Unlike linear pooling, correlation present in $\pd_{2}$ will also persist in $\pd_{\text{pool}}$.
+This is a valid probability density function for $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, due to our assumption that all prior marginal distributions are proper and finitely integrable. 
+Unlike linear pooling, correlation present in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ will persist in $\pd_{\text{pool}}$.
 
 ### Pooling weights
 
-Specifying values for $\lambda = (\lambda_{1}, \lambda_{2}, \lambda_{3})$ that produce an appropriate $\pd_{\text{pool}}$ is a challenging problem [@genest:mcconway:90].
-Using linear pooling to construct $\pd_{\text{pool}}$ allows us to interpret $\lambda$ as a vector that weights the contribution of each marginal density.
+Specifying values for $\lambda = (\lambda_{1}, \lambda_{2}, \lambda_{3})$ that produce an appropriate $\pd_{\text{pool}}$ is challenging.
+Using linear pooling to construct $\pd_{\text{pool}}$ allows us to interpret $\lambda$ as a vector that weights the contribution of each marginal density [@genest:mcconway:90].
 Interpreting the components of $\lambda$ as relative weights is standard when constructing mixture distributions[@everitt:hand:81]; often these weights are constrained to sum to 1, ensuring that the mixture density is normalised.
 However, when employing logarithmic pooling, the components of $\lambda$ are not interpretable as weights in the usual, mixture distribution sense. 
+
 This lack of interpretability is particularly apparent when $d_{1}$ and $d_{2}$ differ.
 We would like to develop our intuition about the influence of $\lambda$ on $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, when using logarithmic pooling, so that our choice of $\lambda$ appropriately reflects prior information.
+
+- _something about giving $\lambda$ a prior leading to a doubly-intractable problem [@moller:etal:06]._
  
 ## Pooled prior examples 
 
 Specifying the type of pooling and values for the pooling weights is a subjective process.
-The choices are sensitive to the availability of prior information, and the specifics of the marginals being pooled; providing submodel-agnostic advice about the specification process is challenging.
-The examples in this section demonstrate common challenges encountered when constructing the pooled prior, such as discovering which pooling method produces the desired pooled prior, and addressing the mismatch in supports between the marginals.
-Our examples are necessarily simple, so that we can understand the impact of our choices on the pooled prior and provide useful advice on the specification process.
-
-### Pooling Gaussian and Student-$t$ densities
+The choices are sensitive to the availability of prior information, and the specifics of the marginals being pooled; providing submodel-agnostic advice about the specification process is challenging
+The examples in this section we apply common challenges encountered when constructing the pooled prior, such a. for use in Markov ering which pooling method produces the desired pooled prior, and addressing the mismatch in supports between the marginals## Pooling Gaussian and Student-$t$ densities
 
 #### Choosing relative values for the weights
 
-We first investigate the choice of pooling method and value of $\lambda$.
-Consider pooling following distributions
-\input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
+We first investigate the choice of pooling method and value of $\lambda$.\input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
 where $f(\phi; \mu, \sigma^{2})$ is a density function with location parameter $\mu$, scale parameter $\sigma$, and $f$ is an appropriate dimension Gaussian or Student-$t_{4}$ density function.
 The two dimensional density function $\pd_{2}$ has an additional parameter $\rho$, which controls the correlation.
 Appendix \ref{log-pooling-gaussian-densities} derives $\pd_{\text{pool}}$ when all densities being pooled are Gaussian and logarithmic pooling is employed. This derivation emphasises the importance of $\lambda_{2}$, it controls the degree of correlation present in $\pd_{\text{pool}}$.
 In all other cases a recognisable form for $\pd_{\text{pool}}$ is not derivable, and we estimate $\pd_{\text{pool}}$ via numerical methods.
 
-To understand the effect of $\lambda$ on $\pd_{\text{pool}}$ we set fix the parameters in the densities in Equation \eqref{eqn:marginal-gaussian-example}, and vary the value $\lambda$.
+To understand the effect of $\lambda$ on $\pd_{\text{pool}}$ we set fix the parameters in the densities in Equation \eqref{eqn:marginal-gaussian-example} whilst varying $\lambda$.
 We set $\mu_{1} = -2, \mu_{2} = \left[\mu_{2, 1} \,\, \mu_{2, 2}\right]' = \left[0 \,\, 0\right]', \mu_{3} = 2, \sigma_{1}^{2} = \sigma_{2}^{2} = \sigma_{3}^{2} = 1$ and $\rho = 0.8$.
-In the logarithmic case, we set $\lambda_{1} = \lambda_{3}$ and parameterise $\lambda_{2} = 1 - 2\lambda_{1}$, so that $\lambda_{1} + \lambda_{2} + \lambda_{3} = 1$ and we have only $\lambda_{1}$ to vary.
-For the same reasons, in the linear case, we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
+For simplicity, in the logarithmic case we set $\lambda_{1} = \lambda_{3}$ and parameterise $\lambda_{2} = 1 - 2\lambda_{1}$, so that $\lambda_{1} + \lambda_{2} + \lambda_{3} = 1$ whilst limiting ourselves to only varying $\lambda_{1}$.
+Similarly, in the linear case we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
 
 Figure \ref{fig:pooled_densities_plot} contains the estimates of $\pd_{\text{pool}}$ for $\lambda_{1} \in \{0, 0.1, 0.2, \frac{1}{3}, 0.45, 0.5\}$.
 In the linear case $\pd_{\text{pool}}$ contains no correlation, due to the additive form of Equations \eqref{eqn:silly-linear-solution-1} and \eqref{eqn:silly-linear-solution-2}.
 Also, the variance of $\pd_{\text{pool}}$ in the linear case increases as $\lambda_{1}$ increases from $0$ to $\frac{1}{3}$, then decreases as $\lambda_{1}$ increases further to $0.5$.
 This behaviour is not intuitive, and pooled densities constructed via linear pooling should be thoroughly investigated to ensure they are fit for purpose before being used in the melded model.
-Logarithmic pooling does not display this behaviour.
-For increasing values of $\lambda_{1}$ the variance of $\pd_{\text{pool}}$ consistently increases.
+Logarithmic pooling does not display this behaviour, for increasing values of $\lambda_{1}$ the variance of $\pd_{\text{pool}}$ consistently increases.
 The $\lambda_{1} = 0.45$ case is noteworthy when using logarithmic pooling; the mode of $\pd_{\text{pool}}$ formed from $t_{4}$ densities has shifted towards the marginal mean $[-2 \,\, 2]'$ more so than the Gaussian equivalent.
 Logarithmically pooled priors should also be checked for suitability a priori, as part of a Bayesian workflow [@betancourt:20].
-
 
 ```{r pooled_densities_plot, fig.cap = "Contour plots of $\\pd_{\\text{pool}}$ under linear and logarithmic pooling (columns), for the values of $\\lambda_{1}$ indicated in the row labels. The distributional form of $f$ corresponds to the colours of the contours."}
 knitr::include_graphics("plots/pooling-tests/pooled-densities-2d.pdf")
 ```
-
-- I'm still not sure what I learnt from Figure \ref{fig:pooled_densities_plot}.
-    - Densities move and concentrate when you pool them? Not hugely surprising?
-
-- We could distribute weights between $(p_{1}(\phi_{1 \cap 2}) p_{3}(\phi_{2 \cap 3}))$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, as these are equal dimensional objects.
-    - This doesn't work for $\Nm = 4$ models, but do we really care?
-    - If we equally divide weights in this way, we have $\lambda_{1} + \lambda_{2} + \lambda_{3} > 1$, which is fine, but not exactly intuitive.
-
 
 #### Varying the dimension
 
 ```{r pooling_dimension_tests, fig.cap = "tba"}
 knitr::include_graphics("plots/pooling-tests/densities-vs-dimension.pdf")
 ```
-- The results in Equation \eqref{eqn:log-pooling-gaussian} are useful in 2 dimension, but what happens as $d_{1}$ and $d_{2}$ change, and grow further apart? 
-- I think I want to find out how different density functions change as the dimension of their input increases
-- To do so, we must evaluate $f(x; \mu, \sigma^2)$ for $x \in \mathbb{R}^{d}$ for increasing $d$.
-- Denote the $d$-dimensional vector of zeros as $0_{d}$, and similarly vector of twos $2_{d}$.
-- Figure \ref{fig:pooling_dimension_tests} shows the log of the density function, evaluate at these two values of $x_{d}$, as $d$ increases.
-- In the Gaussian case, the density function decreases at an exponential rate.
-    - The decrease occurs faster for a point further in the tails.
-- In the Student-$t_{4}$ case, the density decreases exponentially for $x_{d} = 2_{d}$, i.e. a point sufficiently far in the tail of the distribution.
-- However, for $x_{d} = 0_{d}$, the density function decreases, reaches a minimum, and then increases at a faster-than-exponential rate.
-    - This behaviour makes it difficult to state the general impact of $\lambda$ in the pooled prior if one of the marginal densities is non-Gaussian / heavy tailed.
 
-- _What do we learn here_:
-- Choosing pooling weights in logarithmic pooling depends on:
-    - Dimension of $\phi_{1 \cap 2}$ and $\phi_{1 \cap 3}$
-    - Range of values of $\phi_{1 \cap 2}$ and $\phi_{1 \cap 3}$ that one intends to evaluate $\pd_{\text{pool}}$ over
-    - Marginal density functions, in a way that is hard to generalise ($t_{\nu}$-distribution explodes in a  neighbourhood $0_{d}$ for certain $\nu, d$)
-    - So really we're more certain that the only possible answer is 'it depends'?
+Our previous experiments pertain to the $d_{1} = d_{2} = 1$ case.
+However, the intuition obtained in this low dimensional setting does not generalise to higher dimensional ones, which makes choosing an appropriate $\lambda$ more challenging.
+To illustrate how different high dimensional settings can be, we consider $d$-dimensional versions of the Gaussian and Student-$t_{4}$ densities, with $d$ dimensional zero vector $0_{d}$ and identity matrix $\mathcal{I}_{d}$ as mean/location and covariance/scale respectively.
+Denoting the density function of interest as $f(\phi_{d}; 0_{d}, \mathcal{I}_{d})$, we evaluate it at two points: $\phi_{d} = 0_{d}$, the mode of both densities, and $\phi_{d} = 2_{d}$, a point suitably far in the tails, for increasing values of $d$, and display the results in Figure \ref{fig:pooling_dimension_tests}.
+The Gaussian density function decreases at an exponential rate, and the decrease occurs faster for the point in the tail.
+In the Student-$t_{4}$ case, the density decreases exponentially when evaluated at $2_{d}$, however for $0_{d}$, the density function decreases to a minimum, and then increases at a faster-than-exponential rate.
+This indicates that the behaviour of the Student-$t_{4}$ density, as a function of $d$, depends on where it is evaluated. 
+We can deduce that, when pooling sufficiently non-Gaussian densities, the appropriate value for $\lambda$ depends on the range of values at which we evaluate $\pd_{\text{pool}}$.
+Such information is generally unavailable a priori, emphasising the need to employ prior-predictive checks to ensure $\pd_{\text{pool}}$ appropriately represents available information.
 
 # Posterior estimation
 
@@ -223,19 +214,13 @@ The second parallelises parts of the sampling process, and has the potential to 
 
 ## Sequential sampler
 
-The sampler described in this section is _sequential_.
-Stage one ($s_{1}$) targets terms from submodel $\pd_{1}$. The target is expanded in stage two ($s_{2}$) to also include $\pd_{2}$ terms, finally to include the $\pd_{3}$ terms and $\pd_\text{pool}$ in stage three ($s_{3}$).
-An overview of this target broadening process is displayed in Figure \ref{fig:seq-sampler-dag}
-\input{tex-input/multi-stage-sampler/0001-seq-sampler-dag.tex}
-    
-#### Stage one
+The sampler described in this section we apply _sequential_
+Stage one ($s_{1}$) target. for use in Markov melding terms from submodel $\pd_{1}$. The target is expanded in stage two ($s_{2}$) to also include $\pd_{2}$ ly to include the $\pd_{3}$ terms and $\pd_\text{pool}$ in stage three ($s_{3}$)### Stage one
 
 Mathematically, stage one of the sequential sampler targets
 \input{tex-input/multi-stage-sampler/0020-stage-one-target.tex}
 using a generic proposal kernel for both $\phi_{1 \cap 2}$ and $\psi_{1}$. 
 The corresponding acceptance probability for a proposed update from $(\phi_{1 \cap 2}, \psi_{1})$ to $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})$ is
-\input{tex-input/multi-stage-sampler/0021-stage-one-acceptance-probability.tex}
-
 #### Stage two
 
 The stage two target augments the stage one target by including the second submodel and corresponding prior marginal distribution,
@@ -278,7 +263,7 @@ which can be computed independently of one another.
 
 #### Stage two
 
-Stage two targets the melded posterior of Equation \eqref{eqn:melded-posterior} using a Metropolis-within-Gibbs sampler, where the proposals are distributed according to
+Stage two targets the melded posterior of Equation \eqref{eqn:melded-model-full} using a Metropolis-within-Gibbs sampler, where the proposals are distributed according to
 \input{tex-input/dc-sampler/0031-stage-two-proposals.tex}
 The acceptance probabilities for these updates are
 \input{tex-input/dc-sampler/0032-stage-two-acceptance.tex}
@@ -297,7 +282,7 @@ Viewing the IPM as a melded model allows us to use the parallel sampler describe
 @finke:etal:19 consider a number of variations on the original model of @schaub:etal:06 and @abadi:etal:10.
 We consider variant from @finke:etal:19 with the highest marginal likelihood.
 Before we detail the specifics of our chosen model, we need to introduce some notation. 
-Data and parameters are stratified into Two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, Two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
+Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, Two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
 
 #### Capture recapture: $\pd_{1}$
 
@@ -342,10 +327,9 @@ The components of $\alpha$ present in $\pd_{1}$ and $\pd_{2}$ are assigned indep
 A $\text{U}(0, 10)$ prior is assigned to $\rho$ in $\pd_{2}$ and $\pd_{3}$.
 
 Completing the specification of $\pd_{\text{meld}}$ requires us to choose $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-To align $\pd_{\text{meld}}$ with the IPM, we opt for product-of-experts pooling: $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \propto \pd_{1}(\phi_{1 \cap 2}) \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \pd_{3}(\phi_{2 \cap 3})$.
-Aligning the models allows us to directly compare the melded posterior with the IPM posterior.
+So that we can appropriately compare the melded posterior with the IPM posterior $\pd_{\text{meld}}$ we opt for product-of-experts pooling: $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \propto \pd_{1}(\phi_{1 \cap 2}) \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \pd_{3}(\phi_{2 \cap 3})$.
 
-- Should I also run a variant that forms $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via one of our pooling methods?
+- _Should I also run a variant that forms $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via one of our pooling methods?_
 
 ### Posterior estimation via the parallel sampler
 
@@ -370,14 +354,14 @@ Results are compared to a long run, 6 chains of $2 \times 10^5$ iterations each,
 The results obtained from our sampler are indistinguishable from the original IPM.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry:etal:19; @kay:20] for the melded quantities, and we are particular interested in the agreement between $\pd_{\text{meld}}$ $\pd_{\text{IPM}}$.
 We further compare the IPM and melded posteriors via the QQ plots in Figure \ref{fig:phi_qq_compare}, and again see near identical results.
-Trace plots, rank plots, and numerical convergence measures [@vehtari:etal:diagnostics:19] for both stages of the parallel sampling process are presented in Appendix \ref{appendix-owls-example-diagnostics}.
+Trace plots, rank plots, and numerical convergence measures [@vehtari:etal:diagnostics:19] for both stages of the parallel sampling process are presented in Appendix \ref{diagnostics-for-the-owls-example}.
 
 Our sampling process gives back identical results to that of the original IPM.
 It does so whilst combining a number of different Bayesian inference methods and implementations.
 By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here: we can use the output from one model to target some larger model, without needing to reimplement said model in a different language or framework.
 It is also an example of estimating an intricate model without ever simultaneously evaluating all components of the model, a useful property for large, complicated models.
 
-## other-tba
+## other-example-tba
 
 Some desirable properties of the second example.
 
@@ -428,8 +412,6 @@ Some desirable properties of the second example.
 # Conclusion 
 
 
-
-
 <!-- -------------------- END OF MAIN BODY OF DOCUMENT -------------------- -->
 \newpage
 
@@ -456,7 +438,7 @@ The right hand column of Figure \ref{fig:pooled_densities_plot} illustrates this
 When $\lambda_{1} = \lambda_{3} = 0 \implies \lambda_{2} = 1$, all correlation in $\pd_{2}$ is present in $\pd_{\text{pool}}$.
 The correlation decreases for increasing values of $\lambda_{1}$ until $\lambda_{1} = \lambda_{3} = 0.5 \implies \lambda_{2} = 0$, where no correlation persists.
 
-# Owls example diagnostics
+# Diagnostics for the owls example
 
 ## Stage one diagnostics
 
@@ -487,3 +469,9 @@ We include $\alpha_{5}$ because it has the maximum $\widehat{R}$ and minimum Bul
 ```{r stage_two_mcmc_diags, fig.cap = "Stage two trace and rank plots of the melded quantities."}
 knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
 ```
+
+# General $\Nm$ case of the melded model, pooled priors.
+
+# Markov melding is sensitive to the order in which the submodels are considered
+
+- Maths / argument goes here, in text sentence goes something like "A possible two-step approach for combining these models is to apply Markov melding to submodels 1 and 2 in step one, then apply it again to the result of step one and submodel 3. However, as we show in Appendix \ref{the-right-appendix-name}, this result of this process is dependent on whether one considers submodels 1 and 2 in step one, or submodels 2 and 3. This dependence is undesirable, and to address it we now develop a modified version of markov melding that is order insensitive."

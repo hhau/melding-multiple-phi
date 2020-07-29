@@ -77,9 +77,10 @@ p1 <- ggplot(
       "Student-t" = expression("Student" ~ "-" ~ italic("t")[4])
     )
   ) +
-  ylab(expression("log"(italic("f")('x'["d"])))) +
+  ylab(expression("log"(italic("f")(phi[italic("d")])))) +
+  xlab(expression(italic("d"))) +
   labs(
-    lty = expression("x"["d"]),
+    lty = expression(phi[italic("d")]),
     colour = "Density"
   ) +
   theme(

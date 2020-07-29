@@ -315,33 +315,6 @@ with Gibbs updates
 and acceptance probabilities
 \input{tex-input/dc-sampler/0012-dc-acceptance-probabilities.tex}
 
-# Examples
-
-## Integrated population model -  Little Owls
-
-
-
-
-
-### Submodels
-
-
-
-
-
-### Sampling
-
-<!-- Make this explicit,  -->
-
-
-
-### Results and discussion
-
-
-
-
-
-\newpage
 
 # Arbitrary graphs of models
 
