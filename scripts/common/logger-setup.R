@@ -11,10 +11,11 @@ cat(
   "  ",
   blue$underline("log_filename:"), 
   sprintf("%s", log_filename),
-  '\n',
+  "\n",
   "  ",
   blue$underline("base_filename:"), 
-  sprintf("%s", base_filename)
+  sprintf("%s", base_filename),
+  "\n"
 )
 
 logfile_line_delineator <- function() {

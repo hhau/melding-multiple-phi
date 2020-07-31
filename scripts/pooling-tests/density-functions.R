@@ -121,22 +121,22 @@ f_student_t_log_generator <- function(outer_lambda_1, outer_lambda_2) {
 }
 
 f_student_t_linear_generator <- function(outer_lambda_1, outer_lambda_2) {
-  twod_samples <- rmvt(
-    n = 2e4,
-    sigma = sigma_mat,
-    df = t_df
-  )
+  # twod_samples <- rmvt(
+  #   n = 2e4,
+  #   sigma = sigma_mat,
+  #   df = t_df
+  # )
   
-  bandwidths <- apply(twod_samples, 2, bw.SJ) * 4
+  # bandwidths <- apply(twod_samples, 2, bw.SJ) * 4
 
-  kde_marginal <- function(phi, margin) {
-    sm.density(
-      x = twod_samples[, margin],
-      h = bandwidths[margin],
-      eval.points = as.vector(phi),
-      display = "none"
-    )[['estimate']]
-  }
+  # kde_marginal <- function(phi, margin) {
+  #   sm.density(
+  #     x = twod_samples[, margin],
+  #     h = bandwidths[margin],
+  #     eval.points = as.vector(phi),
+  #     display = "none"
+  #   )[['estimate']]
+  # }
 
   q_student_t_linear <- function(
     phi,
@@ -146,10 +146,10 @@ f_student_t_linear_generator <- function(outer_lambda_1, outer_lambda_2) {
     res <-
       (
         lambda_1 * dt(t(phi)[, 1, drop = FALSE] - mean_p1, df = t_df) +
-        lambda_2 * kde_marginal(t(phi)[, 1, drop = FALSE], margin = 1)  
+        lambda_2 * dt(t(phi)[, 1, drop = FALSE], df = t_df)  
       ) *
       (
-        lambda_2 * kde_marginal(t(phi)[, 2, drop = FALSE], margin = 2) +
+        lambda_2 * dt(t(phi)[, 2, drop = FALSE], df = t_df) +
         lambda_1 * dt(t(phi)[, 2, drop = FALSE] - mean_p3, df = t_df)
       ) 
 

@@ -30,6 +30,7 @@ clean :
 		$(BASENAME).tex \
 		Rplots.pdf
 
+################################################################################
 ## Pooling visualisation tests
 POOLING_TESTS = pooling-tests
 POOLING_SCRIPTS = scripts/$(POOLING_TESTS)
@@ -116,6 +117,35 @@ $(MELDED_QQ_PLOT) : $(OWLS_SCRIPTS)/plot-qq-comparison.R $(MELDED_POSTERIOR) $(O
 	$(RSCRIPT) $<
 
 ALL_PLOTS += $(MELDED_DIAGNOSTIC_PLOT) $(MELDED_QQ_PLOT)
+
+################################################################################
+## surv-example
+SURV_BASENAME = surv-example
+SURV_SCRIPTS = $(SCRIPTS)/$(SURV_BASENAME)
+SURV_RDS = $(RDS)/$(SURV_BASENAME)
+SURV_PLOTS = $(PLOTS)/$(SURV_BASENAME)
+SURV_MODELS = $(SURV_SCRIPTS)/models
+
+SURV_SIMULATION_SETTINGS = $(SURV_RDS)/submodel-one-simulation-settings.rds
+$(SURV_SIMULATION_SETTINGS) : $(SURV_SCRIPTS)/simulation-settings.R
+	$(RSCRIPT) $<
+
+SURV_SUBMODEL_ONE_SIMULATED_DATA = $(SURV_RDS)/submodel-one-simulated-data.rds
+$(SURV_SUBMODEL_ONE_SIMULATED_DATA) : $(SURV_SCRIPTS)/simulate-data.R $(SURV_SIMULATION_SETTINGS) 
+	$(RSCRIPT) $<
+
+SURV_SUMODEL_ONE = $(SURV_MODELS)/linear-measurement.stan
+SURV_SUBMODEL_ONE_SIMULATED_OUTPUT = $(SURV_RDS)/submodel-one-output.rds
+$(SURV_SUBMODEL_ONE_SIMULATED_OUTPUT) : $(SURV_SCRIPTS)/fit-linear-measurement-model.R $(SURV_SUBMODEL_ONE_SIMULATED_DATA) $(SURV_SUMODEL_ONE)
+	$(RSCRIPT) $<
+
+SURV_ALL_SUBMODEL_ONE_INPUTS = $(SURV_SIMULATION_SETTINGS) $(SURV_SUBMODEL_ONE_SIMULATED_DATA) $(SURV_SUBMODEL_ONE_SIMULATED_OUTPUT)
+
+SURV_SUBMODEL_ONE_POSTERIOR_PLOT = $(SURV_PLOTS)/submodel-one-posterior.pdf
+$(SURV_SUBMODEL_ONE_POSTERIOR_PLOT) : $(SURV_SCRIPTS)/plot-linear-measurement-fit.R $(PLOT_SETTINGS) $(MCMC_UTIL) $(SURV_ALL_SUBMODEL_ONE_INPUTS)
+	$(RSCRIPT) $<
+
+ALL_PLOTS += $(SURV_SUBMODEL_ONE_POSTERIOR_PLOT)
 
 ################################################################################
 
