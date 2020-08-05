@@ -22,11 +22,13 @@ stan_input_data <- with(simulated_data,
     n_obs = length(patient_id),
     n_patients = length(unique(patient_id)),
     Y = measurement,
+    X = covariate_values,
     obs_ids = patient_id,
     obs_times = time,
     y_threshold = submodel_one_settings$y_threshold,
     n_plot = submodel_one_settings$n_plot,
-    x_plot = submodel_one_settings$x_plot
+    x_plot = submodel_one_settings$x_plot,
+    t_plot = submodel_one_settings$t_plot
   )
 )
 
@@ -38,7 +40,10 @@ model_fit <- sampling(
   cores = 4,
   control = list(
     adapt_delta = 0.9
-  )
+  ),
+  iter = 5000,
+  warmup = 4000,
+  thin = 1
 )
 
 raw_samples <- as.array(model_fit)

@@ -30,9 +30,9 @@ base_plot <- ggplot(simulated_data, aes(x = time, y = measurement)) +
 # really should store all intermediary data
 res <- model_output$samples %>%
   array_to_mcmc_list() %>%  
-  spread_draws(plot_mu[patient_id, plot_x])
+  spread_draws(plot_mu[patient_id, t_plot])
 
-res$plot_x <- submodel_one_settings$x_plot[res$plot_x]
+res$t_plot <- submodel_one_settings$t_plot[res$t_plot]
 
 posterior_plot_data <- res %>% 
   point_interval(
@@ -44,13 +44,13 @@ posterior_plot_data <- res %>%
 with_post_mean <- base_plot + 
   geom_line(
     data = posterior_plot_data, 
-    aes(x = plot_x, y = plot_mu),
+    aes(x = t_plot, y = plot_mu),
     inherit.aes = FALSE,
     col = highlight_col
   ) +
   geom_ribbon(
     data = posterior_plot_data, 
-    aes(x = plot_x, ymin = .lower, ymax = .upper),
+    aes(x = t_plot, ymin = .lower, ymax = .upper),
     inherit.aes = FALSE,
     alpha = 0.2
   )
@@ -97,8 +97,8 @@ final_version <- with_threshold +
   ) + 
   scale_x_continuous(
     limits = c(
-      min(submodel_one_settings$x_plot),
-      max(submodel_one_settings$x_plot)
+      min(submodel_one_settings$t_plot),
+      max(submodel_one_settings$t_plot)
     )
   )
 

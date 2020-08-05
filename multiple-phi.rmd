@@ -387,11 +387,25 @@ The 80% credible interval for each patient's event time is in blue, with the cav
 
 Note that this means we get a distribution of event times for patients who clearly do not have the event.
 I'm not sure this fits into a typical survival analysis framework?
+We could assign event indicators based on the posterior, if the even happened within the time frame of interest.
+Otherwise they are censored?
 
 ```{r submodel_one_synthetic_plot, fig.cap = "to be written"}
 knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
 ```
 
+The mathematical model behind this is something like:
+
+- we have individuals $j$ with measurements $i = 1, \ldots, N_{j}$ at times $y = 1, \ldots, T_{j}$ denoted $y_{i, j, t}$ with covariates $x_{i, j, t}$.
+- Intuitively, we'd like to have a model for the regression that had one model for the covariate / measurement model:
+\input{tex-input/surv-example/0010-regression-model-observation-level.tex}
+with the typical hierarchical structure on the regression coefficients, and appropriate, distinct priors on $\varepsilon^{x}_{i, j, t}$ and $\varepsilon^{t}_{i, j, t}$ to identify them.
+- we immediately see that $\alpha_{0, j}$ and $\beta_{0, j}$ are interchangable, and our model is overparamtereised / unidentifiable, and that distinguishing between $\varepsilon^{x}_{i, j, t}$ and $\varepsilon^{t}_{i, j, t}$ is left entirely to the prior.
+- We should instead consider this as a 2-d surface regression, and write
+\input{tex-input/surv-example/0011-regression-model-indentifiable.tex}
+- I'd still like to be decompose $\varepsilon_{i, j, t}$ into a regression error and a temporal/trajectory error, so maybe something like? 
+\input{tex-input/surv-example/0012-regression-model-indentifiable-two-error.tex}
+- The errors will still be somewhat co-linear, but I think that's okay as long as the surface is MCMC-able?
 
 #### Second submodel
 
