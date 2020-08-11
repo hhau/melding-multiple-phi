@@ -1,6 +1,6 @@
-# Submodel one settings.
+source("scripts/surv-example/GLOBALS.R")
 
-n_patients <- 16
+# Submodel one settings.
 event_prop <- 0.5
 
 n_obs_per_patient <- pmax(rpois(n_patients, 8), 3)

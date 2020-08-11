@@ -388,7 +388,9 @@ The 80% credible interval for each patient's event time is in blue, with the cav
 Note that this means we get a distribution of event times for patients who clearly do not have the event.
 I'm not sure this fits into a typical survival analysis framework?
 
-```{r submodel_one_synthetic_plot, fig.cap = "to be written"}
+- I think we should set the event time to $t = 1$ (the maximum possible time) when the event is censored (i.e. $T_{i}^{*} = C_{i} = 1$] when $\delta_{i} = \mathcal{I} \{T_{i}^{*} < C_{i}\} = 0$)
+
+```{r submodel_one_synthetic_plot, fig.cap = "First submodel. The 80\\% credible interval for each individuals event distribution, if the event occurs for that individual, is displayed in blue and is truncated to $t \\in [0, 1]$."}
 knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
 ```
 
@@ -406,11 +408,24 @@ knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
 - use a weibull/parametric survival model 
   - find out what the likelihood is for this:  (d/dt (1 - S(t))), where the weibull model defines the survival function S(t), and I can easily analytically compute the derivative.
 
+- for time-varying covariates, this is joint longitudinal / survival modelling.
+- We might want to do the longitudinal / trajectory modelling bit first? Evaluating the linear predictor $\eta_{i}(t)$ is still a little unclear to me. 
+
+- We may want to do extra covariates at baseline in this submodel.
+    - if we do time-varying covariates in the other submodel, then without additional baseline covariates $\pd_{2}$ only assembles other submodel components (i.e. $Y_{2} = \emptyset, \psi_{2} = \emptyset$)
+
 #### Third submodel
 
-- the third submodel should be for the missing covariates at baseline
-- I will need to look up what kinds of models are actually underpin multiple imputation type approaches.
-
+- for time varying covariates, this submodel is (in the joint modelling world) referred to as the biomarker submodel.
+- say we have $P = 3$ biomarkers / covariates, indexed by $p = 1, \ldots, P$. 
+- for each covariate we should/could? have a mean trajectory (spline or polynomial of time), and each individual should have a deviation/spline-as-a-random effect from it? (splines and scaling is a problem here (new individuals outside scale? never predicting anyway, so doesn't matter)).
+- the sampled spline coefficients then become $\phi_{2 \cap 3}$, because for the same spline basis they alone define the trajectory of the covariate/biomarker (mean or posterior predictive?)
+- then we can evaluate $\eta_{i}(t) = f_{i}(t)$ (the predictor / spline fit / trajectory) at any value $t$.
+    - however, there is a computational issue here
+    - typically we precompute the b-spline basis for a fixed grid of evaluation points (not just knots), and write the spline term as a random effect $\boldsymbol{Z}u$. We'd have to recompute the spline basis each time we propose an event time $t$. 
+        - this is true even if we use a truncated power basis or B-spline basis.
+        - gp has same problem, would need to recompute kernel distance matrix for each new evaluation point.
+    - if we did some kind of polynomial regression this would be less or a problem
 
 ### Diagnostics
 

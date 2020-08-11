@@ -8,7 +8,7 @@ library(ggplot2)
 source("scripts/common/plot-settings.R")
 
 model_output <- readRDS(
-  file = "rds/surv-example/linear-measurement-output.rds"
+  file = "rds/surv-example/submodel-three-output.rds"
 )
 
 div_style <- parcoord_style_np(

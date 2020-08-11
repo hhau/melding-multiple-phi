@@ -5,19 +5,16 @@ source("scripts/common/logger-setup.R")
 
 # I should really copy mike and do this with argparse
 simulated_data <- readRDS(
-  file = "rds/surv-example/submodel-one-simulated-data.rds"
+  file = "rds/surv-example/submodel-three-simulated-data.rds"
 )
-submodel_one_settings <- readRDS(
-  file = "rds/surv-example/submodel-one-simulation-settings.rds"
+submodel_three_settings <- readRDS(
+  file = "rds/surv-example/submodel-three-simulation-settings.rds"
 )
 
-flog.info(
-  "surv-fit-linear-measurement-model: compiling model", 
-  name = base_filename
-)
+flog.info("surv-fit-submodel-three: compiling model", name = base_filename)
 
 model_prefit <- stan_model(
-  file = "scripts/surv-example/models/linear-measurement.stan"
+  file = "scripts/surv-example/models/submodel-three.stan"
 )
 
 stan_input_data <- with(simulated_data, 
@@ -27,14 +24,13 @@ stan_input_data <- with(simulated_data,
     Y = measurement,
     obs_ids = patient_id,
     obs_times = time,
-    y_threshold = submodel_one_settings$y_threshold,
-    n_plot = submodel_one_settings$n_plot,
-    x_plot = submodel_one_settings$x_plot
+    n_plot = submodel_three_settings$n_plot,
+    x_plot = submodel_three_settings$x_plot
   )
 )
 
 flog.info(
-  "surv-fit-linear-measurement-model: fitting model",
+  "surv-fit-submodel-three: fitting model",
    name = base_filename
  )
 
@@ -43,24 +39,24 @@ model_fit <- sampling(
   data = stan_input_data,
   cores = 4,
   control = list(
-    adapt_delta = 0.9
+    adapt_delta = 0.95
   )
 )
 
 raw_samples <- as.array(model_fit)
 nuts_params_for_samples <- nuts_params(model_fit)
 
-model_one_sampler_output <- list(
+model_three_sampler_output <- list(
   samples = raw_samples,
   nuts_params = nuts_params_for_samples
 )
 
 flog.info(
-  "surv-fit-linear-measurement-model: saving output",
+  "surv-fit-submodel-three: saving output",
   name = base_filename
 )
 
 saveRDS(
-  object = model_one_sampler_output,
-  file = "rds/surv-example/submodel-one-output.rds"
+  object = model_three_sampler_output,
+  file = "rds/surv-example/submodel-three-output.rds"
 )
