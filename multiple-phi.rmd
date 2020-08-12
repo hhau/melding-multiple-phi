@@ -386,7 +386,7 @@ The 80% credible interval for each patient's event time is in blue, with the cav
 Note that this means we get a distribution of event times for patients who clearly do not have the event.
 I'm not sure this fits into a typical survival analysis framework?
 
-- We should set the event time to $t = 1$ (the maximum possible time) when the event is censored (i.e. $T_{i}^{*} = C_{i} = 1$ when $\delta_{i} = \mathcal{I} \{T_{i}^{*} < C_{i}\} = 0$)
+- We should set the event time to $t = 1$ (the maximum possible time) when the event is censored (i.e. $T_{i}^{*} = C_{i} = 1$ when $d_{i} = \mathcal{I} \{T_{i}^{*} > C_{i}\} = 0$)
     - otherwise we will have sampled event times greater than the censoring time.
 
 ```{r submodel_one_synthetic_plot, fig.cap = "First submodel. The 80\\% credible interval for each individuals event distribution, if the event occurs for that individual, is displayed in blue and is truncated to $t \\in [0, 1]$."}
@@ -398,38 +398,25 @@ knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
 
 - the second submodel uses these uncertain event times as a response to a survival model.
   - the phi/melding quantity here will be patient specific
-- we might have baseline covariate information about these individuals, and we wish to find the posterior distribution of the coefficients (to see if any of the baseline covariates are indicative of the event occurring?)
-  - for simplicity we should stick to baseline only (no repeated measures?)
-- some of these may be missing, and we meld over the missing data?
-  - the phi will be patient specific as well (and potentially quite tricky depending on how the missingness is structured).
-    - MCAR makes everything independent? Means all KDEs (if necessary) are 1-d?
-  - start with simulating covariates, and removing them randomly whilst ensuring that we don't completely remove patients.
 - use a weibull/parametric survival model 
   - find out what the likelihood is for this:  (d/dt (1 - S(t))), where the weibull model defines the survival function S(t), and I can easily analytically compute the derivative.
-
 - for time-varying covariates, this is joint longitudinal / survival modelling.
 - We might want to do the longitudinal / trajectory modelling bit first? Evaluating the linear predictor $\eta_{i}(t)$ is still a little unclear to me. 
 - @brilleman:etal:20 note that _"However, in general, there is no longer a closed form expression for the cumulative hazard, survival function, or CDF. Therefore, when the linear predictor includes time-varying coefficients, quadrature is used ..."_, which is a problem. We may need to get the Stan code used to do the quadrature?
-    - looks like: https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.5452 has done the integration for us?
     - No I think this might be possible using a linear model for the trajectory
+    - looks like @austin:12 has done the integration for us?
 
-- See if we can specify the log-likelihood.
+- Specifying the log-likelihood and evaluating the integral seems possible.
 
 Consider individual $i$ with true event time $T^{*}_{i}$, censoring time $C_{i}$, and censoring indicator $d_{i}$ which is 0 if $T^{*}_{i} > C_{i}$ and 1 if $0 < T^{*}_{i} < C_{i}$.
 Define the observed event time $T_{i}$ = $\max(0, \min(T^{*}_{i}, C_{i}))$.
 Individuals have $k$ possible time-varying covariates, which we will model with a linear model.
 The Weibull hazard for any point in time $t$, such that $t > 0$ is then
-
 \input{tex-input/surv-example/0030-submodel-two-hazard-general.tex}
-
 Using Equation (28) from @brilleman:etal:20, the log likelihood is
-
 \input{tex-input/surv-example/0031-submodel-two-log-likelihood.tex}
-
 The first term is fine. The integral in the second term can be computed as follows:
-
 \input{tex-input/surv-example/0032-submodel-two-hazard-integral.tex}
-
 Note that $\beta_{1, i, k}$ is constrained to be negative in submodel 3, and that $\gamma(\lambda, -\beta_{1, i, k}t)$ is the lower incomplete gamma function (available in Stan).
 
 - There might be an extra multiplicative parameter in here, because $(\beta_{0, i, k}, \beta_{1, i, k})$ come from the longitudinal / time varying covariate submodel, and we are interested in quantifying how associated they are with the survival outcome. 
@@ -441,7 +428,7 @@ So we might instead have $\eta_{i}(t) = \alpha_{i, k}(\beta_{0, i, k} + \beta_{1
     - this is not true. even if we don't do baseline covariates we will still have $h_{0}(t)\exp\{\alpha_{i}f(t)\}$, i.e. coefficients inside the survival model/hazard that determine whether the longitudinal trajectory is related to the survival outcome.
         - we will also have the baseline hazard parameter(s).
 
-- melding seems to be doing a very similar thing to the correction proposed in https://arxiv.org/pdf/1808.07719.pdf in Eq (6)
+- the Multi-stage sampler seems to be doing a very similar thing to the correction proposed in @mauff:etal:2020 in Eq (6).
 
 #### Third submodel
 
@@ -476,6 +463,9 @@ knitr::include_graphics("plots/surv-example/submodel-three-posterior.pdf")
 
 - What are we going to do about it?
 - exchangeable individuals means the prior marginals are $\pd_{1}(\phi_{1 \cap 2})^{N}$ and $\pd_{3}(\phi_{2 \cap 3})^{N}$.
+- What on earth is $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$?
+    - particularly $\pd_{2}(\phi_{1 \cap 2})$, the prior distribution for the event times and indicators in the survival model? 
+    - there is a suite a methodology for simulating realistic event times from a survival model i.e. @crowther:lambert:13. Can we repurpose this to sample from the prior? I think this is what @brilleman:simsurv:19 uses.
 
 
 ### Diagnostics
