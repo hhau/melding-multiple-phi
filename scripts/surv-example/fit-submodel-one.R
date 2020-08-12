@@ -12,12 +12,12 @@ submodel_one_settings <- readRDS(
 )
 
 flog.info(
-  "surv-fit-linear-measurement-model: compiling model", 
+  "surv-fit-submodel-one: compiling model", 
   name = base_filename
 )
 
 model_prefit <- stan_model(
-  file = "scripts/surv-example/models/linear-measurement.stan"
+  file = "scripts/surv-example/models/submodel-one.stan"
 )
 
 stan_input_data <- with(simulated_data, 
@@ -34,7 +34,7 @@ stan_input_data <- with(simulated_data,
 )
 
 flog.info(
-  "surv-fit-linear-measurement-model: fitting model",
+  "surv-fit-submodel-one: fitting model",
    name = base_filename
  )
 
@@ -56,7 +56,7 @@ model_one_sampler_output <- list(
 )
 
 flog.info(
-  "surv-fit-linear-measurement-model: saving output",
+  "surv-fit-submodel-one: saving output",
   name = base_filename
 )
 

@@ -55,10 +55,7 @@ with_post_mean <- base_plot +
     alpha = 0.2
   )
 
-with_post_mean
-
 ggsave_fullpage(
   filename = "plots/surv-example/submodel-three-posterior.pdf",
   plot = with_post_mean
-
 )

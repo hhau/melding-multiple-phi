@@ -9,7 +9,7 @@ sim_settings <- readRDS("rds/surv-example/submodel-one-simulation-settings.rds")
 # will this lead to truncated distributions?
 # Possibly too hard
 
-flog.info("surv: simulating data", name = base_filename)
+flog.info("surv-submodel-one: simulating data", name = base_filename)
 
 simulated_data <- with(sim_settings, 
   bind_rows(lapply(1 : n_patients, function(patient_id) {
@@ -36,7 +36,10 @@ simulated_data <- with(sim_settings,
   }))
 )
 
-flog.info("surv: saving simulated data to disk", name = base_filename)
+flog.info(
+  "surv-submodel-one: saving simulated data to disk",
+  name = base_filename
+)
 
 saveRDS(
   object = simulated_data,

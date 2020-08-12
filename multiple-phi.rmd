@@ -368,16 +368,14 @@ This is hopefully going to be the second example for the multiple phi chapter.
 
 #### First submodel
 
-This submodel has two steps.
+We decided to keep this submodel simple for the moment.
 
-1.  Can we get SF (SpO2/FiO2) ratio and PF (PO2/FiO2) ratio data for ICU patients.
+1. PF (PO2/FiO2) ratio data for ICU patients.
     - One of these quantities is less available, but more desirable?
         - according to @pandharipande:etal:09, the PF ratio is the actual blood gas measurement of interest, but needs to be done in a lab. The SF ratio is more available as a result (requires non-invasive measurement).
-    - Can we build a model that converts a SF ratio measurement to a PF ratio distribution.
     - get data from MIMIC? 
         - for the moment we can stick to synthetic data until all the submodels work
-2. Can we then take each individuals uncertain PF ratio measurements, plot them over time (assuming there is a temporal aspect to these measurements), fit a regression model, look at the (mean/predictions?) from the regression model, see if/when they drop below a threshold (tau, definition of event occurring), and sample the distribution of event times for each individual. 
-    - censoring?
+    - Data from MIMIC on PF ratio, after some surgical intervention (so we have a common entry point).
     - for more complicated regression models (i.e. not linear regression), finding the event time (first time y goes below tau) will involve optimising? (if the inverse of the regression function is not available)
 
 I simulate some synthetic data to address step 2 in Figure \ref{fig:submodel_one_synthetic_plot}.
@@ -388,7 +386,8 @@ The 80% credible interval for each patient's event time is in blue, with the cav
 Note that this means we get a distribution of event times for patients who clearly do not have the event.
 I'm not sure this fits into a typical survival analysis framework?
 
-- I think we should set the event time to $t = 1$ (the maximum possible time) when the event is censored (i.e. $T_{i}^{*} = C_{i} = 1$] when $\delta_{i} = \mathcal{I} \{T_{i}^{*} < C_{i}\} = 0$)
+- We should set the event time to $t = 1$ (the maximum possible time) when the event is censored (i.e. $T_{i}^{*} = C_{i} = 1$ when $\delta_{i} = \mathcal{I} \{T_{i}^{*} < C_{i}\} = 0$)
+    - otherwise we will have sampled event times greater than the censoring time.
 
 ```{r submodel_one_synthetic_plot, fig.cap = "First submodel. The 80\\% credible interval for each individuals event distribution, if the event occurs for that individual, is displayed in blue and is truncated to $t \\in [0, 1]$."}
 knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
@@ -410,13 +409,43 @@ knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
 
 - for time-varying covariates, this is joint longitudinal / survival modelling.
 - We might want to do the longitudinal / trajectory modelling bit first? Evaluating the linear predictor $\eta_{i}(t)$ is still a little unclear to me. 
+- @brilleman:etal:20 note that _"However, in general, there is no longer a closed form expression for the cumulative hazard, survival function, or CDF. Therefore, when the linear predictor includes time-varying coefficients, quadrature is used ..."_, which is a problem. We may need to get the Stan code used to do the quadrature?
+    - looks like: https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.5452 has done the integration for us?
+    - No I think this might be possible using a linear model for the trajectory
+
+- See if we can specify the log-likelihood.
+
+Consider individual $i$ with true event time $T^{*}_{i}$, censoring time $C_{i}$, and censoring indicator $d_{i}$ which is 0 if $T^{*}_{i} > C_{i}$ and 1 if $0 < T^{*}_{i} < C_{i}$.
+Define the observed event time $T_{i}$ = $\max(0, \min(T^{*}_{i}, C_{i}))$.
+Individuals have $k$ possible time-varying covariates, which we will model with a linear model.
+The Weibull hazard for any point in time $t$, such that $t > 0$ is then
+
+\input{tex-input/surv-example/0030-submodel-two-hazard-general.tex}
+
+Using Equation (28) from @brilleman:etal:20, the log likelihood is
+
+\input{tex-input/surv-example/0031-submodel-two-log-likelihood.tex}
+
+The first term is fine. The integral in the second term can be computed as follows:
+
+\input{tex-input/surv-example/0032-submodel-two-hazard-integral.tex}
+
+Note that $\beta_{1, i, k}$ is constrained to be negative in submodel 3, and that $\gamma(\lambda, -\beta_{1, i, k}t)$ is the lower incomplete gamma function (available in Stan).
+
+- There might be an extra multiplicative parameter in here, because $(\beta_{0, i, k}, \beta_{1, i, k})$ come from the longitudinal / time varying covariate submodel, and we are interested in quantifying how associated they are with the survival outcome. 
+So we might instead have $\eta_{i}(t) = \alpha_{i, k}(\beta_{0, i, k} + \beta_{1, i, k}t)$, which feels overparameterised?
+
 
 - We may want to do extra covariates at baseline in this submodel.
     - if we do time-varying covariates in the other submodel, then without additional baseline covariates $\pd_{2}$ only assembles other submodel components (i.e. $Y_{2} = \emptyset, \psi_{2} = \emptyset$)
+    - this is not true. even if we don't do baseline covariates we will still have $h_{0}(t)\exp\{\alpha_{i}f(t)\}$, i.e. coefficients inside the survival model/hazard that determine whether the longitudinal trajectory is related to the survival outcome.
+        - we will also have the baseline hazard parameter(s).
+
+- melding seems to be doing a very similar thing to the correction proposed in https://arxiv.org/pdf/1808.07719.pdf in Eq (6)
 
 #### Third submodel
 
-- for time varying covariates, this submodel is (in the joint modelling world) referred to as the biomarker submodel.
+- for time varying covariates, this submodel is (in the joint modelling world) referred to as the biomarker? / time varying covariate / longitudinal trajectory submodel.
 - say we have $P = 3$ biomarkers / covariates, indexed by $p = 1, \ldots, P$. 
 - for each covariate we should/could? have a mean trajectory (spline or polynomial of time), and each individual should have a deviation/spline-as-a-random effect from it? (splines and scaling is a problem here (new individuals outside scale? never predicting anyway, so doesn't matter)).
 - the sampled spline coefficients then become $\phi_{2 \cap 3}$, because for the same spline basis they alone define the trajectory of the covariate/biomarker (mean or posterior predictive?)
@@ -426,6 +455,28 @@ knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
         - this is true even if we use a truncated power basis or B-spline basis.
         - gp has same problem, would need to recompute kernel distance matrix for each new evaluation point.
     - if we did some kind of polynomial regression this would be less or a problem
+
+Figure \ref{fig:submodel_three_posterior} is the posterior fit of single (biomarker / covariate) trajectory.
+
+- The same individual $i$ (as submodel 1) has a measurement of a covariate $j$ at time $t$ $y_{i, j, t}$
+
+- we fit a linear model: $y_{i, j, t} = \beta_{0, i, j} + \beta_{1, i, j} t + \varepsilon_{i, j, t}$
+    - with the hierarchical structure: $\beta_{0, i, j} \sim \text{N}(\mu_{0, j}, \sigma^{2}_{0, j}), \beta_{1, i, j} \sim \text{N}(\mu_{1, j}, \sigma^{2}_{1, j})$
+- The linear model is nice, because in submodel two we need to evaluate the $f_{i}(t)$ part of this $y_{i}(t) = f(t) + \boldsymbol{\varepsilon}$ model for arbitrary $t$. 
+    - This constraint makes could makes splines slightly problematic? recomputing the spline basis on every MCMC iteration could be expensive? We would also have to do submodel 2 / stage 2 in `R`, to use something like `splines::bs` and `splines::predict.bs`.
+    - Other methods get around this how? Fixed time/covariate sample points? Event times are fixed? 
+        - if event times are fixed (i.e. there is a fixed, finite number of $t$ values at which the trajectory/longitudinal model needs evaluating, then we can precompute the spline basis matrix)
+
+```{r submodel_three_posterior, fig.cap = "example data + posterior fit of biomarker/covariate submodel"}
+knitr::include_graphics("plots/surv-example/submodel-three-posterior.pdf")
+```
+
+
+#### Pooled prior:
+
+- What are we going to do about it?
+- exchangeable individuals means the prior marginals are $\pd_{1}(\phi_{1 \cap 2})^{N}$ and $\pd_{3}(\phi_{2 \cap 3})^{N}$.
+
 
 ### Diagnostics
 

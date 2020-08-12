@@ -1,0 +1,25 @@
+\begin{align}
+  \int_{0}^{t} h_{i}(u)\text{d}u &=
+    \int_{0}^{t} 
+      \lambda u ^{\lambda - 1} 
+      \exp\{
+        \beta_{0, i, k} + \beta_{1, i, k} u
+      \} 
+    \text{d}u \\
+  &=
+    \lambda
+    \exp\{\beta_{0, i, k}\}
+    \frac{\Gamma(\lambda)}{-\beta_{1, i, k}^{\lambda}}
+    \int_{0}^{t}
+      \frac{-\beta_{1, i, k}^{\lambda}}{\Gamma(\lambda)}
+      u^{\lambda - 1}
+      \exp\{\beta_{1, i, k} u\}
+    \text{d}u \\
+  &= 
+    \lambda
+    \exp\{\beta_{0, i, k}\}
+    \frac{\Gamma(\lambda)}{-\beta_{1, i, k}^{\lambda}}
+    \frac{1}{\Gamma(\lambda)}
+    \gamma(\lambda, -\beta_{1, i k}t)
+  \label{eqn:submodel-two-hazard-integral}
+\end{align}

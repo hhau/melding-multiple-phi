@@ -702,7 +702,7 @@
     },
     "tidyr": {
       "Package": "tidyr",
-      "Version": "1.0.2",
+      "Version": "1.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "fb73a010ace00d6c584c2b53a21b969c"

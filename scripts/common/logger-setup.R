@@ -6,14 +6,14 @@ log_filename <- paste0("logs/" , Sys.Date(), "_", base_filename, ".log")
 flog.appender(appender.file(log_filename), name = base_filename)
 
 cat(
-  blue(sprintf('futile.logger info')),
+  green(sprintf('futile.logger info')),
   "\n",
   "  ",
-  blue$underline("log_filename:"), 
+  green$underline("log_filename:"), 
   sprintf("%s", log_filename),
   "\n",
   "  ",
-  blue$underline("base_filename:"), 
+  green$underline("base_filename:"), 
   sprintf("%s", base_filename),
   "\n"
 )
