@@ -252,6 +252,5 @@ positive_discrete_slice_sampler <- nimbleFunction(
         timesAdapted <<- 0
         sumJumps <<- 0
     }
-  ),
-  where = getLoadingNamespace()
+  )
 )

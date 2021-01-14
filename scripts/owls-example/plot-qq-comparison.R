@@ -6,6 +6,7 @@ library(tibble)
 
 original_model_samples <- readRDS("rds/owls-example/original-ipm-samples.rds")
 stage_two_samples <- readRDS("rds/owls-example/melded-posterior-samples.rds")
+normal_approx_samples <- readRDS("rds/owls-example/melded-posterior-normal-approx-samples.rds")
 
 vars <- c("fec", "v[1]", "v[2]")
 plot_quantiles <- seq(from = 0.001, to = 1 - 0.001, by = 0.001)
@@ -39,11 +40,24 @@ meld_samples_slim <- array(
   )
 )
 
+normal_approx_slim <- array(
+  normal_approx_samples[, , vars],
+  dim = c(
+    dim(normal_approx_samples)[1] * dim(normal_approx_samples)[2],
+    3
+  ), 
+  dimnames = list(
+    NULL,
+    vars
+  )
+)
+
 res <- lapply(vars, function(a_var) {
   tibble(
     quantile = plot_quantiles,
     orig_quantile = quantile(orig_samples_slim[, a_var], probs = plot_quantiles),
     meld_quantile = quantile(meld_samples_slim[, a_var], probs = plot_quantiles),
+    normal_approx_quantile = quantile(normal_approx_slim[, a_var], probs = plot_quantiles),
     param = a_var
   )
 }) %>% 
@@ -51,7 +65,8 @@ res <- lapply(vars, function(a_var) {
   group_by(param) %>% 
   mutate(
     standardised_orig_quantile = scale(orig_quantile),
-    standardised_meld_quantile = scale(meld_quantile)
+    standardised_meld_quantile = scale(meld_quantile),
+    standardised_normal_approx_quantile = scale(normal_approx_quantile)
   )
 
 res$param <- res$param %>% 
@@ -61,11 +76,13 @@ plot_list <- lapply(unique(res$param), function(a_param) {
   plot_data <- filter(res, param == a_param)
   plot_limit_min <- min(
     min(plot_data$meld_quantile),
-    min(plot_data$orig_quantile)
+    min(plot_data$orig_quantile),
+    min(plot_data$normal_approx_quantile)
   )
   plot_limit_max <- max(
     max(plot_data$meld_quantile),
-    max(plot_data$orig_quantile)
+    max(plot_data$orig_quantile),
+    max(plot_data$normal_approx_quantile)
   )
   
   if (a_param == 'rho') {
@@ -87,6 +104,13 @@ plot_list <- lapply(unique(res$param), function(a_param) {
   
   p1 <- ggplot(data = plot_data, aes(x = meld_quantile, y = orig_quantile)) +
     geom_line(colour = highlight_col, alpha = 0.9) +
+    geom_line(
+      inherit.aes = FALSE, 
+      data = plot_data,
+      mapping = aes(x = meld_quantile, y = normal_approx_quantile),
+      colour = blues[2],
+      lty = "dotdash"
+    ) +
     geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
     facet_wrap(
       vars(param),

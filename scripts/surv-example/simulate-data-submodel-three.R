@@ -2,6 +2,9 @@ library(tibble)
 library(dplyr)
 
 source("scripts/common/logger-setup.R")
+source("scripts/surv-example/GLOBALS.R")
+
+set.seed(data_seed)
 
 sim_settings <- readRDS("rds/surv-example/submodel-three-simulation-settings.rds")
 

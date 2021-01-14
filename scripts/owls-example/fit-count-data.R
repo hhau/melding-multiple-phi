@@ -23,8 +23,7 @@ parameters <- c(
   "phia",
   "fec",
   "im",  
-  "v",
-  "bp"
+  "v"
 )
 
 results <- coda.samples(

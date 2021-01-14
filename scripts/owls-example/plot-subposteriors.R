@@ -6,22 +6,12 @@ library(tidybayes)
 library(scales)
 library(RColorBrewer)
 
-# Load:
-# - Original model posterior samples (DONE)
-# - Capture-Recapture subposterior samples (DONE)
-# - Count data subposterior samples (DONE)
-# - Stage one samples (TODO)
-#   - Maybe don't have to do this if we use the subposterior as the stage-one
-#   - Target. 
-# - Melded posterior samples (TODO)
 original_model_samples <- readRDS("rds/owls-example/original-ipm-samples.rds")
 capture_recapture_submodel_samples <- readRDS("rds/owls-example/capture-recapture-subposterior-samples.rds")
 count_data_submodel_samples <- readRDS("rds/owls-example/count-data-subposterior-samples.rds")
-
-# try to include rho as well
 fecunditiy_submodel_samples <- readRDS("rds/owls-example/fecundity-subposterior-samples.rds")
-
 melded_model_samples <- readRDS("rds/owls-example/melded-posterior-samples.rds")
+normal_approx_samples <- readRDS("rds/owls-example/melded-posterior-normal-approx-samples.rds")
 
 # a tidybayes multiple-interval approach
 original_model_tidybayes_tbl <- original_model_samples %>%
@@ -64,9 +54,19 @@ melded_model_tidybayes_tbl <- melded_model_samples %>%
   gather_draws(v[i], fec) %>%
   filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
-  mutate(model_type = "melded-model")  
+  mutate(model_type = "melded-model-z")  
 
 melded_model_tidybayes_tbl$orig_par <- melded_model_tidybayes_tbl$i %>%
+  recode(!!!recode_vec)
+
+normal_approx_tidybayes_tbl <- normal_approx_samples %>%
+  array_to_mcmc_list() %>%
+  gather_draws(v[i], fec) %>%
+  filter(i %in% c(1, 2) || .variable == "fec") %>%
+  median_qi(.width = c(.5, .8, .95, .99)) %>%
+  mutate(model_type = "melded-model-normal-approx")  
+
+normal_approx_tidybayes_tbl$orig_par <- normal_approx_tidybayes_tbl$i %>%
   recode(!!!recode_vec)
 
 # Try to wrangle the fecundity samples into the same form
@@ -95,7 +95,8 @@ plot_tbl <- bind_rows(
   capture_recapture_tidybayes_tbl,
   count_data_tidybayes_tbl,
   fecundity_tidybayes_tbl,
-  melded_model_tidybayes_tbl
+  melded_model_tidybayes_tbl,
+  normal_approx_tidybayes_tbl
 )
 
 plot_tbl$orig_par <- plot_tbl$orig_par %>%  
@@ -127,14 +128,16 @@ p_2 <- ggplot(
       "capture-recapture-submodel" = highlight_col,
       "count-data-submodel" = greens[2],
       "fecundity-submodel" = "#EE3377",
-      "melded-model" = "#666666"
+      "melded-model-z" = "#666666",
+      "melded-model-normal-approx" = "#000000"
     ),
     labels = c(
       "original-ipm-model" = expression("p"["ipm"]),
       "capture-recapture-submodel" = expression("p"[1]),
       "count-data-submodel" = expression("p"[2]),
       "fecundity-submodel" = expression("p"[3]),
-      "melded-model" = expression("p"["meld"])
+      "melded-model-z" = expression("p"["meld"]),
+      "melded-model-normal-approx" = expression(tilde("p")["meld"])
     ),
     guide = guide_legend(
       reverse = TRUE,
@@ -144,7 +147,7 @@ p_2 <- ggplot(
   theme(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    strip.text = element_text(size = 14)
+    strip.text = element_text(size = 10)
   ) +
   xlab("") +
   ylab("") 

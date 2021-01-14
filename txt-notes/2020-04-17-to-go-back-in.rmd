@@ -106,12 +106,7 @@ _Integrated_, in that they integrate more than one source of data and an associa
 # Melded model
 
 
-
-
-
 # The pooled prior and pooling weights
-
-
 
 ## General case
 
@@ -135,101 +130,7 @@ The logarithmic pooled prior for $\Nm$ models in a chain is
 
 ## Applying the original Markov Melding operator twice
 
-### Definitions
 
-- Denote the original melding operator with $\circledast$, and its output  
-\input{tex-input/noncommutativity/0005-def-usual-melded-model.tex}
-where $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$ for some pooling function $g^{12}$.
-- Denote the entire parameter space of $\pd_{\text{meld}}^{12}$ as $\Theta^{12} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$ .
-- Any marginal distribution of $\pd_{\text{meld}}^{12}$ can be derived in the usual way, for example 
-\input{tex-input/noncommutativity/0006-example-melded-marginal-definition.tex}
-- Define $\pd_{\text{meld}}^{(12)3}$ as 
-\input{tex-input/noncommutativity/0007-iterated-application-melding.tex}
-so that the parentheses in the superscript indicate the order in which the melding operator is applied.
-- Analogously, define $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$ for a potentially different choice of pooling function $g^{(12)3}$.
-
-### $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}$: Step one
-
-In step one, $\pd_{1} \circledast \pd_{2}$ produces the usual melded model:
-\input{tex-input/noncommutativity/0010-usual-melded-model.tex}
-In the $\Nm = 2$ context the second model would be expressed in terms of $\psi_{2}' = (\psi_{2}, \phi_{2 \cap 3})$. 
-We are intentionally keeping these quantities distinct, to clarify the next application of the original melding operator. 
-
-### $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}$: Step two
-
-Next we compute $\pd_{\text{meld}}^{(12)3} = \pd_{\text{meld}}^{12} \circledast \pd_{3}$:
-\input{tex-input/noncommutativity/0011-double-melded-model.tex}
-with $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$.
-The difficult term here is $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$. Define $\Omega = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, then
-\input{tex-input/noncommutativity/0012-strange-marginal-definition.tex}
-In words, this is the marginal distribution for $\phi_{2 \cap 3}$ under the melded model $\pd_{1} \circledast \pd_{2}$.
-Expanding Equation \eqref{eqn:double-melded-model} gives:
-\input{tex-input/noncommutativity/0013-expanded-double-melded-model.tex}
-
-### Is this the same as the proposed operator?
-
-For this to be equal to the model defined in Equation \eqref{eqn:melded-model} (ignoring all normalising constants for clarity), both the following equalities must hold:
-
-1. $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-    - This can only be true if $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are independent a priori in $\pd_{2}$.
-    - If they are independent then $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}) \pd_{2}(\phi_{2 \cap 3})$, and $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$ for the equality to hold.
-        - This is true when $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, which is dictatorial pooling.
-        - To verify:
-        \input{tex-input/noncommutativity/0015-verify-dictatorial-pooling.tex}
-        thus $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ in order for final integral to produce the desired marginal: $\pd_{2}(\phi_{2 \cap 3})$.
-
-2. $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$
-    - All the $g$'s (pooling functions) must be logarithmic if we form the joint pooled prior (RHS) via logarithmic pooling
-        - Even then, we need independence in the second model for this to be true.
-    - _On term matching_: If we form the joint pooled prior via the strange form of linear pooling we define, then the joint has 4 terms. 
-    - As for the left hand side:
-        - $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ has 1 term (logarithmic) or 2 terms (linear).
-        - If $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ uses our form of logarithmic pooling, then it has 1 or 2 terms if $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ is logarithmic or linear respectively (due to the interaction with $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$).
-        - Alternatively, if $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ uses our form of linear pooling, then it has 4 or 8 terms (using the same reasoning).
-        - So if we use linear pooling to form the joint pooled prior (RHS), then we must use logarithmic pooling for $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2})$ and linear for $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})$ to result in the correct number of terms. This alone will not guarantee that the quantities are equal, but at least it may be possible.
-
-So in general, applying the original melding operator twice does not result in the same model as \eqref{eqn:melded-model}.
-
-### Is the original commutative? Does $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$?
-
-By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model}, we find that the original melding operator is only commutative if 
-\input{tex-input/noncommutativity/0016-commutativity-condition.tex}
-which implies the following equalities
-\input{tex-input/noncommutativity/0014-orig-melding-commutative-equalities.tex}
-Showing one of the equalities in Equation \eqref{eqn:orig-melding-commutative-equalities-1} and \eqref{eqn:orig-melding-commutative-equalities-2} implies its partner equality is also true. 
-Consider the first equality
-\input{tex-input/noncommutativity/0017-pooling-equality.tex}
-Assume that $g^{12}$ and $g^{1(23)}$ are both linear or logarithmic pooling functions.
-For Equation \eqref{eqn:pooling-equality} to be true, $\pd_{2}(\phi_{1 \cap 2}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2})$, which is the same result we require in Equation \eqref{eqn:orig-melding-commutative-equalities-2}.
-We have already shown that this is only true when using dictatorial pooling.
-
-### Conditional commutativity
-
-- _Question_: Can we show that the original operator has a weaker form of commutativity if there exists a part of $\pd_{2}$, which we can temporarily call $A$, that renders $\phi_{1 \cap 2} \indep \phi_{2 \cap 3} \mid A$?
-- _TODO_: Need to make explicit how this argument goes through the pooled prior terms in Equation \eqref{eqn:expanded-double-melded-model}
-    - I think that Section \ref{is-the-original-commutative-does-pd_1-circledast-pd_2-circledast-pd_3-pd_1-circledast-pd_2-circledast-pd_3} shows that this is really the same question.
-
-Assume there exists an $A \subset \psi_{2}$, such that $\phi_{1 \cap 2} \indep \phi_{2 \cap 3} \mid A$, and $A' = \psi_{2} \setminus{A}$. 
-    <!-- - $A$ is sometimes known as the _d-separator_ of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$. -->
-The original melding operator is conditionally commutative, which is to say $(\pd_{1}(\cdot) \circledast \pd_{2}(\cdot \mid A)) \circledast \pd_{3}(\cdot) = \pd_{1}(\cdot) \circledast (\pd_{2}(\cdot \mid A) \circledast \pd_{3}(\cdot))$.
-To show this, it suffices to to show that 
-\input{tex-input/noncommutativity/00201-conditional-commutativity-target-equality.tex} 
-Symmetry in the indices implies that it is sufficient to show that $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3} \mid A) = \pd_{2}(\phi_{2 \cap 3} \mid A)$
-\input{tex-input/noncommutativity/0020-conditional-commutativity.tex}
-Noting that $\int \pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1}) \text{d}Y_{1} = \pd_{1}(\phi_{1 \cap 2}, \psi_{1})$ by definition, we can immediately integrate out $Y_{1}, \psi_{1}, Y_{2}$, and $A'$, leaving
-\input{tex-input/noncommutativity/0021-conditional-commutativity-two.tex}
-where we use the conditional independence property to pull $\pd_{2}(\phi_{2 \cap 3} \mid A)$ out of the integral, and the last step assumes that $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2} \mid A)$ is normalised.
-
-### Summary
-
-1. Original operator targets something different from the proposed operator.
-1. Original operator is generally noncommutative.
-
-Exceptions include: 
-
-- If $\phi_{1 \cap 2} \indep \phi_{2 \cap 3}$ in $\pd_{2}$, then both operators target the same thing, and the original operator is commutative.
-- If we use dictatorial pooling, i.e. set $\pd_{\text{pool}}^{23}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ and/or $\pd_{\text{pool}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, then the original operator is commutative, but still targets something different from the proposed operator.
-- If there exists an $A \subset \psi_{2}$ such that $\phi_{1 \cap 2} \indep \phi_{2 \cap 3} \mid A$, then the original operator has a weaker form of commutativity $(\pd_{1}(\cdot) \circledast \pd_{2}(\cdot \mid A)) \circledast \pd_{3}(\cdot) = \pd_{1}(\cdot) \circledast (\pd_{2}(\cdot \mid A) \circledast \pd_{3}(\cdot))$.
 
 #### Example {-}
 
@@ -343,6 +244,8 @@ and acceptance probabilities
 - There are a lot of unknown self-density ratios, including many $\pd_{\modelindex}(\phi_{\modelindex - 1, \text{nu}}, \phi_{\modelindex, \text{nu}}) \mathop{/} \pd_{\modelindex}(\phi_{\modelindex - 1, \text{de}}, \phi_{\modelindex, \text{de}})$ terms.
     - In the case where $\phi_{\modelindex - 1}$ and $\phi_{\modelindex}$ are both one dimensional, this is already a four-dimensional problem.
     - We can reframe this as an advantage, as estimating $\pd_{\text{pool}}(\phi_{1 \cap 2}, \ldots,\phi_{\Nm - 1})$ is potentially a series of lower dimensional estimation problems, which is easier than one estimation problem in a larger dimension?
+
+- Just take parametric approximations and move on with our lives lol (or fit mixtures using heavyish tails)
 
 
 

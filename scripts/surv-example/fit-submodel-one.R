@@ -2,6 +2,9 @@ library(rstan)
 library(bayesplot)
 
 source("scripts/common/logger-setup.R")
+source("scripts/surv-example/GLOBALS.R")
+
+set.seed(sim_seed)
 
 # I should really copy mike and do this with argparse
 simulated_data <- readRDS(
@@ -40,6 +43,7 @@ flog.info(
 
 model_fit <- sampling(
   model_prefit,
+  seed = data_seed,
   data = stan_input_data,
   cores = 4,
   control = list(

@@ -1,0 +1,129 @@
+---
+title: "Multiple phi, second example teething issues."
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+
+I am currently trying to get the survival example to work in the multiple $\phi$ setting.
+I can fit the uncertain event time submodel $\text{p}_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$.
+The next step is to meld it with a standard Weibull survival model.
+
+# preliminary tests
+
+As a preliminary test, I take one sample of the event times from $\text{p}_{1}$'s posterior, and treating it as data in a standard survival model. 
+I also simulate one baseline covariate, with non-zero effect.
+This lets me compare the results from my implementation to standard survival model implementations. 
+To make the outputs roughly comparable, I have to centre the covariate and scale the event time to $[0, 1]$.
+Even then, I can't get the various survival packages to agree on the sign
+of the coefficients nor the estimate of the hazard shape $\lambda$.
+
+```{r pkgs, include = FALSE, message = FALSE, warning = FALSE, comment = NA}
+library(rstan) 
+library(rstanarm) # for stan_surv
+library(flexsurv) # for flexsurvreg
+library(bayesplot)
+
+source("../scripts/surv-example/GLOBALS.R")
+
+set.seed(sim_seed)
+submodel_one_output <- readRDS("../rds/surv-example/submodel-one-output.rds")
+submodel_two_data <- readRDS("../rds/surv-example/submodel-two-simulated-data.rds")
+psi_step_stan_model <- stan_model("../scripts/surv-example/models/submodel-two-psi-step.stan")
+event_time_names <- sprintf("event_time[%d]", 1 : n_patients)
+
+stan_data <- list(
+  n_patients = length(submodel_two_data$patient_id),
+  baseline_measurement = submodel_two_data$baseline_val, 
+  event_time = submodel_one_output$samples[
+    sample(1 : dim(submodel_one_output$samples)[1], 1), 
+    sample(1 : dim(submodel_one_output$samples)[2], 1), 
+    event_time_names
+  ]
+)
+
+rescaled_stan_data <- stan_data
+rescaled_stan_data$event_time <- with(stan_data, event_time / max(event_time))
+rescaled_stan_data$baseline_measurement <- scale(
+    stan_data$baseline_measurement,
+    center = TRUE,
+    scale = FALSE
+  ) %>% 
+  as.numeric()
+
+surv_reg_df <- data.frame(
+  event_time = rescaled_stan_data$event_time,
+  event_indicator = rep(1, rescaled_stan_data$n_patients),
+  baseline = rescaled_stan_data$baseline_measurement
+)
+
+```
+
+
+# My output
+
+```{r my_implementation, message = FALSE, warning = FALSE, comment = NA}
+test_fit <- sampling(
+  psi_step_stan_model,
+  data = rescaled_stan_data,
+  cores = 4,
+  refresh = 0
+)
+
+print(test_fit, digits = 4, probs = c(0.025, 0.975))
+```
+Which uses the following Stan model/code, which I think is right (it is based of Appendix A.2 of @brilleman_bayesian_2020):
+
+<details><summary>Show code</summary>
+```{r my_stan_code, echo = FALSE, comment = NA}
+cat(readLines("../scripts/surv-example/models/submodel-two-psi-step.stan"), sep = "\n")
+```
+</details>
+
+# stan_surv
+
+This uses Stan to sample a Weibull survival model as defined in @brilleman_bayesian_2020.
+
+```{r stan_surv, message = FALSE, warning = FALSE, comment = NA}
+res_surv_stan <- stan_surv(
+  Surv(event_time, event_indicator) ~ baseline, 
+  data = surv_reg_df, 
+  basehaz = "weibull",
+  cores = 4,
+  refresh = 0
+)
+
+print(res_surv_stan, digits = 4)
+```
+
+
+# flexsurv
+
+`flexsurv` doesn't seem to report its estimate of the intercept, and has two parameters for the Weibull distribution, shape and scale.
+The versions of the Weibull survival model I've read all only have one (shape), maybe other packages do some kind of transformation of the response? 
+
+```{r flexsurv, message = FALSE, warning = FALSE, comment = NA}
+res_flex <- flexsurvreg(
+  Surv(event_time, event_indicator) ~ 1 + baseline, 
+  data = surv_reg_df, 
+  dist = "weibull",
+)
+
+print(res_flex, digits = 4)
+```
+
+# Bibliography

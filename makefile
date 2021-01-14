@@ -37,20 +37,13 @@ POOLING_SCRIPTS = scripts/$(POOLING_TESTS)
 POOLING_OUTPUTS = rds/$(POOLING_TESTS)
 POOLING_PLOTS = plots/pooling-tests
 
-POOLED_PLOT_2D_DATA = $(POOLING_OUTPUTS)/pooling-types-weights-results.rds
-POOLED_PLOT_2D = $(POOLING_PLOTS)/pooled-densities-2d.pdf
+POOLED_PLOT_2D = $(POOLING_PLOTS)/version-two.pdf
+$(POOLING_SCRIPTS)/sub-plot-maker.R : $(POOLING_SCRIPTS)/density-functions.R
 
-$(POOLED_PLOT_2D_DATA) : $(POOLING_SCRIPTS)/simulate-pooled-priors.R $(POOLING_SCRIPTS)/density-functions.R
+$(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/plot-pooled-priors.R  $(PLOT_SETTINGS) $(POOLING_SCRIPTS)/sub-plot-maker.R
 	$(RSCRIPT) $<
 
-$(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/plot-pooled-priors.R  $(PLOT_SETTINGS) $(POOLED_PLOT_2D_DATA)
-	$(RSCRIPT) $<
-
-POOLED_DENSITY_DIMENSION = $(POOLING_PLOTS)/densities-vs-dimension.pdf
-$(POOLED_DENSITY_DIMENSION) : $(POOLING_SCRIPTS)/plot-densities-vs-dimension.R $(PLOT_SETTINGS)
-	$(RSCRIPT) $<
-
-ALL_PLOTS += $(POOLED_PLOT_2D) $(POOLED_DENSITY_DIMENSION)
+ALL_PLOTS += $(POOLED_PLOT_2D) 
 
 ################################################################################
 ## Owls example
@@ -99,6 +92,10 @@ $(SUBPOSTERIOR_PLOT) : $(OWLS_SCRIPTS)/plot-subposteriors.R $(PLOT_SETTINGS) $(M
 	$(RSCRIPT) $<
 
 ALL_PLOTS += $(SUBPOSTERIOR_PLOT)
+
+NORMAL_APPROX_MELDED_POSTERIOR = $(OWLS_RDS)/melded-posterior-normal-approx-samples.rds
+$(NORMAL_APPROX_MELDED_POSTERIOR) : $(OWLS_SCRIPTS)/fit-normal-approx.R $(MCMC_UTIL) $(CAPTURE_RECAPTURE_SUBPOSTERIOR) $(FECUNDITY_SUBPOSTERIOR) $(OWLS_DATA) $(OWLS_SCRIPTS)/models/count-data-normal-approx.bug
+	$(RSCRIPT) $<
 
 MELDED_POSTERIOR = $(OWLS_RDS)/melded-posterior-samples.rds
 $(MELDED_POSTERIOR) : $(OWLS_SCRIPTS)/mcmc-main-stage-two.R $(OWLS_SCRIPTS)/mcmc-nimble-functions.R $(MCMC_UTIL) $(FECUNDITY_SUBPOSTERIOR) $(CAPTURE_RECAPTURE_SUBPOSTERIOR) $(OWLS_DATA)
@@ -152,6 +149,10 @@ $(SURV_SUBMODEL_ONE_POSTERIOR_PLOT) : $(SURV_SCRIPTS)/plot-submodel-one.R $(PLOT
 ALL_PLOTS += $(SURV_SUBMODEL_ONE_POSTERIOR_PLOT)
 
 ### Submodel 2
+
+SURV_SUBMODEL_TWO_SIMULATED_DATA = $(SURV_RDS)/submodel-two-simulated-data.rds
+$(SURV_SUBMODEL_TWO_SIMULATED_DATA) : $(SURV_SCRIPTS)/simulate-data-submodel-two.R $(SURV_GLOBAL_SETTINGS) $(SURV_SIMULATION_SETTINGS_ONE)
+	$(RSCRIPT) $<
 
 ### Submodel 3
 SURV_SIMULATION_SETTINGS_THREE = $(SURV_RDS)/submodel-three-simulation-settings.rds

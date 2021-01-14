@@ -1,5 +1,6 @@
 source("scripts/surv-example/GLOBALS.R")
 
+set.seed(data_seed)
 # Submodel three settings.
 n_obs_per_patient <- pmax(rpois(n_patients, 8), 3)
 n_biomarkers <- 1

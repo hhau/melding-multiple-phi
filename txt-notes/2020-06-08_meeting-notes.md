@@ -29,7 +29,6 @@
 
 - look at biological part of textbook Rob emailed (Applied Bayesian case studies) 
 
-
 ### possible PF ratio question
 
 - For respiratory failure, this is a much more biologically relevant endpoint (ICU admission as other problems as well)
@@ -49,7 +48,6 @@
 
 - This will involve learning about survival models + bayesian missing data / multiple imputation (which is fine, might even be quite interesting)
 
-
 - make notes on: file:///Users/amanderson/Downloads/env.571.pdf
   - multiple scale
 
@@ -57,7 +55,6 @@
 
 - build regression model for https://www.intensive.org/epic2/Documents/Estimation%20of%20PO2%20and%20FiO2.pdf
 - missing data model from http://www.bias-project.org.uk/Missing2012/Lectures.pdf
-
 
 - This seems important in ARDS (acute respiratory distress syndrome, and they may have relevant, available data?)
   - paper: https://www.nejm.org/doi/full/10.1056/NEJM200005043421801

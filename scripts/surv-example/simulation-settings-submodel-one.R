@@ -1,5 +1,7 @@
 source("scripts/surv-example/GLOBALS.R")
 
+set.seed(data_seed)
+
 # Submodel one settings.
 event_prop <- 0.5
 

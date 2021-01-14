@@ -63,7 +63,7 @@ count_model_code <- nimbleCode({
   }
 })
 
-  source("scripts/owls-example/mcmc-nimble-functions.R")
+source("scripts/owls-example/mcmc-nimble-functions.R")
 
 count_model <- nimbleModel( 
   code = count_model_code, 
