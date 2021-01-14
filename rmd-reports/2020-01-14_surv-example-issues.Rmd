@@ -31,6 +31,7 @@ This lets me compare the results from my implementation to standard survival mod
 To make the outputs roughly comparable, I have to centre the covariate and scale the event time to $[0, 1]$.
 Even then, I can't get the various survival packages to agree on the sign
 of the coefficients nor the estimate of the hazard shape $\lambda$.
+I think this suggests there's something wrong with my implementation?
 
 ```{r pkgs, include = FALSE, message = FALSE, warning = FALSE, comment = NA}
 library(rstan) 
@@ -70,9 +71,7 @@ surv_reg_df <- data.frame(
   event_indicator = rep(1, rescaled_stan_data$n_patients),
   baseline = rescaled_stan_data$baseline_measurement
 )
-
 ```
-
 
 # My output
 

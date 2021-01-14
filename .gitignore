@@ -21,6 +21,7 @@ multiple-phi.tex
 
 # the rmd-report cache
 rmd-reports/*_cache/*
+rmd-reports/*.html
 
 # sometimes these don't get cleaned up properly
 *.aux
