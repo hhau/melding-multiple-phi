@@ -1,0 +1,117 @@
+---
+title: "Time varying covariates."
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+Our   goal is to fin  
+d an analytic [^1] expression for the survival model's likelihood usinga Wei
+bul
+  l baseline hazard, time varying covariate, and a simple linear mixed model for said covar  
+
+[^1]: Analytic here is a little imprecise. We want an expression that contains only functions and operations available inside Stan, so that we can actually implement the model.
+
+# Maths
+
+The hazard for individual $i$ at time $t$ is
+\begin{equation}
+  h_{i}(t) = h_{0}(t) \exp\{x_{i}\theta + \alpha m_{i}(t)\}
+  \label{eqn:time-varying-general}
+\end{equation}
+where $h_{0}(t)$ is the baseline hazard, $x_{i}$ is a baseline covariate, with coefficient $\theta$, and $m_{i}(t)$ is the fitted value from our longitudinal model with coefficient $\alpha$. 
+Using a simple random slope and intercept regression for the longitudinal model, we can expand Equation \eqref{eqn:time-varying-general} to
+\begin{equation}
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp\{x_{i}\theta + \alpha (\beta_{0, i} + \beta_{1, i}t)\}
+  \label{eqn:time-varying-specific}
+\end{equation}
+Evaluating the likelihood requires both the hazard and the survival probability $S_{i}(t)$
+\begin{equation}
+  S_{i}(t) = \exp \left\{
+    - \int_{0}^{t} h_{i}(u) \text{d}u
+  \right\}
+\end{equation}
+Substiuting Equation \eqref{eqn:time-varying-specific} in and rearranging yields
+\begin{align}
+  S_{i}(t) &= \exp \left\{
+    -\int_{0}^{t} 
+        \gamma u^{\gamma - 1} 
+        \exp\{x_{i}\theta + \alpha (\beta_{0, i} + \beta_{1, i}t)\} 
+    \text{d}u
+  \right\} \\
+  &= 
+    \exp \left\{
+      -
+      \left(
+        \gamma 
+        \exp\{x_{i}\theta + \alpha\beta_{0, i}\}
+        \int_{0}^{t} 
+          u^{\gamma - 1}
+          \exp\{\alpha \beta_{1, i} u\}
+        \text{d}u
+      \right)
+    \right\}
+\end{align}
+The last term looks like the kernel of a gamma distribution. Consequently
+\begin{align}
+  \int_{0}^{t} u^{\gamma - 1} \exp\{\alpha \beta_{1, i} u\} \text{d}u &=
+    \frac {\Gamma(\gamma)} {(-\alpha\beta_{1, i})^{\gamma}}
+    \int_{0}^{t} 
+      \frac {(-\alpha\beta_{1, i})^{\gamma}} {\Gamma(\gamma)}
+      u^{\gamma - 1} \exp\{\alpha \beta_{1, i} u\} 
+    \text{d}u \\
+  &=
+    \frac {\Gamma(\gamma)} {(-\alpha\beta_{1, i})^{\gamma}}
+    \frac {1} {\Gamma(\gamma)}
+    \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t) \\
+  &= 
+    \frac {1} {(-\alpha\beta_{1, i})^{\gamma}}
+    \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t) 
+\end{align}
+where $\mathrm{g}_{l}$ is the [lower incomplete gamma function](https://en.wikipedia.org/wiki/Incomplete_gamma_function), a __scaled__[^2] version of which is [available in Stan as `gamma_p`](https://mc-stan.org/docs/2_26/functions-reference/betafun.html). Note that this necessitates $-\alpha\beta_{1, i} > 0$, which we will need to find a suitable way to impose.
+
+[^2]: I will need to multiply (log add) by $\Gamma(\gamma)$ to get the result I want.
+
+We can now substitute this back into the survival probability expression
+\begin{equation}
+  S_{i}(t) = \exp \left\{
+      -
+      \left(
+        \gamma 
+        \exp\{x_{i}\theta + \alpha\beta_{0, i}\}
+        \frac {1} {(-\alpha\beta_{1, i})^{\gamma}}
+        \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t)
+      \right)
+    \right\}
+\end{equation}
+Our implementation will use $\log(S_{i}(t))$, which we opt to write as
+\begin{equation}
+  \log(S_{i}(t)) = -
+    \frac {
+      \gamma \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t)
+    } {
+      (-\alpha\beta_{1, i})^{\gamma}
+    }  
+    \exp\{x_{i}\theta + \alpha\beta_{0, i}\}
+\end{equation}
+
+## Observations
+
+- Define $\eta_{i} = x_{i}\theta + \alpha\beta_{0, i}$
+- The $\exp\{\eta_{i}\}$ term is present as in the survival probability without time varying covariates,
+- Instead of $-t_{i}^{\gamma}$, we have $-\frac {\gamma \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t)} {(-\alpha\beta_{1, i})^{\gamma}}$
+
+# Log likelihood 

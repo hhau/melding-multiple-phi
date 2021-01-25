@@ -1,0 +1,92 @@
+---
+title: "Weibull maths + survival maths"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+- What are we working from?
+    - Rob's notes
+    - @cox_analysis_2018
+
+- What is the goal here.
+    - set out a notation for the paper/thesis
+    - End up with a post for the Stan forums.
+    - Understand the basic Survival model components (hazard, survival probability, cumulative hazard), how they are linked to covariates.
+
+# Notation
+
+- Individual $i$ in a sample of size $n$
+- Failure/event time $T_{i}$, which is a random variable
+- There is a period of observation $c_{i}$, such that the observation on an individual ceases at $c_{i}$ if failure has not occurred.
+- The observations thus consist of $X_{i} = \min\{T_{i}, c_{i}\}$, and the indicator variable $V_{i} = 1$ if $T_{i} \leq c_{i}$ ($u$, uncensored), or $V_{i} = 0$ if $T_{i} > c_{i}$ ($c$, censored).
+    - "_A crucial condition is that, conditionally on the values of any explanatory variables, the prognosis for any individual who has survived to $c_{i}$, should not be affected if the individual is censored at $c_{i}$_".
+
+# Likelihood
+
+- A subject observed to fail at time $t_{i}$ contributes a term $f(t_{i}; \theta)$ to the likelihood, the density of failure time at $t_{i}$. The contribution from a subject whose survival time is censored at $c_{i}$ is $S(c_{i}; \phi)$, the probability of survival beyond $c_{i}$. 
+    - $\theta$ is the vector of all parameters
+- The full likelihood is thus
+\begin{equation}
+  L(\theta \mid \boldsymbol{X}) = 
+    \prod_{u} f(t_{i}; \phi) 
+    \prod_{c} S(c_{i}; \phi)
+\end{equation}
+- Since $f(t) = h(t)S(t)$ (density equals hazard times survival probability), this may be written
+\begin{equation}
+  L(\theta \mid \boldsymbol{X}) = 
+    \sum_{u} \log (h(t_{i}; \phi)) +
+    \sum \log (S(c_{i}; \phi))
+\end{equation}
+- Noting that $X_{i} = \min\{T_{i}, c_{i}\}$ and hence $x_{i} = \min\{t_{i}, c_{i}\}$
+\begin{equation}
+  L(\theta \mid \boldsymbol{x}) = 
+    \sum_{u} \log (h(x_{i}; \phi)) +
+    \sum \log (S(x_{i}; \phi))
+\end{equation}
+
+# Dependence on explanatory variables
+
+- For each individual there is a defined $q \times 1$ vector $z$ of explanatory variables, which may include treatments, intrinsic properties of the individuals, or exogenous variables.
+    - _" ... it is often convenient to start with the simplest case of the comparison of two treatments, corresponding to a single binary explanatory variable, ..."_.
+- $\psi(z)$ denotes a function linking $z$ to survival: __increasing__ $\psi(z)$ always corresponds to increasing risk, i.e. to decreasing failure time. The symbol $\beta$ is reserved for a parameter vector characterising $\psi(z)$.
+- Note that the functions $\psi(z)$ in two different models are not in general quantitatively comparable.
+- A parametric form for $\psi(z; \beta)$ may be needed. A natural candidate is $\psi(z; \beta) = \exp\{\beta^{\top} z\}$.
+- _"It is again convenient to introduce into the vector $z$ of explanatory variables a component $z_{0}$ identically one, writing $\rho = e^{\beta_{0}}$"_ (this is just putting an intercept into the explanatory vector.)
+- The log likelihood for the Weibull distribution is (this is implicitly an AFT formulation)
+\begin{equation}
+  \mathcal{L} = 
+    -\sum \exp\{\kappa \beta^{\top} z_{i}\} x_{i}^{\kappa} + 
+    \sum_{u} \left[\kappa \beta^{\top} z_{i}  + (\kappa - 1) \log(t_{i}) + \log(k) \right]
+\end{equation} 
+- In out specific case, where we have no censoring, $x_{i} = t_{i}$. If I denote the linear predictor as $\eta_{i} = \beta^{\top} z_{i}$, then 
+\begin{equation}
+  \mathcal{L} = 
+    \sum -\exp\{\kappa \eta_{i}\} t_{i}^{\kappa} + 
+    \kappa \eta_{i}  + (\kappa - 1) \log(t_{i}) + \log(k)
+\end{equation}
+    - Cox and Billemann disagree over the sign of $\kappa$ (which Brilleman calls $\gamma$), but otherwise things are broadly the same. Cox in 6.3 (iii) discusses the AFT parameterisation of the Weibull.
+    - Such signs disagreements mean looking at the survival curves, stratified by group / covariate, is essential. (Only makes sense for categorical / discrete covariates, what about continuous ones? Maybe look at survival curves using min/median/max of covariate from the data?)
+
+- Okay, but none of this describes why there is a difference between the model `stan_surv` states it is implementing, and my implementation.
+- Things `stan_surv` does:
+  - Centres the covariates
+  - Puts a prior on the 'intercept (which is? _it's included in the lienar predictor_)' 
+
+# Stan post
+
+
+# Bibliography

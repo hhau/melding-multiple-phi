@@ -18,7 +18,6 @@ options(width = 9999)
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 
-
 I am currently trying to get the survival example to work in the multiple $\phi$ setting.
 I can fit the uncertain event time submodel $\text{p}_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$.
 The next step is to meld it with a standard Weibull survival model.
@@ -57,6 +56,9 @@ stan_data <- list(
   ]
 )
 
+stan_data$log_crude_event_rate <- 
+  log(sum(stan_data$event_time) / stan_data$n_patients)
+    
 rescaled_stan_data <- stan_data
 rescaled_stan_data$event_time <- with(stan_data, event_time / max(event_time))
 rescaled_stan_data$baseline_measurement <- scale(
@@ -87,8 +89,8 @@ print(test_fit, digits = 4, probs = c(0.025, 0.975))
 ```
 Which uses the following Stan model/code, which I think is right (it is based of Appendix A.2 of @brilleman_bayesian_2020):
 
-<details><summary>Show code</summary>
-```{r my_stan_code, echo = FALSE, comment = NA}
+<details><summary>Show Stan code</summary>
+```{r stan_model_code, echo = FALSE, comment = NA}
 cat(readLines("../scripts/surv-example/models/submodel-two-psi-step.stan"), sep = "\n")
 ```
 </details>
@@ -124,5 +126,18 @@ res_flex <- flexsurvreg(
 
 print(res_flex, digits = 4)
 ```
+
+# Survival
+
+```{r survival, message = FALSE, warning = FALSE, comment = NA}
+res_surv <- survreg(
+  Surv(event_time, event_indicator) ~ 1 + baseline, 
+  data = surv_reg_df, 
+  dist = "weibull"
+)
+
+print(res_surv, digits = 4)
+```
+
 
 # Bibliography

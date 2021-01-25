@@ -12,6 +12,9 @@ simulated_data <- readRDS(
 submodel_three_settings <- readRDS(
   file = "rds/surv-example/submodel-three-simulation-settings.rds"
 )
+submodel_one_settings <- readRDS(
+  file = "rds/surv-example/submodel-one-simulation-settings.rds"
+)
 
 # read in model output
 model_output <- readRDS(
@@ -38,21 +41,33 @@ posterior_plot_data <- res %>%
   point_interval(
     .width = 0.8,
     .point = mean,
-    .interval = qi
+    .interval = qi,
+    .exclude = c(".chain", ".iteration", ".draw", ".row", "event_indicator")
   )
+
+event_df <- tibble(
+  patient_id = 1 : submodel_one_settings$n_patients,
+  event_indicator = submodel_one_settings$event_indicator
+)  
+
+posterior_plot_data <- posterior_plot_data %>%
+  left_join(event_df, by = c("patient_id" = "patient_id")) %>% 
+  mutate(event_indicator = as.factor(event_indicator))
 
 with_post_mean <- base_plot + 
   geom_line(
     data = posterior_plot_data, 
-    aes(x = plot_x, y = plot_mu),
-    inherit.aes = FALSE,
-    col = highlight_col
+    aes(x = plot_x, y = plot_mu, col = event_indicator),
+    inherit.aes = FALSE
   ) +
   geom_ribbon(
     data = posterior_plot_data, 
     aes(x = plot_x, ymin = .lower, ymax = .upper),
     inherit.aes = FALSE,
     alpha = 0.2
+  ) +
+  theme(
+    legend.position = "none"
   )
 
 ggsave_fullpage(

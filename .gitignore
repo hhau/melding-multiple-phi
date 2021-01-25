@@ -21,6 +21,7 @@ multiple-phi.tex
 
 # the rmd-report cache
 rmd-reports/*_cache/*
+rmd-reports/*_files/*
 rmd-reports/*.html
 
 # sometimes these don't get cleaned up properly
@@ -29,3 +30,4 @@ rmd-reports/*.html
 
 .DS_Store
 bibliography/multi-phi-bib.bib.original
+rstanarm_surv_stan_code.stan

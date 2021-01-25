@@ -1,0 +1,110 @@
+---
+title: "First two models, second example"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+```{r read_results, echo = FALSE, message = FALSE, warning = FALSE, comment = NA}
+library(bayesplot)
+library(tidybayes)
+library(rstan)
+library(dplyr)
+
+source("../scripts/common/mcmc-util.R")
+source("../scripts/common/plot-settings.R")
+
+stage_two_event_times <- readRDS("../rds/surv-example/stage-two-phi-samples.rds")
+submodel_one_output <- readRDS("../rds/surv-example/submodel-one-output.rds")
+submodel_one_settings <- readRDS("../rds/surv-example/submodel-one-simulation-settings.rds")
+stage_two_psi_samples <- readRDS("../rds/surv-example/stage-two-psi-samples.rds")
+
+event_time_names <- dimnames(stage_two_event_times)[[3]]
+stage_one_event_times <- submodel_one_output$samples[, , event_time_names]
+```
+
+# stage two mixing using stage one samples as proposal ($\phi$)
+
+The mixing for $\phi$ is good. Using 40,000 samples we get a good ESS (at least 300) for all parameters.
+
+```{r stage_two_mixing}
+mcmc_trace(stage_two_event_times) +
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+```{r stage_two_phi_numerics, comment = NA}
+monitor(stage_two_event_times, warmup = 1)
+```
+
+There is also some contraction in the posterior distribution between stage one and two. The following plot condition on those who actually have the event (I know this because the data is simulated).
+
+```{r contraction, comment = NA, warning = FALSE}
+stage_one_event_times_tbl <- stage_one_event_times %>% 
+  array_to_mcmc_list() %>% 
+  gather_draws(event_time[i]) %>% 
+  mutate(stage = 1)
+
+stage_two_event_times_tbl <- stage_two_event_times %>% 
+  array_to_mcmc_list() %>% 
+  gather_draws(event_time[i]) %>% 
+  mutate(stage = 2) 
+
+all_tbl <- rbind(stage_one_event_times_tbl, stage_two_event_times_tbl)  
+
+# filter down to whom actually had the event:
+
+index_vec <- which(submodel_one_settings$event_indicator == 1)
+
+all_tbl %>% 
+  # filter(i %in% index_vec) %>% 
+  mutate(
+    stage = as.factor(stage),
+    i = as.factor(i),
+    event_ind = i %in% index_vec
+  ) %>% 
+  ggplot(aes(x = .value, colour = stage, lty = event_ind)) +
+  geom_density(bw = 0.1) +
+  facet_wrap(vars(i), scales = "free") +
+  scale_x_continuous(limits = c(0, 1.2))
+```
+
+Though this could just be a smoothing artefact. I do not find it surprising that the impact of one weekly predictive covariate on the stage one posterior is minimal.
+
+To make this slightly more realistic, we could introduce right/administrative censoring at $t = 1$.
+
+# $\psi_{2}$
+
+The second stage $\psi_{2}$ samples look fine as well. The posterior distributions now account for the uncertainty in the event time, and are hence much wider (than the were when I was just taking one single sample of the event times from the stage one posterior).
+
+```{r stage_two_psi}
+mcmc_trace(stage_two_psi_samples[-1, , ])
+```
+
+```{r stage_two_psi_numerics, comment = NA}
+monitor(stage_two_psi_samples[-1, , ], warmup = 0)
+```
+
+# Todo
+
+
+- Add a third model, which is standing in for a longitudinal submodel. I had some initial concerns about the identifiability of the joint model, but I am now convinced it's okay.
+    - If we stick to Weibull, then there are no integration issues
+    - I am reading chapter 4 of @rizopoulos_joint_2012 for general guidance.
+- A cleaner version of the maths for what is going on here.    
+- Pooled prior, haven't really thought about. Currently (implicitly) doing PoE.
+    - $\text{p}_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ is going to be the hard part -- simulating from the prior predictive distribution of a joint survival model is non-trivial.
+        - The even times we can do with MCMC and post process.
+        - The longitudinal curve/prior is a bit trickier to see at the moment, but I'm it's possible.

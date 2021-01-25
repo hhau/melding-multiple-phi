@@ -44,7 +44,7 @@ model {
   target += normal_lpdf(mu_beta_zero | 1.0, 1.0);
   target += normal_lpdf(mu_beta_one | 0.0, 1.0);
   target += lognormal_lpdf(sigma_beta_zero | 0.0, 1.0);
-  target += lognormal_lpdf(sigma_beta_one | 0.0, 1.0);
+  target += lognormal_lpdf(sigma_beta_one | 1.0, 1.0);
   target += lognormal_lpdf(sigma_y | 0.0, 1.0);
 }
 
@@ -57,6 +57,7 @@ generated quantities {
     if (event_time[ii] < time_limit_upper) {
       event_indicator[ii] = 1;
     }  else {
+      // should we also truncate event time to time_limit_upper here?
       event_indicator[ii] = 0;
     }
   }
