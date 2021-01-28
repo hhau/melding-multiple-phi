@@ -115,9 +115,10 @@ p_2 <- ggplot(
     nrow = 1,
     labeller = label_parsed
   ) +
-  geom_intervalh(
+  geom_interval(
     alpha = rescale(1 - plot_tbl$.width, to = c(0.1, 1)),
-    size = 9
+    size = 9,
+    orientation = "horizontal"
   ) +
   scale_size_continuous(range = c(12, 20)) +
   scale_color_manual(

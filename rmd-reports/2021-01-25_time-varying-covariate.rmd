@@ -18,10 +18,7 @@ options(width = 9999)
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 
-Our   goal is to fin  
-d an analytic [^1] expression for the survival model's likelihood usinga Wei
-bul
-  l baseline hazard, time varying covariate, and a simple linear mixed model for said covar  
+Our goal is to find an analytic [^1] expression for the survival model's likelihood using a Weibull baseline hazard, time varying covariate, and a simple linear mixed model for said covariate.  
 
 [^1]: Analytic here is a little imprecise. We want an expression that contains only functions and operations available inside Stan, so that we can actually implement the model.
 
@@ -113,5 +110,118 @@ Our implementation will use $\log(S_{i}(t))$, which we opt to write as
 - Define $\eta_{i} = x_{i}\theta + \alpha\beta_{0, i}$
 - The $\exp\{\eta_{i}\}$ term is present as in the survival probability without time varying covariates,
 - Instead of $-t_{i}^{\gamma}$, we have $-\frac {\gamma \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t)} {(-\alpha\beta_{1, i})^{\gamma}}$
+- The difficult part is constraining $-\alpha\beta_{1, i} > 0 \implies \alpha\beta_{1, i} < 0$.
+    - This means either one of $\alpha$ or $\beta_{1, i}$ has to be less than zero.
+    - This makes interpreting either of them kind of difficult? And maybe this doesn't make any sense?
+    - Say our hypothesis is that a low value for the longitudinal covariate makes the event more likely. Then, given a simple random intercept and slope model, a negative sign for $\beta_{1, i}$ seems likely. If the interpretation for $\exp{\alpha}$ is (@rizopoulos_joint_2012) "_the relative increase in the risk for an event at time $t$ that results from one unit increase in $m_{i}(t)$ at the same time point_" then a unit increase in $m_{i}(t)$ should decrease the risk, so $\exp{\alpha}$ should be less than zero, and hence $\alpha$ should _also_ be less than zero, which we've just said we need to constrain to not occur.
+    - Conversely, suppose our hypothesis is that a _high_ value for the covariate makes the event more likely. Then, a positive sign for those who have the event seems likely, and by the same logic, $\alpha > 0$ seems sensible. 
+    - This itself, is contradictory, and is also contradicted by Rizopolos in the next sentence where he states that the "_the corresponding survival function depends on the whole covariate history_"
+    - ~~Maybe we don't actually need this constraint? If one uses the power series definition of the lower incomplete gamma function, then it is relatively easy to see why it admits negative second arguments:
+    \begin{equation}
+      \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t) = 
+        (-\alpha\beta_{1, i} t)^{\gamma}
+        \exp\{\alpha\beta_{1, i} t\}
+        \sum_{k = 0}^{\infty}
+          \frac{(-\alpha\beta_{1, i} t)^{k}}
+          {\gamma^{\overline{k + 1}}}
+    \end{equation}
+    where 
+    \begin{equation}
+      \gamma^{\overline{k + 1}} = \prod_{j = 0}^{k}(\gamma + j)
+    \end{equation}
+    which, according to the [most authoritative of sources](https://dlmf.nist.gov/8.11#ii), is absolutely convergent. Whilst neat, we'll have to wait and see if the implementation possesses the required numerical stability for our purpose~~.
+    Nope, if $\gamma$ is not an integer, then the result is a complex number, and no good for us.
+    - Looks like we'll have to do some numerical integration, I guess time to learn how @brilleman_bayesian_2020 do it[^3]? Or maybe better to use [`integrate_1d`](https://mc-stan.org/docs/2_22/functions-reference/functions-1d-integrator.html)
+    
+[^3]: This is not a great idea, quite a complicated, bespoke quadrature routine.
 
-# Log likelihood 
+# Log likelihood
+
+For completeness, the __pointwise__ log likelihood is  
+\begin{equation}
+  \log(\gamma) + (\gamma - 1) \log(t) +
+  x_{i} \theta + \alpha(\beta_{0, i} + \beta_{1, i} t) -
+  \left(
+    \frac {
+        \gamma \mathrm{g}_{l}(\gamma, -\alpha\beta_{1, i} t)
+      } {
+        (-\alpha\beta_{1, i})^{\gamma}
+      }  
+    \exp\{x_{i}\theta + \alpha\beta_{0, i}\}
+  \right)
+\end{equation}
+
+recall that in our setting, t is also a parameter being estimated.
+
+## Updated
+
+Now that we know we have to do the integral numerically, we should rewrite the log-likelihood 
+
+\begin{equation}
+  \log(\mathcal{L}(t_i \mid x_{i}))  = \log(h_{i}(t)) + \log(S_{i}(t)) = 
+    \log(\gamma) + (\gamma - 1) \log(t) +
+  x_{i} \theta + \alpha(\beta_{0, i} + \beta_{1, i} t)
+    - \gamma 
+      \exp\{x_{i}\theta + \alpha\beta_{0, i}\}
+      \int_{0}^{t} 
+        u^{\gamma - 1}
+        \exp\{\alpha \beta_{1, i} u\}
+      \text{d}u
+  \label{eqn:point-wise-log-likelihood}
+\end{equation} 
+
+and compute the integral numerically. 
+Let's try to vectorise Equation \ref{eqn:point-wise-log-likelihood} to the best of our ability. All of these are vectors of length $n$ (the number of data points), or scalars that can be sensibly added to vectors.
+
+\begin{equation}
+  \log(\boldsymbol{\mathcal{L}}(\boldsymbol{t} \mid \boldsymbol{x})) =
+    n \log(\gamma) + 
+    (\gamma - 1) \log(\boldsymbol{t}) +
+    \boldsymbol{x}\theta +
+    \alpha(
+      \boldsymbol{\beta}_{0} + 
+      \boldsymbol{\beta}_{1} \circ \boldsymbol{t}
+    ) -
+    \gamma \exp\{\boldsymbol{x} \theta + \alpha \boldsymbol{\beta}_{0}\}
+    \circ
+    \int_{\boldsymbol{0}}^{\boldsymbol{t}}
+      \boldsymbol{u}^{\gamma - 1}
+      \exp\{\alpha \boldsymbol{\beta}_{1} \circ \boldsymbol{u}\}
+    \text{d}\boldsymbol{u}
+\end{equation}
+
+where $\boldsymbol{a} \circ \boldsymbol{b} = \text{diag}(\boldsymbol{a})\boldsymbol{b}$ (i.e. element wise multiplication).
+
+## some note on numerically evaluating the integral
+
+`integrate_1d` does not like this integrand. Quadrature seems unable to accurately compute it for some configurations of $\gamma, t > 0$ and $\alpha, beta_{1} \in \mathbb{R}$. I asked the [Stan forums](https://discourse.mc-stan.org/t/stabilising-survival-model-integrand-for-use-in-integrate-1d/20443) to see if they had any inspiration.
+
+- one option is to abandon this model and resort to just a random effect model for the third model. Whilst simpler, that is a bit unsatisfactory, since the 'longitudinal model' is no longer longitudinal in any way. The random intercept + slope model is the simplest model that could reasonably constitute a 'longitudinal model'.
+
+- There is a bug in Boost (the C++ math library), which Stan uses, that incorrectly assess the tolerance of the numerical integrator. This is leading to lots of numerical integration errors.
+
+- This is supposedly fixed in Stan 2.26, but melding needs to use `rstan::log_prob`, which is only up to Stan 2.21. 
+
+- One option is to build my own Stan/StanHeaders setup from scratch to use 2.26, which is what I've done. 
+    - Or so I thought. I can get something sensible / numerically stable with `cmdstanr` but not with `rstan`. I don't understand why though.
+    - This is a bug, or more likely more than one bug, that is well above my understanding. I guess I could wait for the experts to try and resolve it?
+        - NB it took me the better part of two days to realise I couldn't fix this bug.
+
+- The integrator inside cmdstanr might be a little slow? If we wish to do
+    - $N_{\text{MCMC, outer}}$ -- Total stage 2 MCMC steps
+    - $N_{\text{patients}}$ -- Number of patients in the models
+    - $N_{\text{MCMC, inner}}$ -- Number of MCMC steps for the inner MCMC loop for $\psi_{2}$.
+    - $N_{\text{leapfrog}}$ -- Leap frog steps per Inner MCMC loop for $\psi_{2}$.
+- Then, we need to do $N_{\text{MCMC, outer}}N_{\text{patients}}(2 + N_{\text{MCMC, inner}}N_{\text{leapfrog}})$ numerical integrations. Reasonable estimates result in _at least_ $2.5\times 10^{6}$ integrations (often closer to 10^{7}$, each of which is an adaptive quadrature procedure (which take ~$10^{-5}$ seconds each, so maybe not so bad after all?). 
+    - Also, it depends on which quantities in the integral are 'parameters' (and hence need their gradients computed) and which are 'data'. In the $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ steps we have to pass everything in as a parameter, but don't do HMC, so we don't need the gradients of the log prob (fine). In the $\psi_{2}$ steps we 
+
+## Next
+
+I guess there are a few options for what to do next
+
+- Simplify the model to avoid having to integrate. I don't really like this option because really, it shouldn't be this hard to do a model this simple.
+- Write our own stage two code based on R's built in integrate
+    - I don't really want to have to implement my own Gauss-kronrod quadrature
+    - We can't use any of the other joint modelling packages, specifically JMBayes, because we have to control the proposal distribution for some subset of the parameters.
+
+# Bibliography

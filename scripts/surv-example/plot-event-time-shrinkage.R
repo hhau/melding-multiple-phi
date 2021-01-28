@@ -36,4 +36,4 @@ all_tbl %>%
   ggplot(aes(x = .value, colour = stage)) +
   geom_density(bw = 0.1) +
   facet_wrap(vars(i), scales = "free") + 
-  scale_x_continuous(limits = c(0, 1.2))d
+  scale_x_continuous(limits = c(0, 1.2))
