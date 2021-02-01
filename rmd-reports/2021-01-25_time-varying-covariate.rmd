@@ -194,7 +194,7 @@ where $\boldsymbol{a} \circ \boldsymbol{b} = \text{diag}(\boldsymbol{a})\boldsym
 
 ## some note on numerically evaluating the integral
 
-`integrate_1d` does not like this integrand. Quadrature seems unable to accurately compute it for some configurations of $\gamma, t > 0$ and $\alpha, beta_{1} \in \mathbb{R}$. I asked the [Stan forums](https://discourse.mc-stan.org/t/stabilising-survival-model-integrand-for-use-in-integrate-1d/20443) to see if they had any inspiration.
+`integrate_1d` does not like this integrand. Quadrature seems unable to accurately compute it for some configurations of $\gamma, t > 0$ and $\alpha, beta_{1} \in \mathbb{R}$. I asked the [__Stan forums__](https://discourse.mc-stan.org/t/stabilising-survival-model-integrand-for-use-in-integrate-1d/20443) to see if they had any inspiration.
 
 - one option is to abandon this model and resort to just a random effect model for the third model. Whilst simpler, that is a bit unsatisfactory, since the 'longitudinal model' is no longer longitudinal in any way. The random intercept + slope model is the simplest model that could reasonably constitute a 'longitudinal model'.
 
@@ -221,7 +221,7 @@ I guess there are a few options for what to do next
 
 - Simplify the model to avoid having to integrate. I don't really like this option because really, it shouldn't be this hard to do a model this simple.
 - Write our own stage two code based on R's built in integrate
-    - I don't really want to have to implement my own Gauss-kronrod quadrature
+    - I don't really want to have to implement my own Gauss-kronrod, or equivalent, quadrature
     - We can't use any of the other joint modelling packages, specifically JMBayes, because we have to control the proposal distribution for some subset of the parameters.
 
 # Bibliography
