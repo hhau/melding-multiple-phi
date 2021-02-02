@@ -1,0 +1,64 @@
+---
+title: "Simpler longitudinal model -- avoiding numerical integration"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+# Plan and steps.
+
+- [x] Recode third data generating process and submodel 
+- [x] Recode second submodel, and finish stage two sampling process.
+    - there is a segfault somewhere due to incorrect indexing.
+    - reprex suggests it's me, unsurprising
+      - because I was changing the type and names of an object inside an acceptance probability. A type system and immutability would have prevented this (i.e. Rust) 
+- inspect diagnostics for convergence an credibility
+- Rewrite model text and maths
+- Consider what I'd like to compare this against?
+
+
+## code things
+
+- [ ] automate example diagnostics
+- consider rewriting makefile to new form? 
+
+# maths for the simpler longitudinal model
+
+The hazard will be
+
+\begin{equation}
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp{x_{i}\theta + \alpha\beta_{0, i}}
+\end{equation}
+
+and the survival probability will be
+
+\begin{equation}
+  S_{i}(t) = \exp \{
+    - t_{i}^{\gamma}
+    \exp\{x_{i}\theta + \alpha\beta_{0, i}\}
+  \}
+\end{equation}
+
+# issues
+
+- because we are introducing 'more' uncertainty via the uncertain event times, we might expect the posterior distributions for the longitudinal parameters to have wider posterior distributions than in the longitudinal submodel, but the two stage process will not allow that to happen. In some sense this is a kind of unintentional cut.
+  - Maybe this is one of the comparisons to make
+    - $\alpha, \theta, \beta_{0}$ between stages one and two, and also between including the uncertain event time submodel and taking the mean event time as the fixed event time?
+    - I know the idea is what is important here, but if we can show 'better' -- here, different -- uncertainty quantification, this would be a pragmatic demonstration of the value of the idea.
+
+# Stage two diagnostics
+
+\input{../tex-input/surv-example/0090-stage-two-phi-12-diag.tex}

@@ -686,6 +686,14 @@ knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
 
 # Diagnostics for the surv example
 
+## Stage one diagnostics
+
+## Stage two diagnostics
+
+\input{tex-input/surv-example/0090-stage-two-phi-12-diag.tex}
+\input{tex-input/surv-example/0091-stage-two-phi-23-diag.tex}
+\input{tex-input/surv-example/0092-stage-two-psi-2-diag.tex}
+
 # Markov melding is sensitive to the order in which the submodels are considered
 
 - Maths / argument goes here, in text sentence goes something like "A possible two-step approach for combining these models is to apply Markov melding to submodels 1 and 2 in step one, then apply it again to the result of step one and submodel 3. However, as we show in Appendix \ref{the-right-appendix-name}, this result of this process is dependent on whether one considers submodels 1 and 2 in step one, or submodels 2 and 3. This dependence is undesirable, and to address it we now develop a modified version of markov melding that is order insensitive."
