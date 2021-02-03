@@ -6,8 +6,12 @@ source("scripts/common/mcmc-util.R")
 # read in the data
 model_data <- list(
   ti = 26,
-  nestlings = readRDS("rds/owls-example/fecundity-data.rds")[1 : 25,'N_offspring'],
-  sample.size = readRDS("rds/owls-example/fecundity-data.rds")[1 : 25, 'N_breeding_females'],
+  nestlings = readRDS("rds/owls-example/fecundity-data.rds")[1 : 25,'N_offspring'] %>%
+    unlist() %>%
+    as.numeric(),
+  sample.size = readRDS("rds/owls-example/fecundity-data.rds")[1 : 25, 'N_breeding_females'] %>%
+    unlist() %>%
+    as.numeric(),
   popcount = as.numeric(unlist(readRDS("rds/owls-example/count-data.rds"))),
   m = rbind(
     readRDS("rds/owls-example/capture-recapture-female-first-data.rds"),

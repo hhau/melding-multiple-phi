@@ -25,14 +25,15 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
     - there is a segfault somewhere due to incorrect indexing.
     - reprex suggests it's me, unsurprising
       - because I was changing the type and names of an object inside an acceptance probability. A type system and immutability would have prevented this (i.e. Rust) 
-- inspect diagnostics for convergence an credibility
+- inspect diagnostics for convergence and credibility
 - Rewrite model text and maths
 - Consider what I'd like to compare this against?
-
 
 ## code things
 
 - [ ] automate example diagnostics
+    - [x] tables
+    - [ ] plots
 - consider rewriting makefile to new form? 
 
 # maths for the simpler longitudinal model
@@ -40,7 +41,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 The hazard will be
 
 \begin{equation}
-  h_{i}(t) = \gamma t^{\gamma - 1} \exp{x_{i}\theta + \alpha\beta_{0, i}}
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp\{x_{i}\theta + \alpha\beta_{0, i}\}
 \end{equation}
 
 and the survival probability will be
@@ -61,4 +62,17 @@ and the survival probability will be
 
 # Stage two diagnostics
 
-\input{../tex-input/surv-example/0090-stage-two-phi-12-diag.tex}
+- the numerical ones are written straight into latex, check the appendix of the main document
+- visuals:
+
+```{r surv_ex_stage_two_diag_phi_12, fig.cap = "Stage two trace and rank plots for the components of $\\boldsymbol{\\phi}_{1 \\cap 2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
+knitr::include_graphics("../plots/surv-example/stage-two-phi-12-diags.png")
+```
+
+```{r surv_ex_stage_two_diag_phi_23, fig.cap = "Stage two trace and rank plots for the components of $\\boldsymbol{\\phi}_{2 \\cap 3}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
+knitr::include_graphics("../plots/surv-example/stage-two-phi-23-diags.png")
+```
+
+```{r surv_ex_stage_two_diag_psi_2, fig.cap = "Stage two trace and rank plots for the components of $\\boldsymbol{\\psi}_{2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
+knitr::include_graphics("../plots/surv-example/stage-two-psi-2-diags.png")
+```

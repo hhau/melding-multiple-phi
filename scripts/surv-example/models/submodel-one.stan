@@ -22,7 +22,7 @@ parameters {
   vector <lower = y_threshold> [n_patients] beta_zero;
   vector <upper = 0> [n_patients] beta_one;
   real mu_beta_zero;
-  real mu_beta_one;
+  real <upper = 0> mu_beta_one;
   real <lower = 0> sigma_beta_zero;
   real <lower = 0> sigma_beta_one;
   real <lower = 0> sigma_y;

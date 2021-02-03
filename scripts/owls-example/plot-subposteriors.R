@@ -106,7 +106,7 @@ plot_tbl$orig_par <- plot_tbl$orig_par %>%
 
 p_2 <- ggplot(
   data = plot_tbl,
-  aes(y = interaction(model_type, orig_par), x = .value, colour = model_type)
+  aes(y = model_type, x = .value, colour = model_type)
 ) +
   facet_wrap(
     vars(orig_par),
@@ -115,7 +115,8 @@ p_2 <- ggplot(
     nrow = 1,
     labeller = label_parsed
   ) +
-  geom_interval(
+  ggdist::geom_interval(
+    mapping = aes(xmin = .lower, xmax = .upper),
     alpha = rescale(1 - plot_tbl$.width, to = c(0.1, 1)),
     size = 9,
     orientation = "horizontal"
@@ -148,11 +149,13 @@ p_2 <- ggplot(
   theme(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    strip.text = element_text(size = 10)
+    strip.text = element_text(size = 10),
+    axis.text.x = element_text(size = rel(0.9)),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
   ) +
   xlab("") +
   ylab("") 
-
 
 ggsave_fullpage(
   filename = "plots/owls-example/subposteriors.pdf",

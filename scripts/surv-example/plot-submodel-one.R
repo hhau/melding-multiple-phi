@@ -53,7 +53,7 @@ posterior_plot_data <- posterior_plot_data %>%
 with_post_mean <- base_plot + 
   geom_line(
     data = posterior_plot_data, 
-    aes(x = plot_x, y = plot_mu, col = event_indicator),
+    aes(x = plot_x, y = plot_mu, lty = event_indicator),
     inherit.aes = FALSE
   ) +
   geom_ribbon(
@@ -64,6 +64,12 @@ with_post_mean <- base_plot +
   ) + 
   theme(
     legend.position = "none"
+  ) +
+  scale_linetype_manual(
+    values = c(
+      "1" = "solid",
+      "0" = "dotted"
+    )
   )
 
 # add the threshold

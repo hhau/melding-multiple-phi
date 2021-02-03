@@ -7,36 +7,16 @@ functions {
     }
     return res;
   }
-  
-  real integrand_stable (real x, real xc, real[] theta, real[] x_r, int[] x_i) {
-    real hazard_gamma = theta[1];
-    real alpha = theta[2];
-    real beta_one = theta[3];
-    real sign = (alpha / fabs(alpha)) * (beta_one / fabs(beta_one));
-    real lf = log(fabs(alpha)) + log(fabs(beta_one)) - log(hazard_gamma) +  
-      hazard_gamma * log(x) + alpha * beta_one * x;
-    real res = sign * exp(lf);
-    
-    if(is_nan(res)) {
-      print(" x: ", x, " beta_1:", beta_one, " f(x):", res, " logf(x):", lf);
-    }
-
-    return(res);
-  }
 }
 
 data {
   // global constant
   int <lower = 1> n_patients;
+  int <lower = 1> n_long_beta;
 
   // Y_{2} - baseline data
   vector [n_patients] baseline_measurement;
   real log_crude_event_rate; // technically comes from Y_{1} but eh.
-}
-
-transformed data {
-  real x_r[0];
-  int x_i[0];
 }
 
 parameters {
@@ -58,41 +38,15 @@ parameters {
 
   // phi_{2 \cap 3} -- from the longitudinal submodel
   // used to calculate m_{i}(t)
-  matrix [n_patients, 2] long_beta;
+  matrix [n_patients, n_long_beta] long_beta;
 }
 
 transformed parameters {
   vector [n_patients] z_common;
-  vector [n_patients] surv_prob_term_one;
-  vector [n_patients] surv_prob_term_two; 
 
   z_common = beta_zero + 
     baseline_measurement * beta_one + 
     alpha * long_beta[, 1];
-
-  surv_prob_term_one = hazard_gamma * exp(z_common);
-
-  for (ii in 1 : n_patients) {
-    real I2; // temp stuff to store intermediate
-    real w;
-    I2 = integrate_1d(
-      integrand_stable,
-      0.0,
-      event_time[ii],
-      {hazard_gamma, alpha, long_beta[ii, 2]},
-      x_r,
-      x_i,
-      0.01
-    );
-
-    w = exp(
-      hazard_gamma * log(event_time[ii]) + 
-      alpha * long_beta[ii, 2] * event_time[ii] - 
-      log(hazard_gamma)
-    );
-
-    surv_prob_term_two[ii] = w - I2;
-  }
 }
 
 model {
@@ -100,14 +54,16 @@ model {
   // log hazard
   target += n_patients * log(hazard_gamma);
   target += (hazard_gamma - 1) * sum(log(event_time));
-  target += sum(z_common) + alpha * sum(long_beta[, 2] .* event_time);
+  target += sum(z_common);
 
   // log survival probability
-  target += -sum(surv_prob_term_one .* surv_prob_term_two);
+  target += -sum(
+    pow_vec(event_time, hazard_gamma) .* z_common
+  );
 
   // priors 
   target += normal_lpdf(beta_zero | log_crude_event_rate, 1);
   target += normal_lpdf(beta_one | 0, 1);
   target += normal_lpdf(hazard_gamma | 0, 1);
-  target += normal_lpdf(alpha | 0, 2);
+  target += normal_lpdf(alpha | 0, 1);
 }

@@ -38,15 +38,17 @@ stage_two_indices_names_psi_3 <- c(
 # process into Stan data for all chains
 phi_12_names <- sprintf("event_time[%d]", 1 : n_patients)
 phi_23_names <- c(
-  sprintf("beta_zero[%d]", 1 : n_patients),
-  sprintf("beta_one[%d]", 1 : n_patients)
+  sprintf("beta_zero[%d]", 1 : n_patients)#,
+  # sprintf("beta_one[%d]", 1 : n_patients)
 )
 
 n_phi_12 <- length(phi_12_names)
 n_phi_23 <- length(phi_23_names)
+n_long_beta <- 1 # 1 = intercept only model, 2 = intercept + slope
 
 stan_data <- list(
   n_patients = length(submodel_two_data$patient_id),
+  n_long_beta = n_long_beta,
   baseline_measurement = submodel_two_data$baseline_val %>%
     scale(center = TRUE, scale = FALSE) %>%
     as.numeric(),
@@ -83,7 +85,7 @@ n_psi_two_pars <- length(psi_two_names)
 
 # general MCMC options
 n_stage_two_chain <- 5
-n_stage_two_iter <- 5e4 # 4e4 for min tail_ess in phi of ~500
+n_stage_two_iter <- 5e3 # 4e4 for min tail_ess in phi of ~500
 
 list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   # set up containers, remember we are abind'ing over the chains
@@ -168,7 +170,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         matrix(
           data = phi_23_samples[ii - 1, 1, ],
           nrow = stan_data$n_patients,
-          ncol = 2
+          ncol = n_long_beta
         )
       )
     )
