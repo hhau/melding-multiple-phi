@@ -245,6 +245,12 @@ $(SURV_EXAMPLE_PHI_12_SRINKAGE_PLOT) : $(SURV_SCRIPTS)/plot-event-time-shrinkage
 
 ALL_PLOTS += $(SURV_EXAMPLE_PHI_12_SRINKAGE_PLOT)
 
+SURV_EXAMPLE_PHI_23_SRINKAGE_PLOT = $(SURV_PLOTS)/phi-23-inter-stage-comparison.pdf
+$(SURV_EXAMPLE_PHI_23_SRINKAGE_PLOT) : $(SURV_SCRIPTS)/plot-long-model-shrinkage.R $(SURV_STAGE_TWO_PHI_23_SAMPLES) $(SURV_SUBMODEL_THREE_OUTPUT)
+	$(RSCRIPT) $<
+
+ALL_PLOTS += $(SURV_EXAMPLE_PHI_23_SRINKAGE_PLOT)
+
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input
 $(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS) $(OWLS_DATA) $(BIBLIOGRAPHY)

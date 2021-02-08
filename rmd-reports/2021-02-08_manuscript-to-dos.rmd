@@ -1,0 +1,70 @@
+---
+title: "Manuscript to do list"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+# introduction
+
+- [ ] pragmatism argument
+- [ ] introduction to other relevant bits of literature
+- [ ] very clear on what the contributions of this work are
+    - _this will take a number of re works, so I don't have to get it perfect each time_
+
+
+# Example introduction
+
+- [ ] is this worth having a separate section?
+- [ ] introduce the survival example 
+- [ ] emphasise why each of the examples is interesting / what angle of the problem it explores.
+
+# Model specification
+
+- [x] things like 'appropriate joint model' and 'valid joint density' are imprecise and should be removed
+- [ ] don't think using the word 'adjacent' / describing it is worth the effort.
+    - I later think otherwise
+- [x] bit more specific about the conditions for the submodels
+    - [ ] this is covered in 3.2
+- [ ] '(co)variance \sigma' is not correct
+- [ ] missing closing parentheses after Equation (7)
+
+# model coherency
+
+- [ ] rewrite
+    - [x] decide if we should use \cap in this section
+        - no.
+- [ ] cut conditional commutativity
+- [ ] decide if this goes in the appendix or in the main text
+
+# posterior estimation 
+
+- [ ] citations for multi-stage samplers 
+- [ ] include normal approximations an propagation of point estimates 
+- [ ] is the maths really necessary? might be worth putting into the appendix and just summarising in the main text
+
+# examples
+
+- [ ] emphasises that the examples are proofs of existence / people already modelling in this manner 
+- [ ] the second model can't really be done as a joint model? You'd have to do some form of gibbs? nah, but it would be difficult to get it all working simultaneously.
+- [ ] the work to get the second example working / showing what we want it to show.
+
+# conclusion
+
+- [ ] 7.2 and 7.3 are subs of 7.1
+- [ ] 7.5 is probably not worth discussing again.
+- [ ] 7.7 is the most interesting imo
+- [ ] 7.6 is worth discussing and citing.
