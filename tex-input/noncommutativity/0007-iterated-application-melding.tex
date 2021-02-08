@@ -1,6 +1,20 @@
-\begin{equation}
-  \pd_{\text{meld}}^{(12)3} = 
-  \pd_{\text{meld}}^{12} \circledast \pd_{3} = 
-  (\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}
-  \label{eqn:iterated-application-melding}
-\end{equation}
+\begin{align}
+  \pd_{\text{meld}}^{(12)3} (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, \psi_{3}, Y_{1}, Y_{2}, Y_{3}) 
+    &= 
+    \pd_{\text{meld}}^{12}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2}) 
+    \circledast 
+    \pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3}) 
+    \\ &= 
+    \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3})
+    \frac{
+      \pd_{\text{meld}}^{12}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})
+    } {
+      \pd_{\text{meld}}^{12}(\phi_{2 \cap 3})
+    }
+    \frac{
+      \pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})
+    } {
+      \pd_{3}(\phi_{2 \cap 3})
+    }
+  \label{eqn:iterated-application-melding-two}
+\end{align}

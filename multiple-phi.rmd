@@ -80,29 +80,26 @@ We will show that this example, and IPMs in general, can be expressed in the Mar
 
 # Model specification
 
-Our intention is to combine submodels into an appropriate joint model, which we call the melded model.
+Our intention is to combine submodels into a specific joint model which we call the _chained melded model_[^chained].
 Explicitly, we consider $\modelindex = 1, \ldots, \Nm$ submodels each with distinct data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
 Additionally, each submodel shares some quantity in common with adjacent submodels $\phi_{\modelindex \cap \modelindex'}$, where $\modelindex \neq \modelindex'$.
-By adjacent we mean related the manner depicted in Figure \ref{fig:owls-simple-dag}, $\pd_{1}$ is adjacent to $\pd_{2}$ and they have $\phi_{1 \cap 2}$ in common.
+By adjacent we mean related the manner depicted in Figure \ref{fig:owls-simple-dag}, where $\pd_{1}$ is adjacent to $\pd_{2}$ because they have $\phi_{1 \cap 2}$ in common.
 Our particular interest is in the $\Nm = 3$ submodel case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$.
+In this way, the submodels are connected in a manner akin to a chain.
 <!-- TODO: -->The appendix contains the more general $\Nm$-model case.
-Each submodel is assumed to be a valid joint density function over all relevant quantities, and all submodel conditionals exist with appropriate support.
+Each submodel is assumed to be a valid joint density function for all constituent quantities, and all submodel conditionals exist with appropriate support.
 
-Difficulties with doing the general M case:
-- defining our linear pooling process for M submodels
+[^chained]: _'Chained graphs'_ were considered by @lauritzen_chain_2002 however they are unrelated to the form of our proposed model. We use 'chained' to emphasise the nature of the relationships between the submodels.
 
 ## Melded model
 
 <!-- Do we need to call this model something else? It's quite confusing having both this model and the original paper's model be called the 'melded model'. -->
 
-The joint model under investigation here is an extension of the melded model introduced in @goudie_joining_2019.
-To emphasise that we are interested in a valid joint density, we first express the melded model in terms of submodel specific conditional distributions
+We begin by defining the chained melded model in terms of submodel conditional distributions
 \input{tex-input/multiple-phi/0010-melded-model-cond.tex}
-By conditioning on the common quantities in each submodel, and assuming that the prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ is proper, we are sure that the joint density is a valid joint density function.
-We will return to the prior on $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ in Section \ref{pooled-prior}.
-
-The conditional distributions of Equation \eqref{eqn:melded-model-cond} are not always available.
-However, each conditional distribution can be written in terms of the submodel joint density and appropriate marginal, and we rewrite the right hand side of Equation \eqref{eqn:melded-model-cond} as
+where the specification of each submodel is conditional on the quantities it has in common with adjacent submodels, and we impose a joint prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ which we will return to momentarily.
+However, these conditional distributions of are not always analytically tractable.
+Each conditional distribution can be written in terms of the submodel joint density and appropriate marginal, and we rewrite the right hand side of Equation \eqref{eqn:melded-model-cond} as
 \input{tex-input/multiple-phi/0012-melded-model-full.tex}
 We refer to Equation \eqref{eqn:melded-model-full} as the melded model, and note that it is proportional to the melded posterior $\pd_{\text{meld}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, \psi_{3} \mid Y_{1}, Y_{2}, Y_{3})$.
 
@@ -134,10 +131,6 @@ We define the logarithmically pooled prior to be
 This is a valid probability density function for $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, due to our assumption that all prior marginal distributions are proper. 
 Unlike linear pooling, correlation present in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ will persist in $\pd_{\text{pool}}$.
 
-<!-- - it's not exactly clear to me that properties like being 'externally Bayesian' apply here, because we have multiple likelihoods? 
-    - I think this is trying to say that if $Y = \{Y_{1}, Y_{2}, Y_{3}\}$ then $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3} \mid Y) = ?$
-    - this is actually quite a complex property, that seems to only apply to cases when you have multiple experts /marginal priors with the same likelihood/obersation mechanism?
-    - O'hagan says that being externally bayesian is getting identical posteriors from 'updating (once new data have been observed) each (marginal/submodel prior) first and using the updated consensus/pooled distribution to obtain the posterior' and 'computing each (sub)posterior first (using the marginal/submodel priors and data) and then combining the subposteriors'. This doesn't really make any sense here.  -->
 
 ### Pooling weights
 
@@ -147,14 +140,14 @@ We recommend producing such prior predictive visualisations as part of a Bayesia
 
 Specifically, we pool the following marginal normal distributions
 \input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
-where $\text{N}(\phi; \mu, \sigma^{2})$ is the normal density function with mean $\mu$ and (co)variance $\sigma$.
-The two dimensional density function $\pd_{2}$ has an additional parameter $\rho$, which controls the marginal correlation.
+where $\text{N}(\phi; \mu, \sigma^{2})$ is the normal density function with mean $\mu$ and standard deviation $\sigma$.
+The two dimensional density function $\pd_{2}$ has an additional parameter $\rho$, which controls the intra-submodel marginal correlation.
 We set $\mu_{1} = -2.5, \mu_{2} = \left[\mu_{2, 1} \,\, \mu_{2, 2}\right]' = \left[0 \,\, 0\right]', \mu_{3} = 2.5, \sigma_{1}^{2} = \sigma_{2}^{2} = \sigma_{3}^{2} = 1$ and $\rho = 0.8$.
 In the logarithmic case we set $\lambda_{1} = \lambda_{3}$ and parameterise $\lambda_{2} = 1 - 2\lambda_{1}$, so that $\lambda_{1} + \lambda_{2} + \lambda_{3} = 1$ whilst limiting ourselves to varying only $\lambda_{1}$.
 Similarly, in the linear case we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
 
 Figure \ref{fig:pooled_densities_plot} displays the estimate of $\pd_{\text{pool}}$, and its constituent marginals, for 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
-For both pooling methods, as $\lambda_{1}$ increases, the contributions of $\pd_{1}(\phi_{1 \cap 2}$ and $\pd_{3}(\phi_{2 \cap 3}$ increase. 
+For both pooling methods, as $\lambda_{1}$ increases, the contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase. 
 As expected, using linear pooling produces a $\pd_{\text{pool}}$ with no correlation, due to the additive form of Equations \eqref{eqn:silly-linear-solution-1} and \eqref{eqn:silly-linear-solution-2}.
 A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ case, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
 The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$.
@@ -164,42 +157,34 @@ Correlation is preserved for all $\lambda_{1} \neq 0.5$, and Appendix \ref{log-p
 knitr::include_graphics("plots/pooling-tests/version-two.pdf")
 ```
 
-# Model coherency
+# Coherency of the chained melded model
 
-- A reasonable requirement for a modular inference method is that the final posterior distribution should not (theoretically) depend on the order in which the data are observed, or integrated into the model.
-- In the context of belief distributions, @bissiri_general_2016 call this property 'coherence', which we will co-opt.
-- Specifically, we believe that that melded model should (theoretically) be the same if 
-    <!-- - should we also check p(13)2?-->
- 
-### Definitions
+A reasonable requirement for a modular inference method is that the final posterior distribution should not, at least theoretically, depend on the order in which data are observed or integrated into the model.
+In the context of belief distributions, @bissiri_general_2016 call this property 'coherence', which we will co-opt.
+Specifically, in the $\Nm = 3$ case, it seems desirable that the chained melded model be the same if either $\pd_{1}$ or $\pd_{3}$ are integrated with submodel $\pd_{2}$ first.
+We will show that the form proposed in Equation \eqref{eqn:melded-model-full} satisfies this property, whilst the model produced by applying the melding method of @goudie_joining_2019 is sensitive to the order of integration.
+    <!-- 
+        - should we also check p(13)2?
+            - (13)2 is the same as original melding with \phi = (\phi_{1 \cap 2}, \phi_{2 \cap 3}),
+            - but the strategy doesn't generalise to higher $M$ (M = 4 immediately disproves)
 
-- Denote the original melding operator with $\circledast$, and its output  
+        - say we had 9 models, and the first three formed \pd_{1}, the second three formed \pd_{2} and the remaining $\pd_{3}$. Would we apply melding here twice? No, we would think about this as chained melding with M = 9 models.
+    -->
+## Applying Markov melding twice
+
+Denote the original melding operator with $\circledast$, and its output
 \input{tex-input/noncommutativity/0005-def-usual-melded-model.tex}
 where $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$ for some pooling function $g^{12}$.
-- Denote the entire parameter space of $\pd_{\text{meld}}^{12}$ as $\Theta^{12} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$ .
-- Any marginal distribution of $\pd_{\text{meld}}^{12}$ can be derived in the usual way, for example 
+We define the parameter space of the output as $\boldsymbol{\Theta}_{12} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, so that any prior marginal distribution of $\pd_{\text{meld}}^{12}$ can be derived by integrating out the irrelevant parts of $\boldsymbol{\Theta}_{12}$.
+For example,  
 \input{tex-input/noncommutativity/0006-example-melded-marginal-definition.tex}
-- Define $\pd_{\text{meld}}^{(12)3}$ as 
+where $\boldsymbol{\Theta}_{12} \setminus \phi_{2 \cap 3}$ is $\boldsymbol{\Theta}_{12}$ without $\phi_{2 \cap 3}$.
+
+To integrate third submodel, we apply the original operator to $\pd_{\text{meld}}^{12}$ and $\pd_{3}$
 \input{tex-input/noncommutativity/0007-iterated-application-melding.tex}
-so that the parentheses in the superscript indicate the order in which the melding operator is applied.
-- Analogously, define $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$ for a potentially different choice of pooling function $g^{(12)3}$.
-
-### $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}$: Step one
-
-In step one, $\pd_{1} \circledast \pd_{2}$ produces the usual melded model:
-\input{tex-input/noncommutativity/0010-usual-melded-model.tex}
-In the $\Nm = 2$ context the second model would be expressed in terms of $\psi_{2}' = (\psi_{2}, \phi_{2 \cap 3})$. 
-We are intentionally keeping these quantities distinct, to clarify the next application of the original melding operator. 
-
-### $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3}$: Step two
-
-Next we compute $\pd_{\text{meld}}^{(12)3} = \pd_{\text{meld}}^{12} \circledast \pd_{3}$:
-\input{tex-input/noncommutativity/0011-double-melded-model.tex}
-with $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$.
-The difficult term here is $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$. Define $\Omega = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, then
-\input{tex-input/noncommutativity/0012-strange-marginal-definition.tex}
-In words, this is the marginal distribution for $\phi_{2 \cap 3}$ under the melded model $\pd_{1} \circledast \pd_{2}$.
-Expanding Equation \eqref{eqn:double-melded-model} gives:
+so that the parentheses in the superscript of $\pd_{\text{meld}}^{(12)3}$ indicate the order in which the melding operator is applied.
+As before we define $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$, but for a potentially different choice of pooling function $g^{(12)3}$.
+In the following sections it will be convenient to expand Equation to \eqref{eqn:iterated-application-melding-two} to
 \input{tex-input/noncommutativity/0013-expanded-double-melded-model.tex}
 
 ### Is this the same as the proposed operator?
@@ -340,22 +325,20 @@ Note that all stage two acceptance probabilities only contain terms from the sec
 
 ## Normal approximations to submodel components
 
-Normal approximations are commonly employed to summarise submodels for use in later, more complex models.
+Normal approximations are commonly employed to summarise submodels for subsequent use in more complex models.
 Suppose we employ such an approximation to summarise the prior and posterior of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ under $\pd_{1}$ and $\pd_{3}$ respectively.
 In addition, assume that
 
 - Such approximations are appropriate for $\pd_{1}(\phi_{1 \cap 2}), \pd_{1}(\phi_{1 \cap 2} \mid Y_{1}), \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$.
 - We are not interested in $\psi_{1}$ and $\psi_{3}$, and can integrate them out of all relevant densities.
-    - _This is not necessary, it just makes the maths slightly clearer_.
-- We employ dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior. 
-    - _we can carry out the calculations for logarithmic pooling and our variation of linear pooling (the latter is slightly fiddly)_.
+- We employ dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
 
 The latter two assumptions imply that the melded posterior of interest is proportional to
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
 
 In parallel, sample the prior and (sub)posterior of $\pd_{1}$ and $\pd_{3}$ and use these samples to approximate, e.g $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ with a normal density that has mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$. 
 Denote the subposterior approximation $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$ and the prior approximation $\pd_{1}(\phi_{1 \cap 2}) \approx \widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0}) = \text{N}(\widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0})$. 
-Analogous approximations and parameters exist for $\pd_{3}$.
+Equivalent approximations and parameters exist for $\pd_{3}$.
 The approximate melded posterior is thus
 \input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
 The product of independent normal densities is an unnormalised multivariate normal density with independent components, so we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
@@ -363,9 +346,7 @@ The product of independent normal densities is an unnormalised multivariate norm
 Finally, the ratio of normal densities is also an unnormalised normal density, and hence Equation \eqref{eqn:normal-approx-nu-de-form} simplifies to
 \input{tex-input/multiple-normal-approximation/0040-final-normal-approx.tex}
 If instead we opt for product-of-experts pooling, all $\mu_{\text{de}}$ and $\Sigma_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:final-normal-approx}.
-Standard MCMC methods can be used to sample from the approximate melded posterior.
-
-- We could use this as a jumping off point for EP? But we'd need a v.motivating example.
+Standard MCMC methods can then be used to sample from the approximate melded posterior.
 
 # Examples
 
@@ -441,7 +422,7 @@ Code for this example is available at https://github.com/hhau/melding-owls-examp
 
 ### Results
 
-```{r phi_subpost, fig.cap = "Subposterior credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{0}, \\alpha_{2})$ and $\\phi_{2 \\cap 3} = \\rho$ from the original integrated population model $\\pd_{\\text{ipm}}$, the melded posterior using the parallel sampler $\\pd_{\\text{meld}}$, the melded posterior using the normal approximation $\\tilde{\\pd}_{\\text{meld}}$, and the individual submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 95\\% wide."}
+```{r phi_subpost, fig.cap = "Subposterior credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{0}, \\alpha_{2})$ and $\\phi_{2 \\cap 3} = \\rho$ from the original integrated population model $\\pd_{\\text{ipm}}$, the melded posterior using the parallel sampler $\\pd_{\\text{meld}}$, the melded posterior using the normal approximation $\\widehat{\\pd}_{\\text{meld}}$, and the individual submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 95\\% wide."}
 knitr::include_graphics("plots/owls-example/subposteriors.pdf")
 ```
 
@@ -524,12 +505,25 @@ where $\theta_{0}$ is an intercept, $\theta_{1}$ is the regression parameter for
 The likelihood is proportional to $h_{i}(t)S_{i}(t)$ (_will change if we censor_).
 We complete the model by specifying the following priors
 \input{tex-input/surv-example/0033-surv-model-priors.tex}
-where $\overline{T}$ is the log of the crude event rate [@brilleman_bayesian_2020].
+where $\overline{T}$ is the log of the crude event rate, in line with @brilleman_bayesian_2020.
+Note that the model in Equation $\eqref{eqn:surv-model-priors}$ is written in terms of generic event time $t$, but we will consider the uncertain even times for each individual $T_{i}$ from submodel 1.
+
+In melding notation we have $Y_{3} = (w_{1}, \ldots, w_{N})$, and $\psi_{2} = (\gamma, \theta_{0}, \theta_{1}, \alpha)$. The common quantities, $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are defined in previous and following sections respectively.
 
 #### Third submodel
 
-To avoid numerically integration in the second submodel, we model the longitudinal process via a hierarchical intercept model, using slightly different notation to distinguish it from submodel 1.
+To avoid numerical integration in the second submodel, we model the single longitudinal process via a hierarchical intercept model, using different notation to distinguish it from submodel 1.
+Specifically, we collect $k = 1, \ldots, K$ longitudinal observations for each individual $x_{i, k}$.
+The model is
+\input{tex-input/surv-example/0040-submodel-three-model.tex}
+and we define $m_{i}(t) = \eta_{i}$. 
 
+In our notation we denote $Y_{3} = \boldsymbol{X} = (\boldsymbol{x}_{1}, \ldots, \boldsymbol{x}_{N}), \, \phi_{2 \cap 3} = \boldsymbol{\eta} = (\eta_{1}, \ldots, \eta_{N})$ and $\psi_{3} = (\mu_{\eta}, \sigma_{\eta}, \sigma_{x})$.
+
+- general motivation.
+    - Ideally we'd have this model be some function of $t$.
+    - In lieu of that, we consider this model to be representative of some individual specific, yet constant over the time period of interest, longitudinal process. One possible example may be blood pressure during hospital stay, where the reason for hospital admission is not, primarily, related to cardiovascular status.
+    - More general, time dependent forms of $m_{i}(t)$ are possible.
 
 #### Pooled prior:
 
@@ -537,8 +531,9 @@ To avoid numerically integration in the second submodel, we model the longitudin
 - exchangeable individuals means the prior marginals are $\pd_{1}(\phi_{1 \cap 2})^{N}$ and $\pd_{3}(\phi_{2 \cap 3})^{N}$.
 - What on earth is $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$?
     - particularly $\pd_{2}(\phi_{1 \cap 2})$, the prior distribution for the event times and indicators in the survival model? 
-    - there is a suite a methodology for simulating realistic event times from a survival model i.e. @crowther_simulating_2013. Can we repurpose this to sample from the prior? I think this is what @brilleman_simsurv_2019 uses.
-- Just do PoE
+    - there is a suite a methodology for simulating realistic event times from a survival model i.e. @crowther_simulating_2013. Can we repurpose this to sample from the prior?
+        - Or, we can be lazy and use MCMC as $N$ is small.
+- Just do PoE and not worry about it.
 
 ### Simulation details
 
@@ -553,11 +548,16 @@ To avoid numerically integration in the second submodel, we model the longitudin
 knitr::include_graphics("plots/surv-example/phi-12-inter-stage-comparison.pdf")
 ```
 
+```{r phi_23_contraction, fig.cap = "Similar story for $\\phi_{2 \\cap 3}$"}
+knitr::include_graphics("plots/surv-example/phi-23-inter-stage-comparison.pdf")
+```
+
 - Similar plot for $\phi_{2 \cap 3}$? Or work into simplified version of Figure \ref{fig:phi_12_contraction}.
+- We can see from Tables \ref{tab:surv-stage-one-submodel-three} and \ref{tab:surv-stage-two-diag-phi-23} that there is also no contraction for $\phi_{2 \cap 3}$. Interesting. Need to think about.
 
 # Discussion
 
-## Thoughts on modelling increasingly complex phenomena as a series of component models
+## Thoughts on modelling increasingly complex phenomena as a combination of constituent models
 
 ## Advantages
 
