@@ -45,7 +45,7 @@ p_1 <- ggplot(
   facet_wrap(vars(facet_label), scales = "free", labeller = label_parsed) + 
   scale_x_continuous(limits = c(0, 2)) + 
   xlab(expression(italic(t))) + 
-  ylab(expression("p"(italic(t)['i'] ~ '|' ~ 'Y'[2] * "," ~ 'Y'[3]))) +
+  ylab(expression("p"(italic(t)['i'] ~ '|' ~ 'Y'[2] * "," ~ 'Y'[3]))) + # not right - has both stages
   scale_color_manual(values = c('1' = blues[2], '2' = highlight_col)) + 
   labs(colour = "Stage", lty = "Stage")
 

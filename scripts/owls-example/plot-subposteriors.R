@@ -139,7 +139,7 @@ p_2 <- ggplot(
       "count-data-submodel" = expression("p"[2]),
       "fecundity-submodel" = expression("p"[3]),
       "melded-model-z" = expression("p"["meld"]),
-      "melded-model-normal-approx" = expression(tilde("p")["meld"])
+      "melded-model-normal-approx" = expression(widehat("p")["meld"])
     ),
     guide = guide_legend(
       reverse = TRUE,
@@ -150,9 +150,7 @@ p_2 <- ggplot(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
     strip.text = element_text(size = 10),
-    axis.text.x = element_text(size = rel(0.9)),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank()
+    axis.text.x = element_text(size = rel(0.9))
   ) +
   xlab("") +
   ylab("") 

@@ -1,0 +1,52 @@
+library(tidybayes)
+library(dplyr)
+
+source("scripts/common/plot-settings.R")
+source("scripts/common/mcmc-util.R")
+
+stage_one_samples <- readRDS(
+  "rds/surv-example/submodel-three-output.rds"
+) %>%
+  magrittr::extract2("samples")
+
+stage_two_samples <- readRDS(
+  "rds/surv-example/stage-two-phi-23-samples.rds"
+)
+
+param_names <- names(stage_two_samples[1, 1, ])
+
+stage_one_tbl <- stage_one_samples[, , param_names] %>%
+  array_to_mcmc_list() %>% 
+  gather_draws(beta_zero[i]) %>% # will need to change if we change mod 3
+  mutate(stage = 1)
+
+stage_two_tbl <- stage_two_samples[, , param_names] %>%
+  array_to_mcmc_list() %>%
+  gather_draws(beta_zero[i]) %>%
+  mutate(stage = 2)
+
+plot_tbl <- bind_rows(stage_one_tbl, stage_two_tbl) %>%
+  mutate(
+    stage = as.factor(stage),
+    facet_label = factor(
+      x = as.character(i),
+      levels = i,
+      labels = paste0("eta[", i, "]")
+    )
+  )
+
+p_1 <- ggplot(plot_tbl, aes(x = .value, colour = stage, lty = stage)) +
+  geom_density(bw = 0.01) +
+  facet_wrap(vars(facet_label), scales = "free", labeller = label_parsed) +
+  xlab(expression(eta)) +
+  ylab(expression('p'(eta)))  +
+  theme(
+    axis.text = element_text(size = rel(0.8))
+  ) +
+  scale_color_manual(values = c('1' = blues[2], '2' = highlight_col)) + 
+  labs(colour = "Stage", lty = "Stage")
+
+ggsave_halfheight(
+  filename = "plots/surv-example/phi-23-inter-stage-comparison.pdf",
+  plot = p_1
+)
