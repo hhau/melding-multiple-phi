@@ -20,7 +20,19 @@ X_mat <- iSpline(
   Boundary.knots = c(0, 1)
 )
 
+X_prime_mat <- iSpline(
+  x = x_seq,
+  knots = seq(
+    from = 0, 
+    to = 1, 
+    length.out = n_internal_knot + 2
+  )[-c(1, n_internal_knot + 2)],
+  Boundary.knots = c(0, 1),
+  derivs = 1
+)
+
 matplot(X_mat, type = "l")
+matplot(X_prime_mat, type = "l")
 
 flat_const <- 1
 down_const <- 1 / 3
@@ -77,5 +89,63 @@ ggplot(plot_df, aes(x = x, col = col)) +
     inherit.aes = FALSE
   )
 
-# generalise
+# numerically find event time 
+down_vec <- -abs(rt(n = ncol(X_mat), df = 10) + 1) / down_const
+down_rand_intercept <- rnorm(n = 1, mean = 0, sd = 1)
+flat_vec <- -abs(rt(n = ncol(X_mat), df = 30) + 1) / flat_const
+flat_rand_intercept <- rnorm(n = 1, mean = 0, sd = 1)
 
+threshold <- -10
+
+fixed_basis <- function(x) {
+  iSpline(
+    x = x,
+    knots = seq(
+      from = 0, 
+      to = 1, 
+      length.out = n_internal_knot + 2
+    )[-c(1, n_internal_knot + 2)],
+    Boundary.knots = c(0, 1)
+  )
+}
+
+optm_function_down <- function(t) {
+  spline_val_at_t <- down_rand_intercept + fixed_basis(t) %*% down_vec
+  sq_dist <- (threshold - spline_val_at_t)^2  
+}
+
+optm_function_flat <- function(t) {
+  spline_val_at_t <- flat_rand_intercept + fixed_basis(t) %*% flat_vec
+  sq_dist <- (threshold - spline_val_at_t)^2  
+}
+
+plot_spline <- function(intercept, coefs) {
+  x_plot <- seq(from = 0, to = 1, length.out = 250)
+  vals <- intercept + fixed_basis(x_plot) %*% coefs
+  plot(x = x_plot, y = vals, type = "l")
+  abline(h = threshold, lty = "33")
+}
+
+res_down <- optim(
+  fn = optm_function_down,
+  # gr = function(x) deriv_basis(x) %*% down_vec,
+  par = 0.5,
+  method = "L-BFGS-B",
+  lower = 0, 
+  upper = 1
+)
+
+plot_spline(down_rand_intercept, down_vec)
+abline(v = res_down$par, col = "red")
+
+res_flat <- optim(
+  fn = optm_function_flat,
+  # gr = function(x) deriv_basis(x) %*% flat_vec,
+  par = 0.5,
+  method = "L-BFGS-B",
+  lower = 0, 
+  upper = 1
+)
+
+plot_spline(flat_rand_intercept, flat_vec)
+abline(v = res_flat$par, col = "red")
