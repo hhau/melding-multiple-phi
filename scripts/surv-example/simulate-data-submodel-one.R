@@ -6,7 +6,9 @@ source("scripts/surv-example/GLOBALS.R")
 
 set.seed(data_seed)
 
-sim_settings <- readRDS("rds/surv-example/submodel-one-simulation-settings.rds")
+sim_settings <- readRDS(
+  "rds/surv-example/simulation-settings-and-joint-data.rds"
+)
 
 # TODO: censoring time / censoring in general?
 # will this lead to truncated distributions?
@@ -16,20 +18,17 @@ flog.info("surv-submodel-one: simulating data", name = base_filename)
 
 simulated_data <- with(sim_settings, 
   bind_rows(lapply(1 : n_patients, function(patient_id) {
-    beta_one_true <- rnorm(n = 1, mean = 1, sd = 0.1)
-    beta_two_true <- rnorm(
-      n = 1,
-      mean = ifelse(event_indicator[patient_id], -1, 0),
-      sd = ifelse(event_indicator[patient_id], 0.2, 0.1)
-    )
-    obs_times <- sort(runif(
-      n = n_obs_per_patient[patient_id]
-    ))
-    true_values <- beta_one_true + beta_two_true * obs_times
+    beta_zero_true <- rnorm(n = 1, mean = 1, sd = 0.1)
+    beta_one_true <- event_model_slope[patient_id]
+    
+    obs_times <- sort(runif(n = n_obs_per_patient[patient_id]))
+    true_values <- beta_zero_true + beta_one_true * obs_times
+
     obs_values <- abs(
       true_values + 
       rnorm(n = n_obs_per_patient[patient_id], mean = 0, sd = sigma_noise)
     )
+    
     res <- tibble(
       patient_id = patient_id,
       time = obs_times,

@@ -20,9 +20,9 @@ transformed data {
 
 parameters {
   vector <lower = y_threshold> [n_patients] beta_zero;
-  vector <upper = 0> [n_patients] beta_one;
+  vector [n_patients] beta_one;
   real mu_beta_zero;
-  real <upper = 0> mu_beta_one;
+  real mu_beta_one;
   real <lower = 0> sigma_beta_zero;
   real <lower = 0> sigma_beta_one;
   real <lower = 0> sigma_y;
@@ -54,11 +54,13 @@ generated quantities {
   int <lower = 0, upper = 1> event_indicator [n_patients];
 
   for (ii in 1 : n_patients) {
-    if (event_time[ii] < time_limit_upper) {
+    if (event_time[ii] < time_limit_upper && event_time[ii] > time_limit_lower) {
       event_indicator[ii] = 1;
     }  else {
-      // should we also truncate event time to time_limit_upper here?
+      // should we also truncate event time to time_limit_upper here
+      // yes - only consider administrative/right censoring at t = 1
       event_indicator[ii] = 0;
+      event_time[ii] = 1.0;
     }
   }
   

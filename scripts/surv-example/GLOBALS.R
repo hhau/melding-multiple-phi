@@ -18,4 +18,4 @@ sim_seed <- "simseed" %>%
   lower_case_string_to_integer()
   
 # Global settings
-n_patients <- 16
+n_patients <- 36

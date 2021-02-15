@@ -33,8 +33,10 @@ parameters {
   real alpha;
 
   // phi_{1 \cap 2} -- from the event time submodel
-  // assuming no censoring for the moment
+  // note that event_indicator will be a vector of ones n zeros, but 
+  // we can't put the bounds on it because they will have log_prob of -inf
   vector <lower = 0> [n_patients] event_time;
+  vector [n_patients] event_indicator;
 
   // phi_{2 \cap 3} -- from the longitudinal submodel
   // used to calculate m_{i}(t)
@@ -50,11 +52,17 @@ transformed parameters {
 }
 
 model {
-  // Weibull model, no censoring.
-  // log hazard
-  target += n_patients * log(hazard_gamma);
-  target += (hazard_gamma - 1) * sum(log(event_time));
-  target += sum(z_common);
+  // Weibull model log hazard
+  // note that this model is never used to compute a gradient
+  // which is why I can do this branching 
+  target += sum(event_indicator) * log(hazard_gamma);
+
+  for (ii in 1 : n_patients) {
+    if (event_indicator[ii] == 1) {
+      target += (hazard_gamma - 1) * log(event_time[ii]);
+      target += z_common[ii];
+    }
+  }
 
   // log survival probability
   target += -sum(

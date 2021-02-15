@@ -9,12 +9,11 @@ source("scripts/common/mcmc-util.R")
 simulated_data <- readRDS(
   file = "rds/surv-example/submodel-three-simulated-data.rds"
 )
-submodel_three_settings <- readRDS(
-  file = "rds/surv-example/submodel-three-simulation-settings.rds"
+
+sim_settings <- readRDS(
+  "rds/surv-example/simulation-settings-and-joint-data.rds"
 )
-submodel_one_settings <- readRDS(
-  file = "rds/surv-example/submodel-one-simulation-settings.rds"
-)
+
 
 # read in model output
 model_output <- readRDS(
@@ -35,7 +34,7 @@ res <- model_output$samples %>%
   array_to_mcmc_list() %>%  
   spread_draws(plot_mu[patient_id, plot_x])
 
-res$plot_x <- submodel_three_settings$x_plot[res$plot_x]
+res$plot_x <- sim_settings$x_plot[res$plot_x]
 
 posterior_plot_data <- res %>% 
   point_interval(
@@ -46,8 +45,8 @@ posterior_plot_data <- res %>%
   )
 
 event_df <- tibble(
-  patient_id = 1 : submodel_one_settings$n_patients,
-  event_indicator = submodel_one_settings$event_indicator
+  patient_id = 1 : sim_settings$n_patients,
+  event_indicator = sim_settings$event_indicator
 )  
 
 posterior_plot_data <- posterior_plot_data %>%

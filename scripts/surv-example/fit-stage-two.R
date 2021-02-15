@@ -36,7 +36,14 @@ stage_two_indices_names_psi_3 <- c(
 )
 
 # process into Stan data for all chains
-phi_12_names <- sprintf("event_time[%d]", 1 : n_patients)
+phi_12_names <- c(
+  sprintf("event_time[%d]", 1 : n_patients),
+  sprintf("event_indicator[%d]", 1 : n_patients)
+)
+
+event_time_names <- grep("event_time", phi_12_names, value = TRUE)
+event_indicator_names <- grep("event_indicator", phi_12_names, value = TRUE)
+
 phi_23_names <- c(
   sprintf("beta_zero[%d]", 1 : n_patients)#,
   # sprintf("beta_one[%d]", 1 : n_patients)
@@ -159,13 +166,28 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   )
 
   for (ii in 2 : n_stage_two_iter) {
-    phi_12_curr_list <- list(as.numeric(phi_12_samples[ii - 1, 1, ]))
-    phi_23_curr_list <- list(as.numeric(phi_23_samples[ii - 1, 1, ]))
+    phi_12_curr_list <- list(
+      event_time = as.numeric(
+        phi_12_samples[ii - 1, 1, event_time_names]
+      ),
+      event_indicator = as.numeric(
+        phi_12_samples[ii - 1, 1, event_indicator_names]
+      )
+    )
+
+    phi_23_curr_list <- list(
+      long_beta = as.numeric(phi_23_samples[ii - 1, 1, ])
+    )
     
     # psi step
     psi_step_data <- c(
       stan_data,
-      event_time = list(as.numeric(phi_12_samples[ii - 1, 1, ])),
+      event_time = list(
+        as.numeric(phi_12_samples[ii - 1, 1, event_time_names])
+      ),
+      event_indicator = list(
+        as.integer(phi_12_samples[ii - 1, 1, event_indicator_names])
+      ),
       long_beta = list(
         matrix(
           data = phi_23_samples[ii - 1, 1, ],
@@ -191,13 +213,21 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     # phi_{1 \cap 2} step
     phi_12_iter_index_prop <- sample.int(n = n_iter_submodel_one, size = 1)
     phi_12_chain_index_prop <- sample.int(n = n_chain_submodel_one, size = 1)
-    phi_12_prop_list <- list(event_time = as.numeric(
-      submodel_one_samples[
-        phi_12_iter_index_prop, 
-        phi_12_chain_index_prop, 
-        phi_12_names
-      ]
-    ))
+    phi_12_prop_list <- list(
+      event_time = as.numeric(
+        submodel_one_samples[
+          phi_12_iter_index_prop, 
+          phi_12_chain_index_prop, 
+          event_time_names
+        ]),
+      event_indicator = as.numeric(
+        submodel_one_samples[
+          phi_12_iter_index_prop, 
+          phi_12_chain_index_prop, 
+          event_indicator_names
+        ]
+      )
+    )
     
     log_prob_phi_12_step_prop <- log_prob(
       object = stanfit_phi_step,
@@ -206,7 +236,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         pars = c(
           psi_2_curr_list,
           phi_12_prop_list,
-          long_beta = phi_23_curr_list
+          phi_23_curr_list
         )
       )
     )
@@ -217,8 +247,8 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         stanfit_phi_step,
         pars = c(
           psi_2_curr_list,
-          event_time = phi_12_curr_list,
-          long_beta = phi_23_curr_list
+          phi_12_curr_list,
+          phi_23_curr_list
         )
       )
     )
@@ -228,7 +258,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     if (runif(1) < exp(log_alpha_12_step)) {
       psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)
       phi_12_samples[ii, 1, ] <- phi_12_prop_list$event_time
-      phi_12_curr_list <- list(phi_12_prop_list$event_time) # for phi_{2 \cap 3} step
+      phi_12_curr_list <- phi_12_prop_list # for phi_{2 \cap 3} step
     } else {
       psi_1_indices[ii, 1, ] <- psi_1_indices[ii - 1, 1, ]
       phi_12_samples[ii, 1, ] <-  phi_12_samples[ii - 1, 1, ]
@@ -251,7 +281,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         stanfit_phi_step,
         pars = c(
           psi_2_curr_list,
-          event_time = phi_12_curr_list,
+          phi_12_curr_list,
           phi_23_prop_list
         )
       )
@@ -263,8 +293,8 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         stanfit_phi_step,
         pars = c(
           psi_2_curr_list,
-          event_time = phi_12_curr_list,
-          long_beta = phi_23_curr_list
+          phi_12_curr_list,
+          phi_23_curr_list
         )
       )
     )

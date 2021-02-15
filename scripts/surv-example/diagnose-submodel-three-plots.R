@@ -22,7 +22,7 @@ p_1 <- plot_worst_pars(
     r"{beta_zero\[}" = r"{beta\[0 * ',' ~}",
     r"{beta_one\[}" = r"{beta\[1 * ',' ~}",
     "mu_beta_zero" = r"{mu[beta * ',' ~ 0]}",
-    "mu_beta_zero" = r"{mu[beta * ',' ~ 1]}",
+    "mu_beta_one" = r"{mu[beta * ',' ~ 1]}",
     "sigma_beta_zero" = r"{sigma[beta * ',' ~ 0]}",
     "sigma_beta_one" = r"{sigma[beta * ',' ~ 1]}",
     "sigma_y" = r"{sigma['y']}" 

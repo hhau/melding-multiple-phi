@@ -10,8 +10,9 @@ set.seed(sim_seed)
 simulated_data <- readRDS(
   file = "rds/surv-example/submodel-one-simulated-data.rds"
 )
-submodel_one_settings <- readRDS(
-  file = "rds/surv-example/submodel-one-simulation-settings.rds"
+
+sim_settings <- readRDS(
+  "rds/surv-example/simulation-settings-and-joint-data.rds"
 )
 
 flog.info(
@@ -30,9 +31,9 @@ stan_input_data <- with(simulated_data,
     Y = measurement,
     obs_ids = patient_id,
     obs_times = time,
-    y_threshold = submodel_one_settings$y_threshold,
-    n_plot = submodel_one_settings$n_plot,
-    x_plot = submodel_one_settings$x_plot
+    y_threshold = sim_settings$y_threshold,
+    n_plot = sim_settings$n_plot,
+    x_plot = sim_settings$x_plot
   )
 )
 
@@ -45,9 +46,12 @@ model_fit <- sampling(
   model_prefit,
   seed = data_seed,
   data = stan_input_data,
-  cores = 4,
+  chains = 5,
+  iter = 6e3,
+  warmup = 1e3,
+  cores = 5,
   control = list(
-    adapt_delta = 0.9
+    adapt_delta = 0.95
   )
 )
 

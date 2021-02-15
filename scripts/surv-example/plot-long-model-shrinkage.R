@@ -3,15 +3,14 @@ library(dplyr)
 
 source("scripts/common/plot-settings.R")
 source("scripts/common/mcmc-util.R")
+source("scripts/surv-example/GLOBALS.R")
 
-stage_one_samples <- readRDS(
-  "rds/surv-example/submodel-three-output.rds"
-) %>%
+set.seed(sim_seed)
+
+stage_one_samples <- readRDS("rds/surv-example/submodel-three-output.rds") %>%
   magrittr::extract2("samples")
 
-stage_two_samples <- readRDS(
-  "rds/surv-example/stage-two-phi-23-samples.rds"
-)
+stage_two_samples <- readRDS("rds/surv-example/stage-two-phi-23-samples.rds")
 
 param_names <- names(stage_two_samples[1, 1, ])
 
@@ -35,8 +34,13 @@ plot_tbl <- bind_rows(stage_one_tbl, stage_two_tbl) %>%
     )
   )
 
-p_1 <- ggplot(plot_tbl, aes(x = .value, colour = stage, lty = stage)) +
-  geom_density(bw = 0.01) +
+sub_sample <- c(4, 11, 20, 23, 25, 33)
+
+p_1 <- ggplot(
+  data = plot_tbl %>% filter(i %in% sub_sample),
+  mapping = aes(x = .value, colour = stage, lty = stage)
+) +
+  geom_density() +
   facet_wrap(vars(facet_label), scales = "free", labeller = label_parsed) +
   xlab(expression(eta)) +
   ylab(expression('p'(eta)))  +

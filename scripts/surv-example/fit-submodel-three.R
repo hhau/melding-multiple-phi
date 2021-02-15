@@ -10,8 +10,9 @@ set.seed(sim_seed)
 simulated_data <- readRDS(
   file = "rds/surv-example/submodel-three-simulated-data.rds"
 )
-submodel_three_settings <- readRDS(
-  file = "rds/surv-example/submodel-three-simulation-settings.rds"
+
+sim_settings <- readRDS(
+  "rds/surv-example/simulation-settings-and-joint-data.rds"
 )
 
 flog.info("surv-fit-submodel-three: compiling model", name = base_filename)
@@ -27,8 +28,8 @@ stan_input_data <- with(simulated_data,
     Y = measurement,
     obs_ids = patient_id,
     obs_times = time,
-    n_plot = submodel_three_settings$n_plot,
-    x_plot = submodel_three_settings$x_plot
+    n_plot = sim_settings$n_plot,
+    x_plot = sim_settings$x_plot
   )
 )
 
@@ -40,7 +41,10 @@ flog.info(
 model_fit <- sampling(
   model_prefit,
   data = stan_input_data,
-  cores = 4,
+  chains = 5,
+  iter = 6e3,
+  warmup = 1e3,
+  cores = 5,
   control = list(
     adapt_delta = 0.95
   )

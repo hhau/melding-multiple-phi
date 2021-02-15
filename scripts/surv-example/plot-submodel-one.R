@@ -9,8 +9,9 @@ source("scripts/common/mcmc-util.R")
 simulated_data <- readRDS(
   file = "rds/surv-example/submodel-one-simulated-data.rds"
 )
-submodel_one_settings <- readRDS(
-  file = "rds/surv-example/submodel-one-simulation-settings.rds"
+
+sim_settings <- readRDS(
+  "rds/surv-example/simulation-settings-and-joint-data.rds"
 )
 
 # read in model output
@@ -32,7 +33,7 @@ res <- model_output$samples %>%
   array_to_mcmc_list() %>%  
   spread_draws(plot_mu[patient_id, plot_x])
 
-res$plot_x <- submodel_one_settings$x_plot[res$plot_x]
+res$plot_x <- sim_settings$x_plot[res$plot_x]
 
 posterior_plot_data <- res %>% 
   point_interval(
@@ -42,8 +43,8 @@ posterior_plot_data <- res %>%
   )
 
 event_df <- tibble(
-  patient_id = 1 : submodel_one_settings$n_patients,
-  event_indicator = submodel_one_settings$event_indicator
+  patient_id = 1 : sim_settings$n_patients,
+  event_indicator = sim_settings$event_indicator
 )
 
 posterior_plot_data <- posterior_plot_data %>%
@@ -75,7 +76,7 @@ with_post_mean <- base_plot +
 # add the threshold
 with_threshold <- with_post_mean +
   geom_abline(
-    intercept = submodel_one_settings$y_threshold,
+    intercept = sim_settings$y_threshold,
     slope = 0,
     alpha = 0.5,
     lty = "dashed"
@@ -103,8 +104,8 @@ final_version <- with_threshold +
   geom_segment(
     data = trimmed_event_data,
     aes(
-      y = submodel_one_settings$y_threshold,
-      yend = submodel_one_settings$y_threshold,
+      y = sim_settings$y_threshold,
+      yend = sim_settings$y_threshold,
       x = .lower,
       xend = .upper
     ),
@@ -114,8 +115,8 @@ final_version <- with_threshold +
   ) + 
   scale_x_continuous(
     limits = c(
-      min(submodel_one_settings$x_plot),
-      max(submodel_one_settings$x_plot)
+      min(sim_settings$x_plot),
+      max(sim_settings$x_plot)
     )
   )
 

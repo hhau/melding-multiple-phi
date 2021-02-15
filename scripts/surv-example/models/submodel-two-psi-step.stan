@@ -19,12 +19,16 @@ data {
   real log_crude_event_rate;
 
   // phi_{1 \cap 2} -- from the event time submodel
-  // assuming no censoring for the moment
+  int <lower = 0, upper = 1> event_indicator [n_patients]; 
   vector <lower = 0> [n_patients] event_time;
   
   // phi_{2 \cap 3} -- from the longitudinal submodel
   // used to calculate m_{i}(t)
   matrix [n_patients, n_long_beta] long_beta;
+}
+
+transformed data {
+  int <lower = 0, upper = n_patients> n_event_patients = sum(event_indicator);
 }
 
 parameters {
@@ -50,11 +54,14 @@ transformed parameters {
 }
 
 model {
-  // Weibull model, no censoring.
-  // log hazard
-  target += n_patients * log(hazard_gamma);
-  target += (hazard_gamma - 1) * sum(log(event_time));
-  target += sum(z_common);
+  // Weibull model log hazard
+  // with censoring.
+  target += n_event_patients * log(hazard_gamma);
+
+  for (ii in 1 : n_patients) {
+    target += (hazard_gamma - 1) * log(event_time[ii]);
+    target += z_common[ii];
+  }
 
   // log survival probability
   target += -sum(
