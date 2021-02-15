@@ -31,24 +31,27 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 - [ ] is this worth having a separate section?
 - [ ] introduce the survival example 
 - [ ] emphasise why each of the examples is interesting / what angle of the problem it explores.
+    - [ ] IPM is the simplest real example of the type of modelling we are interested in
+    - [ ] Survival is another example of a type of modelling that is currently happening, but may be conceptually easier in our proposed framework.
 
 # Model specification
 
 - [x] things like 'appropriate joint model' and 'valid joint density' are imprecise and should be removed
-- [ ] don't think using the word 'adjacent' / describing it is worth the effort.
+- [ ] ~~don't think using the word 'adjacent' / describing it is worth the effort.~~
     - I later think otherwise
 - [x] bit more specific about the conditions for the submodels
     - [ ] this is covered in 3.2
-- [ ] '(co)variance \sigma' is not correct
-- [ ] missing closing parentheses after Equation (7)
+- [x] '(co)variance \sigma' is not correct
+- [x] missing closing parentheses after Equation (7)
 
 # model coherency
 
-- [ ] rewrite
+- [x] rewrite
     - [x] decide if we should use \cap in this section
         - no.
-- [ ] cut conditional commutativity
+- [x] cut conditional commutativity
 - [ ] decide if this goes in the appendix or in the main text
+    - I want this in the main text of the thesis, but I'm not sure what it adds to the paper.
 
 # posterior estimation 
 
