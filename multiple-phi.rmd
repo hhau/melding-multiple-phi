@@ -530,6 +530,9 @@ In melding notation we have $Y_{3} = (w_{1}, \ldots, w_{N})$, and $\psi_{2} = (\
 
 #### Third submodel
 
+- _ideally we'd do some integration over time here_
+    - numerics in stan are the issue, more experiments required to stabilise.
+
 To avoid numerical integration in the second submodel, we model the single longitudinal process via a hierarchical intercept model, using different notation to distinguish it from submodel 1.
 Specifically, we collect $k = 1, \ldots, K$ longitudinal observations for each individual $x_{i, k}$.
 The model is
@@ -586,10 +589,34 @@ knitr::include_graphics("plots/surv-example/phi-inter-stage-posterior-sd.pdf")
 knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
 ```
 
+- fixing event time underestimates the true uncertainty and introduces bias.
+- Fixing the longitudinal submodel seems to have minimal effect, but this is probably due to the simplicity of the model. It is well known that the longitudinal submodel in a joint model can markedly influence the posterior of the survival model, particularly if it is poor fit to the longitudinal data.
 
 # Discussion
 
-## Thoughts on modelling increasingly complex phenomena as a combination of constituent models
+_what have we introduced_
+
+- We have introduced the chained melded model, and illustrated the process by which multiple sources of information are combined to obtained the melded posterior.
+- Our two examples demonstrate that practitioners are already employing modelling processes that combine multiple sources of information, and that ignoring the uncertainty in any submodel component can produce biased, over-confident inference.
+- We note one interesting contribution of this work is that it makes explicit the, often informal, process of summarising and approximating models for use in subsequent analyses. 
+
+_some discussion of seq/para_
+
+- One distinction we explore is between the sequential integration of information and considering all submodels in parallel, i.e. what should one do if an additional submodel becomes available in the future?
+    - What assumptions must be satisfied for the process to be 'exchangeable' w.r.t the order in which data become available? 
+- We describe the independence criteria necessary for the sequential process to yield the same posterior as the chained melded model, and note that in general they do not yield the same posterior.
+    - How should one set $\pd_{1}(\phi_{1 \cap 2})$ when one does not yet know what $\pd_{2}, \pd_{3},  \ldots$ are? Or set $\pd_{\text{pool}}$ when only $\pd_{1}, \pd_{2}$ are known, but there an unknown number of additional models to consider?
+- This is related to the idea that an inference process can/should be externally Bayesian, where by combining the data first then updating all the priors, should give the same result as independently updating the priors then combining the resulting posteriors.
+    - Such a concept is not immediately applicable here, as it asks the process to satisfy strange criteria such as $\pd_{1}(\phi_{1 \cap 2} \mid Y_{3})\pd_{2}(\phi_{1 \cap 2} \mid Y_{3}) = \pd_{\text{meld}}^{12}(\phi_{1 \cap 2} \mid Y_{3})$ among others?
+
+_approx strategies as they relate to other inference methods_
+
+- We also detail two approximation strategies, that we believe are used in practice a great deal.
+    1. The first approximates the subposterior of the common quantity with a Normal approximation, which is then used as a prior in stage two,
+    2. The second is simpler, taking only a point estimate of the subposterior, and treating it as data in stage two.
+- These strategies may admit acceptable approximations to the chained melded model, but in some instances they will produced biased and over-confident inference.
+- It is  interesting to note that many 'preprocessing' steps in an analysis pipeline can be thought of as 'summary by point estimate', the latter strategy, where data are denoised or otherwise cleaned via models, for future use. 
+- Such strategies are implementations of 'multi-phase' inference [@lin_trio_2014] 
 
 ## Advantages
 
@@ -627,9 +654,6 @@ knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
     - This isn't true, PoE is still coherent 
     - issue is with prior specification in the absence of other models, which is then too concentrated / in appropriate when other, related models are postulated.
         - same issue discussed in Section 4.4.3 of @jacob_better_2017-1.
-
-
-# Conclusion 
 
 
 <!-- -------------------- END OF MAIN BODY OF DOCUMENT -------------------- -->

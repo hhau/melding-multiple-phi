@@ -41,8 +41,8 @@ model_fit <- sampling(
   pars = "z_common",
   # cores = 5,
   chains = 5,
-  iter = 2e3,
-  warmup = 1.5e3,
+  iter = 6e3,
+  warmup = 1e3,
   control = list(adapt_delta = 0.95),
   refresh = 0
 )

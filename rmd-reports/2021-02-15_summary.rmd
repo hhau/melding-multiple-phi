@@ -1,0 +1,29 @@
+---
+title: "Summary / questions"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+
+# Comparison to point estimate
+
+- comparing chained melding to the point estimate approximation and the hybrids
+- Seems like the bulk of the uncertainty comes from the uncertain event time? But there is still more uncertainty when the event times are fixed and the other things vary? I am missing something here.
+
+```{r prop, fig.cap = "Posterior of $\\psi_{2}$ under melding and propagating the subposterior medians"}
+knitr::include_graphics("../plots/surv-example/psi-2-method-comparison.png")
+```

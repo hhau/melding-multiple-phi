@@ -61,9 +61,12 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 # examples
 
+- [ ] Figure 6 needs a legend (owls example)
+
 - [ ] emphasises that the examples are proofs of existence / people already modelling in this manner 
 - [ ] the second model can't really be done as a joint model? You'd have to do some form of gibbs? nah, but it would be difficult to get it all working simultaneously.
 - [ ] the work to get the second example working / showing what we want it to show.
+- [ ] the effect sizes in the survival setting need to be reduced 
 
 # conclusion
 

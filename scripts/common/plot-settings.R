@@ -38,6 +38,25 @@ greens <- c(
 ## Burgundy(ish) red highlight
 highlight_col <- wesanderson::wes_palette("FantasticFox1")[5]
 
+whw_pal_16 <- c(
+  "#eab27e",
+  "#f0ac84",
+  "#f4a78c",
+  "#f6a395",
+  "#f59f9f",
+  "#f19da9",
+  "#ec9cb4",
+  "#e49cbd",
+  "#da9cc6",
+  "#ce9ecd",
+  "#c1a0d3",
+  "#b2a2d7",
+  "#a3a4d8",
+  "#93a5d8",
+  "#85a7d6",
+  "#77a8d2"
+)
+
 # ggplot saving settings - @mbertolacci
 display_settings <- list(
   full_page_plot_width = 15,
