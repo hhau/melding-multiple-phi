@@ -23,8 +23,19 @@ model_output <- readRDS(
 base_plot <- ggplot(simulated_data, aes(x = time, y = measurement)) +
   geom_point() +
   facet_wrap(~ patient_id) +
-  bayesplot:::force_x_axis_in_facets() +
-  theme(panel.spacing.x = unit(0.8, "lines"))
+  ylab(expression(italic(z))) +
+  xlab(expression(italic(t))) +
+  scale_x_continuous(
+    breaks = seq(from = 0, to = 1, length.out = 4),
+    labels = function(x) round(x, digits = 2),
+    limits = c(0, 1)
+  ) +
+  # bayesplot:::force_x_axis_in_facets() +
+  theme(
+    panel.spacing.x = unit(0.3, "lines"),
+    axis.text = element_text(size = rel(0.8)),
+    strip.text = element_text(size = rel(0.8))
+  )
 
 # add the posterior mean + 95% quantile interval
 # this is a little slow, could consider caching?
@@ -112,12 +123,6 @@ final_version <- with_threshold +
     col = blues[2],
     size = rel(2),
     alpha = 0.6
-  ) + 
-  scale_x_continuous(
-    limits = c(
-      min(sim_settings$x_plot),
-      max(sim_settings$x_plot)
-    )
   )
 
 ggsave_fullpage(

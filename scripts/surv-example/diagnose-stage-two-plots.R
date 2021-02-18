@@ -20,16 +20,23 @@ p_1 <- plot_worst_pars(
     "event_indicator" = "delta"
   ),
 )
+
 p_2 <- plot_worst_pars(
   phi_23_samples, 
-  c(r"{beta_zero\[}" = r"{beta\[0 * ',' ~}")
+  facet_name_value_pairs = function(x) {
+    res <- str_extract_all(x, "(\\d+,\\d)") %>%
+      str_split(",", simplify = TRUE) %>%
+      as.numeric() 
+    
+    sprintf("eta[%d * ',' ~ %d]", res[1], res[2])
+  }
 )
 
 p_3 <- plot_worst_pars(
   psi_2_samples,
   c(
-    "beta_zero" = "beta[0]",
-    'beta_one' = "beta[1]",
+    "theta_zero" = "theta[0]",
+    'theta_one' = "theta[1]",
     "hazard_gamma" = "gamma",
     "alpha" = "alpha"
   )

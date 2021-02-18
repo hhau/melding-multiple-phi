@@ -10,12 +10,10 @@ sub_vec <- !grepl("(plot_mu|lp__)", x = names(model_samples[1, 1, ]))
 write_diagnostics_to_file(
   samples_array = model_samples[, , sub_vec],
   row_latex_names = c(
-    sprintf(r"{$\beta_{0, %d}$}", 1 : n_patients),
-    # sprintf(r"{$\beta_{1, %d}$}", 1 : 16),
-    r"{$\mu_{\beta, 0}$}",
-    # r"{$\mu_{\beta, 1}$}",
-    r"{$\sigma_{\beta, 0}$}",
-    # r"{$\sigma_{\beta, 1}$}",
+    sprintf(r"{$\mu_{\eta, %d}$}", (1 : n_long_beta) - 1),
+    sprintf(r"{$\sigma_{\eta, %d}$}", (1 : n_long_beta) - 1),
+    sprintf(r"{$\eta_{%d,  0}$}", 1 : n_patients),
+    sprintf(r"{$\eta_{%d,  1}$}", 1 : n_patients),
     r"{$\sigma_{y}$}"
   ),
   output_filename = "tex-input/surv-example/0081-submodel-three-numeric-diags.tex",

@@ -57,14 +57,36 @@ plot_worst_pars <- function(
   worst_index <- c(
     which.max(numerical_diags$Rhat),
     which.min(numerical_diags$n_eff)
-  )
+  ) %>%
+    unique()
+  
+  if (length(worst_index) == 1) {
+    # if the worst rhat and neff are the same variable, 
+    # get the second worst rhat
+    worst_index <- c(
+      worst_index,
+      order(numerical_diags$Rhat, decreasing = TRUE)[2]  
+    )
+  }
   
   current_names <- names(samples_array[1, 1, worst_index])
   n_samples <- dim(samples_array)[1]
   
   # read str_replace_all doc VERY CAREFULLY! Caught out by this behaviour
   # for the second time now.
-  ideal_names <- str_replace_all(current_names, facet_name_value_pairs)
+  # the named vector behaviour of str_replace_all all is inconsistent
+  # I suggest passing a closure through the function argument (more consistent)
+  # and matching on ".+" -- any char vec, which is more consistent
+  if (is.function(facet_name_value_pairs)) {
+    ideal_names <- str_replace_all(
+      current_names,
+      ".+",
+      replacement = facet_name_value_pairs
+    )
+  } else {
+    ideal_names <- str_replace_all(current_names, facet_name_value_pairs)    
+  }
+  
   names(ideal_names) <- current_names
   my_lab <- as_labeller(ideal_names, label_parsed)
 

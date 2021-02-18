@@ -13,31 +13,43 @@ samples_point_3_melded_12 <- readRDS("rds/surv-example/point-est-3-meld-12-psi-2
 plot_tbl <- bind_rows(
   samples_melded %>%
     array_to_mcmc_list() %>%
-    gather_draws(beta_zero, beta_one, hazard_gamma, alpha) %>%
+    gather_draws(theta_zero, theta_one, hazard_gamma, alpha) %>%
     mutate(method = "melding"),
   samples_point %>%
     array_to_mcmc_list() %>%
-    gather_draws(beta_zero, beta_one, hazard_gamma, alpha) %>%
+    gather_draws(theta_zero, theta_one, hazard_gamma, alpha) %>%
     mutate(method = "point"),
   samples_point_1_melded_23 %>%
     array_to_mcmc_list() %>%
-    gather_draws(beta_zero, beta_one, hazard_gamma, alpha) %>%
+    gather_draws(theta_zero, theta_one, hazard_gamma, alpha) %>%
     mutate(method = "point-1-meld-23"),
   samples_point_3_melded_12 %>%
     array_to_mcmc_list() %>%
-    gather_draws(beta_zero, beta_one, hazard_gamma, alpha) %>%
+    gather_draws(theta_zero, theta_one, hazard_gamma, alpha) %>%
     mutate(method = "point-3-meld-12")
 ) %>%
   mutate(
     .variable = factor(
       x = .variable,
-      levels = c("beta_zero", "beta_one", "hazard_gamma", "alpha"),
+      levels = c("theta_zero", "theta_one", "hazard_gamma", "alpha"),
       labels = c("theta[0]", "theta[1]", "gamma", "alpha")
     ),
     method = as.factor(method)
   )
 
-p1 <- ggplot(plot_tbl, aes(x = .value, col = method, lty = method)) +
+## there's one iteration that has a massive outlier, and it's throwing
+## off all the plots.
+
+outlier_id <- plot_tbl %>% 
+  group_by(.variable) %>%
+  filter(.value == min(.value)) %>%
+  pull(.iteration) %>%
+  unique()
+
+p1 <- ggplot(
+  plot_tbl %>% filter(.iteration != outlier_id), 
+  aes(x = .value, col = method, lty = method)
+) +
   geom_density() +
   facet_wrap(vars(.variable), scales = "free", labeller = label_parsed) +
   labs(col = "Method", lty = "Method") +
@@ -59,8 +71,8 @@ p1 <- ggplot(plot_tbl, aes(x = .value, col = method, lty = method)) +
     values = c(
       "melding" = "solid",
       "point" = "solid",
-      "point-1-meld-23" = "3111",
-      "point-3-meld-12" = "3111"
+      "point-1-meld-23" = "3313",
+      "point-3-meld-12" = "3313"
     ),
     labels = list(
       "melding" = "Chained melding",

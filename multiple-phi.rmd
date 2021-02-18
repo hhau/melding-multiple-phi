@@ -460,7 +460,7 @@ It is also an example of estimating an intricate model without ever simultaneous
 - _should we also compare to the normal approximation in this simple setting_?.
 
 ## Uncertain event times in joint longitudinal and survival models.
-
+0
 - What are we considering here?:
     - We now consider _jointly_? modelling longitudinal and survival data, with the added complication that the event times (_and censoring indicators_?) are uncertain, model derived quantities.
 
@@ -490,61 +490,53 @@ It is also an example of estimating an intricate model without ever simultaneous
 
 ### Submodels
 
-#### First submodel
+#### First submodel: Event submodel
 
-- _needs censoring_
-
-The first submodel describes and observable process, where we assume an event occurs when the process crosses some threshold.
+The first submodel describes an observable process, and say that an event to occurs when the process crosses some threshold.
 Consider individuals $i = 1, \ldots, N$ for whom we record $j = 1, \ldots, J_{i}$ measurements $z_{i, j}$ at times $t_{i, j}$, further denoting $\boldsymbol{z}_{i} = (z_{i, 1}, \ldots, z_{i, J_{i}})$ and $\boldsymbol{t}_{i}$ analogously.
-We fit the following hierarchical intercept and slope model
+We fit the following hierarchical linear regression model
 \input{tex-input/surv-example/0020-submodel-one-model.tex}
-where $\text{N}_{-}$ denotes a normal distribution truncated to $(-\infty, 0]$.
-Individuals are said to experience the event of interest $T_{i}$ when their fitted model crosses some threshold $\kappa$, which is to say $T_{i} = (\kappa -\beta_{0, i})\mathop{/} \beta_{1, i}$, and it is for this reason we constrain all $\beta_{1, i}$ and, $\mu_{\beta_{1}}$ to be less than zero. 
-We will later simulate data such that $\kappa < \beta_{0, i}$ to ensure $T_{i} > 0$ for all individuals.
+Individuals are said to experience the event of interest $T^{*}_{i}$ when their fitted model crosses some threshold $\kappa$, which is to say $T^{*}_{i} = (\kappa -\beta_{0, i})\mathop{/} \beta_{1, i}$.
+In addition, we censor the events at time $t = 1$ such that we only record event times $T_{i} = \min(T^{*}_{i}, 1)$ and event indicators $\delta_{i} = \boldsymbol{1}_{\{T^{*}_{i} \in (0, 1)\}}$. 
+Due to our simple regression model it is possible for $T^{*}_{i}$ to be less than zero.
+However, we do not consider the possibility that events occur prior to $t = 0$, and in cases where $T^{*}_{i} < 0$ we set $T_{i} = 1$ and $\delta_{i} = 0$.
+Figure \ref{fig:submodel_one_synthetic_plot} displays the simulated data and fitted model where we set $\kappa = 0.2$, and depict the subposterior $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ via the blue uncertainty intervals.
 
-Figure \ref{fig:submodel_one_synthetic_plot} displays the simulated data and fitted model, which we have truncated to $t \in [0, 1]$ (_this is because I am intending to introduce censoring at $t=1$_).
-We have set $\kappa = 0.2$, and depict the subposterior $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ via the blue uncertainty intervals.
-
-To align this submodel with our notation we denote this submodels data $Y_{1} = (\boldsymbol{t}_{1}, \ldots, \boldsymbol{t}_{N}, \boldsymbol{z}_{1}, \ldots, \boldsymbol{z}_{N})$ and the event times $\phi_{1 \cap 2} = (T_{1}, \ldots, T_{N})$, with $\psi_{1}$ defined to be all model parameters in Equation \eqref{eqn:submodel-one-model}.
+To align this submodel with our notation we denote this submodels data as $Y_{1} = (\boldsymbol{t}_{1}, \ldots, \boldsymbol{t}_{N}, \boldsymbol{z}_{1}, \ldots, \boldsymbol{z}_{N})$ and common quantity $\phi_{1 \cap 2} = (T_{1}, \ldots, T_{N}, \delta_{1}, \ldots, \delta_{N})$, with $\psi_{1}$ defined to be all model parameters in Equation \eqref{eqn:submodel-one-model}.
 
 ```{r submodel_one_synthetic_plot, fig.cap = "First submodel. The 80\\% credible interval for each individuals event distribution, if the event occurs for that individual, is displayed in blue and is truncated to $t \\in [0, 1]$. The threshold $\\kappa$ is displayed as the horizontal dashed line. Individuals the truly have the event occur are denoted by a solid mean regression line, whilst individuals that do not have the event occur have a dotted line"}
 knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
 ```
 
-#### Second submodel
+#### Second submodel: Survival submodel
 
-- _needs censoring_
+- _in the thesis, there should be a brief discussion on the issues encountered when trying to compute this_.
 
 Our second submodel is a standard parametric Weibull survival model with rate $\gamma$.
 Say we observe a baseline covariate $w_{i}$ for each individual.
 We define the hazard and survival probabilities at time $t$
 \input{tex-input/surv-example/0030-submodel-two-hazard-general.tex}
 where $\theta_{0}$ is an intercept, $\theta_{1}$ is the regression parameter for the baseline covariate, and $\alpha$ quantifies the strength of the association between the event time and the fitted value from the longitudinal model $m_{i}(t)$, which we will define momentarily.
-The likelihood is proportional to $h_{i}(t)S_{i}(t)$ (_will change if we censor_).
+The log-likelihood is proportional to $\boldsymbol{1}_{\{\delta_{i} = 1\}} h_{i}(t) + S_{i}(t)$.
 We complete the model by specifying the following priors
 \input{tex-input/surv-example/0033-surv-model-priors.tex}
 where $\overline{T}$ is the log of the crude event rate, in line with @brilleman_bayesian_2020.
-Note that the model in Equation $\eqref{eqn:surv-model-priors}$ is written in terms of generic event time $t$, but we will consider the uncertain even times for each individual $T_{i}$ from submodel 1.
+Note that the model in Equation $\eqref{eqn:surv-model-priors}$ is written in terms of generic event time $t$, but we will consider uncertain event times for each individual $T_{i}$ from submodel 1.
 
 In melding notation we have $Y_{3} = (w_{1}, \ldots, w_{N})$, and $\psi_{2} = (\gamma, \theta_{0}, \theta_{1}, \alpha)$. The common quantities, $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are defined in previous and following sections respectively.
 
-#### Third submodel
+#### Third submodel: Longitudinal submodel
 
-- _ideally we'd do some integration over time here_
-    - numerics in stan are the issue, more experiments required to stabilise.
-
-To avoid numerical integration in the second submodel, we model the single longitudinal process via a hierarchical intercept model, using different notation to distinguish it from submodel 1.
-Specifically, we collect $k = 1, \ldots, K$ longitudinal observations for each individual $x_{i, k}$.
+The third submodel is the longitudinal submodel. 
+Specifically, we collect $k = 1, \ldots, K_{i}$ longitudinal observations for each individual $x_{i, k}$ at times $\tau_{i, k}$, which are not necessarily the same as the observations times in the event submodel $t_{i, j}$.
+We stack each individuals observations and observation times in appropriate vectors $\boldsymbol{x}_{i} = (x_{1}, \ldots, x_{K_{i}})$ and $\boldsymbol{\tau}_{i} = (\tau_{1}, \ldots, \tau_{K_{i}})$.
 The model is
 \input{tex-input/surv-example/0040-submodel-three-model.tex}
-and we define $m_{i}(t) = \eta_{i}$. 
+and we define $m_{i}(t) = \eta_{0, i} + \eta_{1, i}t$. 
+Note that this form of $m_{i}(t)$ requires numerical integration to obtain the survival probability in Equation \eqref{eqn:submodel-two-hazard-general}.
 
-In our notation we denote $Y_{3} = \boldsymbol{X} = (\boldsymbol{x}_{1}, \ldots, \boldsymbol{x}_{N}), \, \phi_{2 \cap 3} = \boldsymbol{\eta} = (\eta_{1}, \ldots, \eta_{N})$ and $\psi_{3} = (\mu_{\eta}, \sigma_{\eta}, \sigma_{x})$.
-
-- general motivation.
-    - Ideally we'd have this model be some function of $t$.
-    - In lieu of that, we consider this model to be representative of some individual specific, yet constant over the time period of interest, longitudinal process. One possible example may be blood pressure during hospital stay, where the reason for hospital admission is not, primarily, related to cardiovascular status.
-    - More general, time dependent forms of $m_{i}(t)$ are possible.
+In our notation we denote data $Y_{3} = (\boldsymbol{x}_{1}, \ldots, \boldsymbol{x}_{N})$, and define the common quantity to be the parameters governing $m_{i}(t)$, i.e. $\phi_{2 \cap 3} = \boldsymbol{\eta} = (\eta_{0, 1}, \ldots, \eta_{0, N}, \eta_{1, 1}, \ldots, \eta_{1, N})$. 
+The remaining parameters are absorbed into $\psi_{3} = (\mu_{\eta, 0}, \mu_{\eta, 1}, \sigma_{\eta, 0}, \sigma_{\eta, 1}, \sigma_{x})$.
 
 #### Pooled prior:
 
@@ -558,7 +550,19 @@ In our notation we denote $Y_{3} = \boldsymbol{X} = (\boldsymbol{x}_{1}, \ldots,
 
 ### Simulation details
 
-- the data is simulated slight differently than the models may suggest, because we need to do the event submodel first, but also associate said events with the longitudinal process.
+Because we have multiple models for the common quantities, the joint model obtained via the product of the independent submodel is not generative.
+As simulating from the prior predictive distribution is not possible, we need to choose how we generate synthetic data.
+We do so by first simulating a latent event indicator for each of $N = 36$ individuals, then joint simulating the relevant submodel parameters.
+
+Specifically, we first simulate a latent indicator variable $E_{i} \sim \text{Bern}(0.5)$ which is 1 if individual $i$ truly experiences the event of interest, and is 0 otherwise.
+If $E_{i} = 1$, the critical parameters and covariates $(\beta_{1, i}, w_{i}, \eta_{0, i}, \eta_{1, i})$ are simulated from a multivariate normal distribution with mean $(1.5, 5, 3, 1.5)$ and covariance $\Sigma = \boldsymbol{I} + \boldsymbol{C}$, where $\boldsymbol{I}$ is the identity matrix and $\boldsymbol{C}$ is a matrix with non-diagonal entries of $0.5$ and diagonal entries of $0$.
+Alternatively, if $E_{i} = 0$, all elements of $(\beta_{1, i}, w_{i}, \eta_{0, i}, \eta_{1, i})$ are independently simulated from standard normal distributions.
+
+Observation times $\boldsymbol{t}_{i}$ and $\boldsymbol{\tau}_{i}$ are uniformly distributed between 0 and 1, and the number of observations $J_{i}$ and $K_{i}$ are uniformly distributed on the integers between 2 and 8 inclusive.
+
+Remaining parameters and submodel data are simulated conditionally given the critical parameters. 
+In submodel 1, the random intercept $\beta_{0, i}$ is simulated from $\text{N}(1, 0.1^2)$, and observations are then simulated such that $\boldsymbol{z}_{i} \sim \text{N}(\beta_{0, i} + \beta_{1, i}\boldsymbol{t}_{i}, 0.1\boldsymbol{I})$.
+We simulate observations in submodel 3 such that $\boldsymbol{x}_{i} \sim \text{N}(\eta_{0, i} + \eta_{1, i}\boldsymbol{\tau}_{i}, \boldsymbol{I})$.
 
 ### Results and discussion for this example.
 

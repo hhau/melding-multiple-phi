@@ -14,7 +14,6 @@ sim_settings <- readRDS(
   "rds/surv-example/simulation-settings-and-joint-data.rds"
 )
 
-
 # read in model output
 model_output <- readRDS(
   file = "rds/surv-example/submodel-three-output.rds"

@@ -20,9 +20,10 @@ write_diagnostics_to_file(
   label = "surv-stage-two-diag-phi-12"
 )
 
+val_gr <- expand.grid(1 : n_patients, (1 : n_long_beta) - 1)
 write_diagnostics_to_file(
   samples_array = phi_23_samples,
-  row_latex_names = sprintf(r"($\beta_{0, %d}$)", 1 : n_patients),
+  row_latex_names = sprintf(r"($\eta_{%d, %d}$)", val_gr[, 1], val_gr[, 2]),
   output_filename = "tex-input/surv-example/0091-stage-two-phi-23-diag.tex",
   caption = r"(Stage two numeric diagnostics for $\phi_{2 \cap 3}$ in the survival example)",
   label = "surv-stage-two-diag-phi-23"
@@ -31,8 +32,8 @@ write_diagnostics_to_file(
 write_diagnostics_to_file(
   samples_array = psi_2_samples,
   row_latex_names = c(
-    r"($\beta_{0}$)", 
-    r"($\beta_{1}$)", 
+    r"($\theta_{0}$)", 
+    r"($\theta_{1}$)", 
     r"($\gamma$)", 
     r"($\alpha$)"
   ),

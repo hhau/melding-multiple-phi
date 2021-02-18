@@ -45,14 +45,11 @@ phi_12_names <- c(
 event_time_names <- grep("event_time", phi_12_names, value = TRUE)
 event_indicator_names <- grep("event_indicator", phi_12_names, value = TRUE)
 
-phi_23_names <- c(
-  sprintf("beta_zero[%d]", 1 : n_patients)#,
-  # sprintf("beta_one[%d]", 1 : n_patients)
-)
+beta_gr <- expand.grid(1 : n_patients, 1 : n_long_beta)
+phi_23_names <- sprintf("beta[%d,%d]", beta_gr[, 1], beta_gr[, 2])
 
 n_phi_12 <- length(phi_12_names)
 n_phi_23 <- length(phi_23_names)
-n_long_beta <- 1 # 1 = intercept only model, 2 = intercept + slope
 
 stan_data <- list(
   n_patients = length(submodel_two_data$patient_id),
@@ -86,7 +83,7 @@ stanfit_phi_step <- sampling(
 )
 
 psi_two_names <- stanfit_phi_step@model_pars %>%
-  grep(".*(beta|gamma|alpha).*", x = ., value = TRUE) %>% 
+  grep(".*(theta|gamma|alpha).*", x = ., value = TRUE) %>% 
   magrittr::extract(!str_detect(., "long"))
   
 n_psi_two_pars <- length(psi_two_names)
@@ -148,29 +145,27 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     phi_12_list <- phi_12_post_median
 
     phi_23_curr_list <- list(
-      long_beta = as.numeric(phi_23_samples[ii - 1, 1, ])
+      long_beta = matrix(
+        phi_23_samples[ii - 1, 1, ],
+        ncol = n_long_beta,
+        nrow = n_patients
+      )
     )
     
     # psi step
     psi_step_data <- c(
       stan_data,
       phi_12_list,
-      long_beta = list(
-        matrix(
-          data = phi_23_samples[ii - 1, 1, ],
-          nrow = stan_data$n_patients,
-          ncol = n_long_beta
-        )
-      )
+      phi_23_curr_list
     )
 
     psi_step <- sampling(
       object = prefit_psi_two_step,
       data = psi_step_data,
-      # init = list(as.list(psi_2_samples[ii - 1, 1, ])),
+      init = list(as.list(psi_2_samples[ii - 1, 1, ])),
       chains = 1,
-      iter = 21,
-      warmup = 20,
+      iter = 6,
+      warmup = 5,
       refresh = 0
     )
 
@@ -180,13 +175,17 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     # phi_{2 \cap 3} step
     phi_23_iter_index_prop <- sample.int(n = n_iter_submodel_three, size = 1)
     phi_23_chain_index_prop <- sample.int(n = n_chain_submodel_three, size = 1)
-    phi_23_prop_list <- list(long_beta = as.numeric(
-      submodel_three_samples[
-        phi_23_iter_index_prop, 
-        phi_23_chain_index_prop, 
-        phi_23_names
-      ]
-    ))
+    phi_23_prop_list <- list(
+      long_beta = matrix(
+        submodel_three_samples[
+          phi_23_iter_index_prop, 
+          phi_23_chain_index_prop, 
+          phi_23_names
+        ],
+        ncol = n_long_beta,
+        nrow = n_patients
+      )
+    )
     
     log_prob_phi_23_step_prop <- log_prob(
       object = stanfit_phi_step,
