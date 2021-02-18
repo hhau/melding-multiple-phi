@@ -29,7 +29,8 @@ stan_input_data <- with(simulated_data,
     obs_ids = patient_id,
     obs_times = time,
     n_plot = sim_settings$n_plot,
-    x_plot = sim_settings$x_plot
+    x_plot = sim_settings$x_plot,
+    n_long_beta = n_long_beta
   )
 )
 

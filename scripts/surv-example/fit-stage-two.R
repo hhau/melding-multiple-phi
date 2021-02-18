@@ -44,14 +44,13 @@ phi_12_names <- c(
 event_time_names <- grep("event_time", phi_12_names, value = TRUE)
 event_indicator_names <- grep("event_indicator", phi_12_names, value = TRUE)
 
-phi_23_names <- c(
-  sprintf("beta_zero[%d]", 1 : n_patients)#,
-  # sprintf("beta_one[%d]", 1 : n_patients)
-)
+# there doesn't seem to be a good way around hardcoding these tbh.
+phi_23_names <- grep("^beta", names(submodel_three_samples[1, 1, ]), value = TRUE)
+long_beta_zero_names <- grep("*,1]$", phi_23_names, value = TRUE)
+long_beta_one_names <- grep("*,2]$", phi_23_names, value = TRUE)
 
 n_phi_12 <- length(phi_12_names)
 n_phi_23 <- length(phi_23_names)
-n_long_beta <- 1 # 1 = intercept only model, 2 = intercept + slope
 
 stan_data <- list(
   n_patients = length(submodel_two_data$patient_id),
@@ -85,7 +84,7 @@ stanfit_phi_step <- sampling(
 )
 
 psi_two_names <- stanfit_phi_step@model_pars %>%
-  grep(".*(beta|gamma|alpha).*", x = ., value = TRUE) %>% 
+  grep(".*(theta|gamma|alpha).*", x = ., value = TRUE) %>% 
   magrittr::extract(!str_detect(., "long"))
   
 n_psi_two_pars <- length(psi_two_names)
@@ -154,8 +153,8 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   ]
   
   psi_2_samples[1, 1, ] <- c(
-    beta_zero = rnorm(n = 1, mean = 4, sd = 1),
-    beta_one = rnorm(n = 1, mean = 0.5, sd = 0.2),
+    theta_zero = rnorm(n = 1, mean = 4, sd = 1),
+    theta_one = rnorm(n = 1, mean = 0.5, sd = 0.2),
     hazard_gamma = abs(rnorm(n = 1, mean = 0.6, sd = 0.2)),
     alpha = rnorm(n = 1, mean = 0, sd = 0.1)
   )
@@ -170,40 +169,32 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       event_time = as.numeric(
         phi_12_samples[ii - 1, 1, event_time_names]
       ),
-      event_indicator = as.numeric(
+      event_indicator = as.integer(
         phi_12_samples[ii - 1, 1, event_indicator_names]
       )
     )
 
     phi_23_curr_list <- list(
-      long_beta = as.numeric(phi_23_samples[ii - 1, 1, ])
+      long_beta = matrix(
+        phi_23_samples[ii - 1, 1, ],
+        ncol = n_long_beta
+      )
     )
     
     # psi step
     psi_step_data <- c(
       stan_data,
-      event_time = list(
-        as.numeric(phi_12_samples[ii - 1, 1, event_time_names])
-      ),
-      event_indicator = list(
-        as.integer(phi_12_samples[ii - 1, 1, event_indicator_names])
-      ),
-      long_beta = list(
-        matrix(
-          data = phi_23_samples[ii - 1, 1, ],
-          nrow = stan_data$n_patients,
-          ncol = n_long_beta
-        )
-      )
+      phi_12_curr_list,
+      phi_23_curr_list
     )
 
     psi_step <- sampling(
       object = prefit_psi_two_step,
       data = psi_step_data,
-      # init = list(as.list(psi_2_samples[ii - 1, 1, ])),
+      init = list(as.list(psi_2_samples[ii - 1, 1, ])),
       chains = 1,
-      iter = 21,
-      warmup = 20,
+      iter = 11,
+      warmup = 10,
       refresh = 0
     )
 
@@ -257,7 +248,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
 
     if (runif(1) < exp(log_alpha_12_step)) {
       psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)
-      phi_12_samples[ii, 1, ] <- phi_12_prop_list$event_time
+      phi_12_samples[ii, 1, ] <- c(phi_12_prop_list$event_time, phi_12_prop_list$event_indicator)
       phi_12_curr_list <- phi_12_prop_list # for phi_{2 \cap 3} step
     } else {
       psi_1_indices[ii, 1, ] <- psi_1_indices[ii - 1, 1, ]
@@ -267,12 +258,14 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     # phi_{2 \cap 3} step
     phi_23_iter_index_prop <- sample.int(n = n_iter_submodel_three, size = 1)
     phi_23_chain_index_prop <- sample.int(n = n_chain_submodel_three, size = 1)
-    phi_23_prop_list <- list(long_beta = as.numeric(
-      submodel_three_samples[
-        phi_23_iter_index_prop, 
-        phi_23_chain_index_prop, 
-        phi_23_names
-      ]
+    phi_23_prop_list <- list(
+      long_beta = matrix(
+        submodel_three_samples[
+          phi_23_iter_index_prop, 
+          phi_23_chain_index_prop, 
+          phi_23_names
+        ],
+        ncol = n_long_beta
     ))
     
     log_prob_phi_23_step_prop <- log_prob(
@@ -309,9 +302,9 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       phi_23_samples[ii, 1, ] <-  phi_23_samples[ii - 1, 1, ]
     }
     
-    if (ii %% 500 == 0) {
+    if (ii %% 50 == 0) {
       flog.info(
-        sprintf("surv-fit-stage-two--chain-%d: iteration-%d", chain_id, ii), 
+        sprintf("surv-fit-stage-two--chain-%d: iteration-%d", chain_id, ii),
         name = base_filename
       )
     }

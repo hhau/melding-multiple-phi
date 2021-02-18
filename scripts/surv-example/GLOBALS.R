@@ -19,3 +19,4 @@ sim_seed <- "simseed" %>%
   
 # Global settings
 n_patients <- 36
+n_long_beta <- 2

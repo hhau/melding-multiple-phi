@@ -1,5 +1,6 @@
 library(tidybayes)
 library(dplyr)
+library(tidyr)
 
 source("scripts/common/plot-settings.R")
 source("scripts/common/mcmc-util.R")
@@ -16,21 +17,23 @@ param_names <- names(stage_two_samples[1, 1, ])
 
 stage_one_tbl <- stage_one_samples[, , param_names] %>%
   array_to_mcmc_list() %>% 
-  gather_draws(beta_zero[i]) %>% # will need to change if we change mod 3
+  gather_draws(beta[i, p]) %>% # will need to change if we change mod 3
   mutate(stage = 1)
 
 stage_two_tbl <- stage_two_samples[, , param_names] %>%
   array_to_mcmc_list() %>%
-  gather_draws(beta_zero[i]) %>%
+  gather_draws(beta[i, p]) %>%
   mutate(stage = 2)
 
 plot_tbl <- bind_rows(stage_one_tbl, stage_two_tbl) %>%
+  unite("ip", i:p, remove = FALSE) %>%
   mutate(
     stage = as.factor(stage),
     facet_label = factor(
-      x = as.character(i),
-      levels = i,
-      labels = paste0("eta[", i, "]")
+      x = as.character(ip),
+      levels = ip,
+      labels = paste0("eta[", i, " * ',' ~", p - 1, "]"
+      )
     )
   )
 
