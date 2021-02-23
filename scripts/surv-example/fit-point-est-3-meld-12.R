@@ -16,6 +16,15 @@ flog.info("surv-fit-point-est-3-meld-12: reading data", name = base_filename)
 submodel_one_output <- readRDS("rds/surv-example/submodel-one-output.rds")
 submodel_two_data <- readRDS("rds/surv-example/submodel-two-simulated-data.rds")
 phi_23_post_median <- readRDS("rds/surv-example/stage-one-phi-23-posterior-median.rds")
+phi_23_post_median_mat <- matrix(
+  unlist(phi_23_post_median),
+  nrow = n_patients,
+  ncol = n_long_beta,
+  dimnames = list(
+    NULL,
+    names(phi_23_post_median)
+  )
+)
 
 submodel_one_samples <- submodel_one_output$samples
 n_iter_submodel_one <- dim(submodel_one_samples)[1]
@@ -41,7 +50,7 @@ event_time_names <- grep("event_time", phi_12_names, value = TRUE)
 event_indicator_names <- grep("event_indicator", phi_12_names, value = TRUE)
 
 beta_gr <- expand.grid(1 : n_patients, 1 : n_long_beta)
-phi_23_names <- sprintf("beta[%d, %d]", beta_gr[, 1], beta_gr[, 2])
+phi_23_names <- sprintf("beta[%d,%d]", beta_gr[, 1], beta_gr[, 2])
 
 n_phi_12 <- length(phi_12_names)
 n_phi_23 <- length(phi_23_names)
@@ -61,26 +70,19 @@ prefit_psi_two_step <- stan_model(
   "scripts/surv-example/models/submodel-two-psi-step.stan"
 )
 
-# NB: we can use the same stan file/fit for both phi_{1 \cap 2} and 
-# phi_{2 \cap 3}, because we can control which parameters change / which
-# are the same.
-prefit_phi_step <- stan_model(
-  "scripts/surv-example/models/submodel-two-phi-step.stan"
+prefit_phi_indiv_step <- stan_model(
+  "scripts/surv-example/models/submodel-two-phi-step-indiv.stan"
 )
 
-stanfit_phi_step <- sampling(
-  prefit_phi_step,
-  data = stan_data,
+stanfit_phi_indiv_step <- sampling(
+  prefit_phi_indiv_step,
   chains = 1,
   cores = 1,
   iter = 1,
   refresh = 0
 )
 
-psi_two_names <- stanfit_phi_step@model_pars %>%
-  grep(".*(theta|gamma|alpha).*", x = ., value = TRUE) %>% 
-  magrittr::extract(!str_detect(., "long"))
-  
+psi_two_names <- c("theta_zero", "theta_one", "hazard_gamma", "alpha")
 n_psi_two_pars <- length(psi_two_names)
 
 # general MCMC options
@@ -135,6 +137,17 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     sprintf("surv-fit-point-est-3-meld-12--chain-%d: initialised okay", chain_id), 
     name = base_filename
   )
+  
+  phi_23_list <- list(
+    long_beta = matrix(
+      data = c(
+        phi_23_post_median$long_beta_zero, 
+        phi_23_post_median$long_beta_one
+      ),
+      ncol = n_long_beta,
+      nrow = n_patients
+    )
+  )
 
   for (ii in 2 : n_stage_two_iter) {
     phi_12_curr_list <- list(
@@ -143,17 +156,6 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       ),
       event_indicator = as.integer(
         phi_12_samples[ii - 1, 1, event_indicator_names]
-      )
-    )
-
-    phi_23_list <- list(
-      long_beta = matrix(
-        data = c(
-          phi_23_post_median$long_beta_zero, 
-          phi_23_post_median$long_beta_one
-        ),
-        ncol = n_long_beta,
-        nrow = n_patients
       )
     )
     
@@ -169,6 +171,8 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       data = psi_step_data,
       init = list(as.list(psi_2_samples[ii - 1, 1, ])),
       chains = 1,
+      include = TRUE,
+      pars = psi_two_names,
       iter = 6,
       warmup = 5,
       refresh = 0
@@ -178,56 +182,75 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     psi_2_curr_list <- as.list(psi_2_samples[ii, 1, ])
 
     # phi_{1 \cap 2} step
-    phi_12_iter_index_prop <- sample.int(n = n_iter_submodel_one, size = 1)
-    phi_12_chain_index_prop <- sample.int(n = n_chain_submodel_one, size = 1)
-    phi_12_prop_list <- list(
-      event_time = as.numeric(
-        submodel_one_samples[
-          phi_12_iter_index_prop, 
-          phi_12_chain_index_prop, 
-          event_time_names
-        ]),
-      event_indicator = as.integer(
-        submodel_one_samples[
-          phi_12_iter_index_prop, 
-          phi_12_chain_index_prop, 
-          event_indicator_names
-        ]
+    # outside, randomly sample a scan order 
+    # function / abstract out the updating? even more assigns / accesses
+    scan_order <- sample.int(n_patients, n_patients, replace = FALSE)
+    for (jj in 1 : n_patients) {
+      indiv_index <- scan_order[jj]
+      phi_12_iter_index_prop <- sample.int(n = n_iter_submodel_one, size = 1)
+      phi_12_chain_index_prop <- sample.int(n = n_chain_submodel_one, size = 1)
+   
+      # define the names
+      phi_12_indiv_names <- phi_12_names[c(indiv_index, indiv_index + n_patients)]
+      
+      # pack/denote the parameters
+      phi_12_indiv_prop_list <- list(
+        event_time = as.numeric(
+          submodel_one_samples[
+            phi_12_iter_index_prop,
+            phi_12_chain_index_prop,
+            phi_12_indiv_names[1]
+          ]
+        ),
+        event_indicator = as.integer(
+          submodel_one_samples[
+            phi_12_iter_index_prop,
+            phi_12_chain_index_prop,
+            phi_12_indiv_names[2]
+          ]
+        ),
+        eta_one = phi_23_post_median_mat[indiv_index, 2]
       )
-    )
-    
-    log_prob_phi_12_step_prop <- log_prob(
-      object = stanfit_phi_step,
-      upars = unconstrain_pars(
-        stanfit_phi_step,
-        pars = c(
-          psi_2_curr_list,
-          phi_12_prop_list,
-          phi_23_list
+      
+      phi_12_indiv_curr_list <- list(
+        event_time = phi_12_samples[ii - 1, 1, phi_12_indiv_names[1]],
+        event_indicator = phi_12_samples[ii - 1, 1, phi_12_indiv_names[2]],
+        eta_one = phi_23_post_median_mat[indiv_index, 2]
+      )
+      # eval the log probs
+      log_prob_phi_12_indiv_prop <- log_prob(
+        stanfit_phi_indiv_step,
+        upars = unconstrain_pars(
+          stanfit_phi_indiv_step,
+          pars = c(psi_2_curr_list, phi_12_indiv_prop_list)
         )
       )
-    )
-
-    log_prob_phi_12_step_curr <- log_prob(
-      object = stanfit_phi_step,
-      upars = unconstrain_pars(
-        stanfit_phi_step,
-        pars = c(
-          psi_2_curr_list,
-          phi_12_curr_list,
-          phi_23_list
+      
+      log_prob_phi_12_indiv_curr <- log_prob(
+        stanfit_phi_indiv_step,
+        upars = unconstrain_pars(
+          stanfit_phi_indiv_step,
+          pars = c(psi_2_curr_list, phi_12_indiv_curr_list)
         )
       )
-    )
-
-    log_alpha_12_step <- log_prob_phi_12_step_prop - log_prob_phi_12_step_curr
-
-    if (runif(1) < exp(log_alpha_12_step)) {
-      psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)
-      phi_12_samples[ii, 1, ] <- c(phi_12_prop_list$event_time, phi_12_prop_list$event_indicator)
-    } else {
-      psi_1_indices[ii, 1, ] <- psi_1_indices[ii - 1, 1, ]
-      phi_12_samples[ii, 1, ] <-  phi_12_samples[ii - 1, 1, ]
+      
+      log_alpha_phi_12_indiv <- log_prob_phi_12_indiv_prop - log_prob_phi_12_indiv_curr
+      
+      if (runif(1) < exp(log_alpha_phi_12_indiv)) {
+        if (jj == 1) {
+          psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)
+        }
+        
+        phi_12_samples[ii, 1, phi_12_indiv_names] <- c(
+          .subset2(phi_12_indiv_prop_list, 1),
+          .subset2(phi_12_indiv_prop_list, 2)
+        )
+      } else {
+        if (jj == 1) {
+          psi_1_indices[ii, 1, ] <- psi_1_indices[ii - 1, 1, ]
+        }
+        phi_12_samples[ii, 1, phi_12_indiv_names] <- phi_12_samples[ii - 1, 1, phi_12_indiv_names]
+      }
     }
     
     if (ii %% 500 == 0) {

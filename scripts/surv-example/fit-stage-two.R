@@ -74,9 +74,21 @@ prefit_phi_step <- stan_model(
   "scripts/surv-example/models/submodel-two-phi-step.stan"
 )
 
+prefit_phi_indiv_step <- stan_model(
+  "scripts/surv-example/models/submodel-two-phi-step-indiv.stan"
+)
+
 stanfit_phi_step <- sampling(
   prefit_phi_step,
   data = stan_data,
+  chains = 1,
+  cores = 1,
+  iter = 1,
+  refresh = 0
+)
+
+stanfit_phi_indiv_step <- sampling(
+  prefit_phi_indiv_step,
   chains = 1,
   cores = 1,
   iter = 1,
@@ -177,6 +189,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
     phi_23_curr_list <- list(
       long_beta = matrix(
         phi_23_samples[ii - 1, 1, ],
+        nrow = n_patients,
         ncol = n_long_beta
       )
     )
@@ -192,68 +205,93 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       object = prefit_psi_two_step,
       data = psi_step_data,
       init = list(as.list(psi_2_samples[ii - 1, 1, ])),
+      include = TRUE,
+      pars = psi_two_names,
       chains = 1,
-      iter = 11,
-      warmup = 10,
+      iter = 6,
+      warmup = 5,
       refresh = 0
     )
 
     psi_2_samples[ii, 1, ] <- as.array(psi_step, pars = psi_two_names)
     psi_2_curr_list <- as.list(psi_2_samples[ii, 1, ])
 
-    # phi_{1 \cap 2} step
-    phi_12_iter_index_prop <- sample.int(n = n_iter_submodel_one, size = 1)
-    phi_12_chain_index_prop <- sample.int(n = n_chain_submodel_one, size = 1)
-    phi_12_prop_list <- list(
-      event_time = as.numeric(
-        submodel_one_samples[
-          phi_12_iter_index_prop, 
-          phi_12_chain_index_prop, 
-          event_time_names
-        ]),
-      event_indicator = as.numeric(
-        submodel_one_samples[
-          phi_12_iter_index_prop, 
-          phi_12_chain_index_prop, 
-          event_indicator_names
-        ]
+    # phi_{1 \cap 2} and psi_{1} step -- do 1-at-a-time
+    scan_order <- sample.int(n_patients, n_patients, replace = FALSE)
+    for (jj in 1 : n_patients) {
+      indiv_index <- scan_order[jj]
+      phi_12_iter_index_prop <- sample.int(n = n_iter_submodel_one, size = 1)
+      phi_12_chain_index_prop <- sample.int(n = n_chain_submodel_one, size = 1)
+      phi_12_indiv_names <- phi_12_names[c(indiv_index, indiv_index + n_patients)]
+
+      phi_12_indiv_prop_list <- list(
+        event_time = as.numeric(
+          submodel_one_samples[
+            phi_12_iter_index_prop,
+            phi_12_chain_index_prop,
+            phi_12_indiv_names[1]
+          ]
+        ),
+        event_indicator = as.integer(
+          submodel_one_samples[
+            phi_12_iter_index_prop,
+            phi_12_chain_index_prop,
+            phi_12_indiv_names[2]
+          ]
+        ),
+        eta_one = phi_23_curr_list[[1]][indiv_index, 2]
       )
-    )
-    
-    log_prob_phi_12_step_prop <- log_prob(
-      object = stanfit_phi_step,
-      upars = unconstrain_pars(
-        stanfit_phi_step,
-        pars = c(
-          psi_2_curr_list,
-          phi_12_prop_list,
-          phi_23_curr_list
+      
+      phi_12_indiv_curr_list <- list(
+        event_time = phi_12_samples[ii - 1, 1, phi_12_indiv_names[1]],
+        event_indicator = phi_12_samples[ii - 1, 1, phi_12_indiv_names[2]],
+        eta_one = phi_23_curr_list[[1]][indiv_index, 2]
+      )
+
+      log_prob_phi_12_indiv_prop <- log_prob(
+        stanfit_phi_indiv_step,
+        upars = unconstrain_pars(
+          stanfit_phi_indiv_step,
+          pars = c(psi_2_curr_list, phi_12_indiv_prop_list)
         )
       )
-    )
-
-    log_prob_phi_12_step_curr <- log_prob(
-      object = stanfit_phi_step,
-      upars = unconstrain_pars(
-        stanfit_phi_step,
-        pars = c(
-          psi_2_curr_list,
-          phi_12_curr_list,
-          phi_23_curr_list
+      
+      log_prob_phi_12_indiv_curr <- log_prob(
+        stanfit_phi_indiv_step,
+        upars = unconstrain_pars(
+          stanfit_phi_indiv_step,
+          pars = c(psi_2_curr_list, phi_12_indiv_curr_list)
         )
       )
-    )
-
-    log_alpha_12_step <- log_prob_phi_12_step_prop - log_prob_phi_12_step_curr
-
-    if (runif(1) < exp(log_alpha_12_step)) {
-      psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)
-      phi_12_samples[ii, 1, ] <- c(phi_12_prop_list$event_time, phi_12_prop_list$event_indicator)
-      phi_12_curr_list <- phi_12_prop_list # for phi_{2 \cap 3} step
-    } else {
-      psi_1_indices[ii, 1, ] <- psi_1_indices[ii - 1, 1, ]
-      phi_12_samples[ii, 1, ] <-  phi_12_samples[ii - 1, 1, ]
+      
+      log_alpha_phi_12_indiv <- log_prob_phi_12_indiv_prop - log_prob_phi_12_indiv_curr
+      
+      if (runif(1) < exp(log_alpha_phi_12_indiv)) {
+        if (jj == 1) {
+          psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)
+        }
+        
+        phi_12_samples[ii, 1, phi_12_indiv_names] <- c(
+          .subset2(phi_12_indiv_prop_list, 1),
+          .subset2(phi_12_indiv_prop_list, 2)
+        )
+      } else {
+        if (jj == 1) {
+          psi_1_indices[ii, 1, ] <- psi_1_indices[ii - 1, 1, ]
+        }
+        phi_12_samples[ii, 1, phi_12_indiv_names] <- phi_12_samples[ii - 1, 1, phi_12_indiv_names]
+      }
     }
+    
+    # update phi_12_curr for next step 
+    phi_12_curr_list <- list(
+      event_time = as.numeric(
+        phi_12_samples[ii, 1, event_time_names]
+      ),
+      event_indicator = as.integer(
+        phi_12_samples[ii, 1, event_indicator_names]
+      )
+    )
     
     # phi_{2 \cap 3} step
     phi_23_iter_index_prop <- sample.int(n = n_iter_submodel_three, size = 1)
