@@ -20,6 +20,13 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align = "center", auto_pdf = TRUE)
 ```
+\begin{abstract}
+    - Something about multiple sources of information / data / models
+    - markov melding and it's extensions 
+    - why this work is distinct and why it's interesting
+    - A bit about the examples
+    - it's contribution in a sentence
+\end{abstract}
 
 # Introduction
 
@@ -78,9 +85,15 @@ We will show that this example, and IPMs in general, can be expressed in the Mar
 
 ## Survival analysis with longitudinal data and uncertain event times
 
-- Interesting because it is a case where it is typical to consider the event / long submodels separately
-- There is some work on uncertain event times as well, so the idea is definitely practical.
-- Do we need a dag? Might be nice for consistency?
+In our second example we consider a joint model for longitudinal and survival data, with the added complication that the event times and outcomes are uncertain, model derived quantities.
+
+Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data is available concurrently with event data.
+Complicated longitudinal process require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with event data.
+This motivates a two-stage approach, were the longitudinal model is fit first and its output is used in the event model [@tsiatis_joint_2004; @mauff_joint_2020].
+
+In some settings the time at which the relevant event occurs is inherently uncertain.
+This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred or diagnosed from other information.
+Examples include kidney failure [@diggle_real-time_2015]
 
 # Model specification
 
@@ -174,6 +187,12 @@ We will show that the form proposed in Equation \eqref{eqn:melded-model-full} sa
     -->
 
 ## Applying Markov melding twice
+
+The general thing I want to be able to say is
+
+
+The idea is that they can only possibly be equal if there is prior independence between the common quantities in each submodel.
+If this is missing, then for any, non product-of-experts, choice of weight functions
 
 Denote the original melding operator with $\circledast$. 
 Its output is 
@@ -333,7 +352,7 @@ which can be computed independently of one another.
 
 #### Stage two
 
-Stage two targets the melded posterior of Equation \eqref{eqn:melded-model-full} using a Metropolis-within-Gibbs sampler, where the proposals are distributed according to
+Stage two targets the melded posterior of Equation \eqref{eqn:melded-model-full} using a Metropolis-within-Gibbs sampler, where the proposal distributions are
 \input{tex-input/dc-sampler/0031-stage-two-proposals.tex}
 The acceptance probabilities for these updates are
 \input{tex-input/dc-sampler/0032-stage-two-acceptance.tex}
@@ -352,17 +371,16 @@ In addition, assume that
 The latter two assumptions imply that the melded posterior of interest is proportional to
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
 
-In parallel, sample the prior and (sub)posterior of $\pd_{1}$ and $\pd_{3}$ and use these samples to approximate, e.g $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ with a normal density that has mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$. 
-Denote the subposterior approximation $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$ and the prior approximation $\pd_{1}(\phi_{1 \cap 2}) \approx \widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0}) = \text{N}(\widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0})$. 
-Equivalent approximations and parameters exist for $\pd_{3}$.
+In parallel, sample the prior and (sub)posterior of $\pd_{1}$ and $\pd_{3}$ and form normal approximations using these samples, e.g approximate $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ by a normal density with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$.
+Denote the subposterior approximation $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$ and the prior approximation $\pd_{1}(\phi_{1 \cap 2}) \approx \widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0}) = \text{N}(\widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0})$, and corresponding approximations and parameters for $\pd_{3}$.
 The approximate melded posterior is thus
 \input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
 The product of independent normal densities is an unnormalised multivariate normal density with independent components, so we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
 \input{tex-input/multiple-normal-approximation/0030-normal-approx-nu-de-form.tex}
 Finally, the ratio of normal densities is also an unnormalised normal density, and hence Equation \eqref{eqn:normal-approx-nu-de-form} simplifies to
 \input{tex-input/multiple-normal-approximation/0040-final-normal-approx.tex}
+Standard MCMC methods can be used to sample from the approximate melded posterior.
 If instead we opt for product-of-experts pooling, all $\mu_{\text{de}}$ and $\Sigma_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:final-normal-approx}.
-Standard MCMC methods can then be used to sample from the approximate melded posterior.
 
 # Examples
 
@@ -460,25 +478,19 @@ It is also an example of estimating an intricate model without ever simultaneous
 - _should we also compare to the normal approximation in this simple setting_?.
 
 ## Uncertain event times in joint longitudinal and survival models.
-0
-- What are we considering here?:
-    - We now consider _jointly_? modelling longitudinal and survival data, with the added complication that the event times (_and censoring indicators_?) are uncertain, model derived quantities.
+
 
 - Why ?:
     - Standard survival analyses consider the event times and censoring indicators as known, fixed quantities.
     However, in some settings the survival times are contaminated with nontrivial measurement error [@gu_semiparametric_2015; @meier_discrete_2003; @oh_considerations_2018; @snapinn_survival_1998;@wang_integrative_2020], or are derived from a, possibly highly complex, model for some other measurable quantity of the individual [see @lee_threshold_2006 for a review; and @szczesniak_dynamic_2020 for recent application].
-    Integrating the output of such models into standard parametric or Cox proportional hazards survival models is challenging, but, we argue,  made less complicated by the melding framework of Section \ref{model-specification}.
+    Integrating the output of such models into standard parametric or Cox proportional hazards survival models is challenging, but, we argue, made conceptually and computational easier by the chained melding framework of Section \ref{model-specification}.
 
     - The integration of complex regression models into survival models is routine in the Joint modelling framework [@rizopoulos_joint_2012].
     Such model complexity is often warranted due to the wide variety of behaviours of the longitudinal process. 
     The associated computational cost motivates two stage estimation procedures [@ye_semiparametric_2008; @mauff_joint_2020] which reduce the computation required.
     Such two stage processes are, in effect, considering a separate submodel for the longitudinal data, and we do the same in our example.
 
-    - We argue that considering the models for the event times and longitudinal process separately is not an unreasonable modelling choice, and choosing to unite them through the survival model comprises an application of our melding methodology.
-
-    _Need to think about where to put this?_
-    However, as @mauff_joint_2020 note, commonly employed versions of the two-stage estimation process produce biased results. 
-    In @mauff_joint_2020 this bias is removed via importance sampling with appropriate weights, which is similar to our two stage sampler in Section
+    - We argue that considering the models for the event times and longitudinal process separately is not an unreasonable modelling choice, and choosing to unite them in the survival model is a natural application of the chained melding method.
 
 - How?:
 
@@ -500,7 +512,12 @@ Individuals are said to experience the event of interest $T^{*}_{i}$ when their 
 In addition, we censor the events at time $t = 1$ such that we only record event times $T_{i} = \min(T^{*}_{i}, 1)$ and event indicators $\delta_{i} = \boldsymbol{1}_{\{T^{*}_{i} \in (0, 1)\}}$. 
 Due to our simple regression model it is possible for $T^{*}_{i}$ to be less than zero.
 However, we do not consider the possibility that events occur prior to $t = 0$, and in cases where $T^{*}_{i} < 0$ we set $T_{i} = 1$ and $\delta_{i} = 0$.
+We also remark that even this simple definition for $T^{*}_{i}$ results in a  non-invertible link function; one cannot uniquely compute the values of $\beta_{0, i}$ and $\beta_{1, i}$ given $T^{*}_{i}$ and $\kappa$.
+This compels us to consider this submodel in stage 1 when estimating the chained melded posterior.
+
 Figure \ref{fig:submodel_one_synthetic_plot} displays the simulated data and fitted model where we set $\kappa = 0.2$, and depict the subposterior $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ via the blue uncertainty intervals.
+The simulation settings, which we discuss momentarily, have been chosen so that there is a mix of individuals who clearly experience the event ($i = 9, 31$), do not experience the event ($i = 1, 4$), and some where there is some uncertainty about their status at the censoring time ($i = 17, 25$).
+Among those who experience the event, there is residual model uncertainty as to when the event actually occurs, which is important to quantify in subsequent survival models. 
 
 To align this submodel with our notation we denote this submodels data as $Y_{1} = (\boldsymbol{t}_{1}, \ldots, \boldsymbol{t}_{N}, \boldsymbol{z}_{1}, \ldots, \boldsymbol{z}_{N})$ and common quantity $\phi_{1 \cap 2} = (T_{1}, \ldots, T_{N}, \delta_{1}, \ldots, \delta_{N})$, with $\psi_{1}$ defined to be all model parameters in Equation \eqref{eqn:submodel-one-model}.
 
@@ -566,27 +583,13 @@ We simulate observations in submodel 3 such that $\boldsymbol{x}_{i} \sim \text{
 
 ### Results and discussion for this example.
 
+- how is this estimated
+
+ _Need to think about where to put this?_ -> I think it should go here.
+    However, as @mauff_joint_2020 note, commonly employed versions of the two-stage estimation process produce biased results. 
+    In @mauff_joint_2020 this bias is removed via importance sampling with appropriate weights, which is similar to our two stage sampler in Section
+
 - see diagnostics in appendix 
-- can't learn any thing about $\phi_{1 \cap 2}$ in this framework, but $\psi_{2}$ more appropriately quantifies the uncertainty than ? Assuming a mean value for $\phi_{1 \cap 2}$ from $\pd_{1}$? What should we be comparing to here.
-
-```{r phi_12_contraction, fig.cap = "The distribution of $\\phi_{1 \\cap 2}$ after stage one and two. There's no contraction in this distribution because we can't learn about $\\psi_{2}$ and $\\phi_{1 \\cap 2}$ simultaneously. That or I haven't put enough information into $Y_{2}$ and $Y_{3}$."}
-knitr::include_graphics("plots/surv-example/phi-12-inter-stage-comparison.pdf")
-```
-
-```{r phi_23_contraction, fig.cap = "Similar story for $\\phi_{2 \\cap 3}$"}
-knitr::include_graphics("plots/surv-example/phi-23-inter-stage-comparison.pdf")
-```
-
-#### Contraction 
-
-- idea here is that we can actually learn something about the even times /longitudinal process from the other parts?
-
-```{r contraction_plot, fig.cap = "Inter-stage posterior standard deviations for the common quantities."}
-knitr::include_graphics("plots/surv-example/phi-inter-stage-posterior-sd.pdf")
-```
-
-#### Comparison to point estimate propagation
-
 - posterior median is the only point estimate that makes sense in this situation (mean/mode not well defined for a mixture of discrete / continuous components)
 
 ```{r psi_2_comparion, fig.cap = "Comparison of $\\psi_{2}$ using melding and propagating the subposterior median of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ alone into stage two."}

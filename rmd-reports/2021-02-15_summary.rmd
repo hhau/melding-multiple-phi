@@ -49,7 +49,7 @@ knitr::include_graphics("../plots/surv-example/psi-2-method-comparison-no-time-d
 \end{equation}
 
 - The combination of censoring and parametrising the integrand stabilises the computation.
-- The down side is that the mixing is terrible at the time/iteration increased such that stage two now takes 1.75 hours, up from 10 mins.
+- The down side is that the mixing is terrible at the time/iteration increased such that stage two now takes 1.75 hours, up from 10 mins. (The whole process now takes about 6 hours because we have to fit stage 2 four times.)
 - There is poor mixing of the event times in stage two
 
 ```{r stage_two_mixing_phi_12}
@@ -63,3 +63,46 @@ knitr::include_graphics("../plots/surv-example/stage-two-psi-2-diags.png")
 ```
 
 - I could probably run this over the weekend / put on long jobs queue on the HPC?
+- I think you also mentioned that mixing might be helped if we update the event times one at a time? 
+    - I would need to cut out a lot of redundant computation for this to work.
+
+# coherency maths / theorem
+
+I think the general thing I want to say is
+
+<style>
+  .theorem {
+  display: block;
+  font-style: italic;
+  }
+  .theorem:before {
+  content: "Theorem. ";
+  font-weight: bold;
+  font-style: normal;
+  }
+  .theorem[text]:before {
+  content: "Theorem (" attr(text) ") ";
+  }
+</style>
+
+<div class="theorem" text='Prior independence'>
+There exists a choice of non-negative pooling weights $\boldsymbol{\lambda}$ and pooling functions $g_{\text{pool}}, g^{12}, g^{(12)3}, \ldots$, such that the joint density produced by sequentially melding $M$ submodels is identical to the joint density of the chained melded model, for the same $M$ submodels, for all $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ if and only if
+\[
+    p_{m}(\phi_{m - 1 \cap m}, \phi_{m \cap m + 1}) =
+    p_{m}(\phi_{m - 1 \cap m})
+    p_{m}(\phi_{m \cap m + 1})
+\]
+for $m \in {2, \ldots, M - 1}$ and $M > 3$.
+</div>
+
+This is pretty difficult to prove. It either has to start from $M = 4$ for so that we get $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ and $\pd_{3}(\phi_{2 \cap 3}, \phi_{3 \cap 4})$ terms, or it doesn't hold in general and there some funky exceptions. But the idea is that I want to be able to state the 'necessary and sufficient' condition is prior independence, with the implication being that without it they differ.
+
+<div class="theorem" text='M = 3 case'>
+The above theorem holds in the $M = 3$ case except for following special case not requiring independence
+\begin{gather*}
+    g_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = p_{1}(\phi_{1 \cap 2}) p_{3}(\phi_{2 \cap 3}), \\
+    g^{12}(p_{1}(\phi_{1 \cap 2}), p_{2}(\phi_{1 \cap 2})) = p_{1}(\phi_{1 \cap 2}), \\
+    g^{(12)3}(p_{\text{meld}}^{12}(\phi_{2 \cap 3}), p_{3}(\phi_{2 \cap 3})) = p_{3}(\phi_{2 \cap 3})
+\end{gather*}
+which is a specific choice of dictatorial pooling.
+</div>
