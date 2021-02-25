@@ -1,5 +1,5 @@
 ---
-title: "Multiple models, multiple shared quantities"
+title: "Chained Markov melding: Joining multiple models with pairwise commonalities"
 author: "Andrew Manderson"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 fontfamily: tgpagella
@@ -52,10 +52,6 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
     - Specifically, our examples contain 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$; where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$. 
     - We will demonstrate that Markov melding, as introduced in @goudie_joining_2019, _can produce a melded model that may not be the one of interest_?, and we devise an extension to the melded model that permits the desired model combination.
 
-    <!-- Figure \ref{fig:intro-dag} contains a DAG representation of the relationship between submodels, where nodes in the DAG are submodels, and edges are quantities common to the submodels. they connect.
-
-    \input{tex-input/introduction/0001-intro-dag.tex} -->
-
 <!-- - Why do we need new methodology? What problem are we solving. -->
 
 - Other advantages to modularised inference
@@ -87,13 +83,20 @@ We will show that this example, and IPMs in general, can be expressed in the Mar
 
 In our second example we consider a joint model for longitudinal and survival data, with the added complication that the event times and outcomes are uncertain, model derived quantities.
 
-Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data is available concurrently with event data.
+Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with event data.
 Complicated longitudinal process require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with event data.
-This motivates a two-stage approach, were the longitudinal model is fit first and its output is used in the event model [@tsiatis_joint_2004; @mauff_joint_2020].
+This motivates a two-stage approach, where the longitudinal submodel is fit first and its output is used in the event submodel [@tsiatis_joint_2004; @mauff_joint_2020].
 
 In some settings the time at which the relevant event occurs is inherently uncertain.
-This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred or diagnosed from other information.
-Examples include kidney failure [@diggle_real-time_2015]
+This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred from other information.
+_first hitting time_ models [@lee_threshold_2006] are used for such data, and applications of threshold crossing models include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@sweeting_estimating_2010; @yu_semi-parametric_2009].
+
+We consider the event time as an uncertain submodel output from a simplified threshold crossing model, which we denote $\pd_{1}$, and as the response in the survival model $\pd_{2}$. 
+The uncertain event time is thus the common quantity $\phi_{1 \cap 2}$.
+We treat the longitudinal submodel, $\pd_{3}$, separately, as is common in two-stage survival modelling, and denote the individual-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
+The high level inter-submodel relationships are displayed in Figure \ref{fig:surv-simple-dag}.
+
+\input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
 # Model specification
 
@@ -387,8 +390,8 @@ If instead we opt for product-of-experts pooling, all $\mu_{\text{de}}$ and $\Si
 ## Little owls
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
-Because the population count model includes a parameter also contained in the nest-record model, and has two parameters in common with the capture-recapture model, the IPM can be viewed as a melded model, as described in Section \ref{melded-model}.
-Viewing the IPM as a melded model allows us to use the parallel sampler described in Section \ref{parallel-sampler}.
+Because the population count model includes a parameter also contained in the nest-record model, and has two parameters in common with the capture-recapture model, the IPM can be viewed as a chained melded model.
+This permits the use of the parallel sampler described in Section \ref{parallel-sampler}.
 
 ### Submodels
 
@@ -417,7 +420,7 @@ Denote the total number of juvenile and adult females in the population at time 
 The latent, population level model is 
 \input{tex-input/owls-example/0020-count-data-submodel.tex}
 Initial population sizes $(x_{J, 1}, x_{A, 1})$ are a priori uniformly distributed over $\{0, 1, \ldots, 50\}$.
-The observation level model is  
+The observation model is  
 \input{tex-input/owls-example/0021-observation-process.tex}
 
 #### Fecundity: $\pd_{3}$
@@ -448,11 +451,14 @@ So that we can appropriately compare the melded posterior with the IPM posterior
 
 We estimate the melded posterior using both the Normal approximation and parallel sampler.
 This allows us to use pre-existing implementations of the submodels.
-Specifically, the capture-recapture and count data submodels are written in BUGS [@lunn_bugs_2009], and the subposterior of the former is sampled via `rjags` [@plummer_rjags_2018]. 
-The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2020].
+Specifically, the capture-recapture and count data submodels are written in BUGS [@lunn_bugs_2009], and the subposterior of the former is sampled via `rjags` [@plummer_rjags_2019]. 
+The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2021].
 We reuse the count data BUGS implementation for stage two of the multi-stage sampler, and implement the Metropolis-within-Gibbs sampler specified in Section \ref{parallel-sampler} via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
 A slightly modified version of the count data submodel used for the Normal approximation, which is also run through `rjags`.
-Code for this example is available at https://github.com/hhau/melding-owls-example.
+We highlight the use of different statistical software for each submodel, an advantage of this 'modular' approach to modelling.
+
+Code and data for all examples are available at [https://github.com/hhau/melding-multiple-phi](https://github.com/hhau/melding-multiple-phi). 
+__TODO:__ Swap this for a Zenodo DOI
 
 ### Results
 
@@ -475,30 +481,21 @@ It does so whilst combining a number of different Bayesian inference methods and
 By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here: we can use the output from one model to target some larger model, without needing to reimplement said model in a different language or framework.
 It is also an example of estimating an intricate model without ever simultaneously evaluating all components of the model, a useful property for large, complicated models.
 
-- _should we also compare to the normal approximation in this simple setting_?.
-
 ## Uncertain event times in joint longitudinal and survival models.
 
+Standard survival analyses consider the event times and censoring indicators as known, fixed quantities.
+However, in some settings the survival times are contaminated with nontrivial measurement error [@gu_semiparametric_2015; @meier_discrete_2003; @oh_considerations_2018; @snapinn_survival_1998;@wang_integrative_2020], or are derived from a, possibly highly complex, model for some other measurable quantity of the individual [see @lee_threshold_2006 for a review; and @szczesniak_dynamic_2020 for recent application].
+Integrating the output of such models into standard parametric or Cox proportional hazards survival models is challenging, but we believe it is made conceptually and computational easier by our chained melding framework.
 
-- Why ?:
-    - Standard survival analyses consider the event times and censoring indicators as known, fixed quantities.
-    However, in some settings the survival times are contaminated with nontrivial measurement error [@gu_semiparametric_2015; @meier_discrete_2003; @oh_considerations_2018; @snapinn_survival_1998;@wang_integrative_2020], or are derived from a, possibly highly complex, model for some other measurable quantity of the individual [see @lee_threshold_2006 for a review; and @szczesniak_dynamic_2020 for recent application].
-    Integrating the output of such models into standard parametric or Cox proportional hazards survival models is challenging, but, we argue, made conceptually and computational easier by the chained melding framework of Section \ref{model-specification}.
+The integration of complex regression models into survival models is routine in the Joint modelling framework [@rizopoulos_joint_2012].
+Such model complexity is often warranted due to the wide variety of behaviours of the longitudinal process. 
+The associated computational cost motivates two stage estimation procedures [@ye_semiparametric_2008; @mauff_joint_2020] which reduce the computation required.
+Such two stage processes are, in effect, considering a separate submodel for the longitudinal data, and we do the same in our example.
+We argue that considering the models for the event times and longitudinal process separately is not an unreasonable modelling choice, and choosing to unite them in the survival model is a natural application of the chained melding method.
 
-    - The integration of complex regression models into survival models is routine in the Joint modelling framework [@rizopoulos_joint_2012].
-    Such model complexity is often warranted due to the wide variety of behaviours of the longitudinal process. 
-    The associated computational cost motivates two stage estimation procedures [@ye_semiparametric_2008; @mauff_joint_2020] which reduce the computation required.
-    Such two stage processes are, in effect, considering a separate submodel for the longitudinal data, and we do the same in our example.
-
-    - We argue that considering the models for the event times and longitudinal process separately is not an unreasonable modelling choice, and choosing to unite them in the survival model is a natural application of the chained melding method.
-
-- How?:
-
-    - We consider a synthetic setting, where data are simulated from the submodels we specify.
-        -> why? 
-        - This is to keep the example simple enough so that we can clearly see how all the parts relate to the bits of the methodology.
-            - Our event time model is obviously a lot less complicated than all the first hitting time models / latent stoch process models.
-        - Also because actual survival data are difficult to model appropriately (many censoring types, complicated dependencies on the longitudinal process), often contain missing data, and myriad other complications.
+To highlight the chained melding process, and not obscure it behind individual submodel complexity, we use simpler versions of the threshold crossing, survival, and longitudinal submodels.
+We use a subject specific linear model with constant threshold, a parametric Weibull model, and a distinct linear subject specific linear model for the respective submodels.
+Data are simulated in a manner that is realistic, but avoids multiple types of censoring in the survival model and missing data.
 
 ### Submodels
 
@@ -509,19 +506,21 @@ Consider individuals $i = 1, \ldots, N$ for whom we record $j = 1, \ldots, J_{i}
 We fit the following hierarchical linear regression model
 \input{tex-input/surv-example/0020-submodel-one-model.tex}
 Individuals are said to experience the event of interest $T^{*}_{i}$ when their fitted model crosses some threshold $\kappa$, which is to say $T^{*}_{i} = (\kappa -\beta_{0, i})\mathop{/} \beta_{1, i}$.
-In addition, we censor the events at time $t = 1$ such that we only record event times $T_{i} = \min(T^{*}_{i}, 1)$ and event indicators $\delta_{i} = \boldsymbol{1}_{\{T^{*}_{i} \in (0, 1)\}}$. 
+In addition, we censor the events at time $t = 1$ such that we only record event times $T_{i} = \min(T^{*}_{i}, 1)$ and event indicators $\delta_{i} = \boldsymbol{1}(T^{*}_{i} \in (0, 1))$.
 Due to our simple regression model it is possible for $T^{*}_{i}$ to be less than zero.
 However, we do not consider the possibility that events occur prior to $t = 0$, and in cases where $T^{*}_{i} < 0$ we set $T_{i} = 1$ and $\delta_{i} = 0$.
 We also remark that even this simple definition for $T^{*}_{i}$ results in a  non-invertible link function; one cannot uniquely compute the values of $\beta_{0, i}$ and $\beta_{1, i}$ given $T^{*}_{i}$ and $\kappa$.
-This compels us to consider this submodel in stage 1 when estimating the chained melded posterior.
+Hence we consider this submodel in stage 1 when estimating the chained melded posterior.
 
 Figure \ref{fig:submodel_one_synthetic_plot} displays the simulated data and fitted model where we set $\kappa = 0.2$, and depict the subposterior $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ via the blue uncertainty intervals.
 The simulation settings, which we discuss momentarily, have been chosen so that there is a mix of individuals who clearly experience the event ($i = 9, 31$), do not experience the event ($i = 1, 4$), and some where there is some uncertainty about their status at the censoring time ($i = 17, 25$).
 Among those who experience the event, there is residual model uncertainty as to when the event actually occurs, which is important to quantify in subsequent survival models. 
 
+- _Should figure 8 be a subset of individuals, but also plot their longitudinal data?_
+
 To align this submodel with our notation we denote this submodels data as $Y_{1} = (\boldsymbol{t}_{1}, \ldots, \boldsymbol{t}_{N}, \boldsymbol{z}_{1}, \ldots, \boldsymbol{z}_{N})$ and common quantity $\phi_{1 \cap 2} = (T_{1}, \ldots, T_{N}, \delta_{1}, \ldots, \delta_{N})$, with $\psi_{1}$ defined to be all model parameters in Equation \eqref{eqn:submodel-one-model}.
 
-```{r submodel_one_synthetic_plot, fig.cap = "First submodel. The 80\\% credible interval for each individuals event distribution, if the event occurs for that individual, is displayed in blue and is truncated to $t \\in [0, 1]$. The threshold $\\kappa$ is displayed as the horizontal dashed line. Individuals the truly have the event occur are denoted by a solid mean regression line, whilst individuals that do not have the event occur have a dotted line"}
+```{r submodel_one_synthetic_plot, fig.cap = "First submodel. The 80\\% credible interval for each individuals event distribution, if the event occurs for that individual, is displayed in blue and is truncated to $t \\in [0, 1]$. The threshold $\\kappa$ is displayed as the horizontal dashed line. Individuals that truly experience the event are distinguished by a solid mean regression line, whilst event free individuals have a dotted line."}
 knitr::include_graphics("plots/surv-example/submodel-one-posterior.pdf")
 ```
 
@@ -567,7 +566,7 @@ The remaining parameters are absorbed into $\psi_{3} = (\mu_{\eta, 0}, \mu_{\eta
 
 ### Simulation details
 
-Because we have multiple models for the common quantities, the joint model obtained via the product of the independent submodel is not generative.
+Because we have multiple models for the common quantities, the joint model obtained via the product of the independent submodels is not generative.
 As simulating from the prior predictive distribution is not possible, we need to choose how we generate synthetic data.
 We do so by first simulating a latent event indicator for each of $N = 36$ individuals, then joint simulating the relevant submodel parameters.
 
@@ -581,31 +580,56 @@ Remaining parameters and submodel data are simulated conditionally given the cri
 In submodel 1, the random intercept $\beta_{0, i}$ is simulated from $\text{N}(1, 0.1^2)$, and observations are then simulated such that $\boldsymbol{z}_{i} \sim \text{N}(\beta_{0, i} + \beta_{1, i}\boldsymbol{t}_{i}, 0.1\boldsymbol{I})$.
 We simulate observations in submodel 3 such that $\boldsymbol{x}_{i} \sim \text{N}(\eta_{0, i} + \eta_{1, i}\boldsymbol{\tau}_{i}, \boldsymbol{I})$.
 
-### Results and discussion for this example.
+### Estimation and results
 
-- how is this estimated
+#### Estimation
 
- _Need to think about where to put this?_ -> I think it should go here.
+The chained posterior is estimated using the parallel sampler.
+In addition, the stage two Metropolis-within-Gibbs sampler updates each individual in $\phi_{1 \cap 2}$ separately, also in a Metropolis-within-Gibbs manner.
+Such a proposal scheme is not obviously correct, so we show that it targets the desired chained posterior in Appendix BLAH.
+All submodels are implemented in `Stan`[^stanver]; The stage one subposteriors are sampled using `Stan`'s dynamic HMC algorithm, and we use the `log_prob` function from `rstan` to evaluate the survival submodel in stage two.
+All MCMC samplers consist of 5 chains of 5000 iterations each. The stage one samplers add an additional 1000 warmup iterations, which are discarded.
+Numerical diagnostics including the split-$\widehat{R}$, bulk and tail effective sample sizes from @vehtari_rank-normalization_2020-1 are provided in Appendix \ref{diagnostics-for-the-survival-example}, as well as visual diagnostics of parameters with the worst numerical diagnostics.
+
+[^stanver]: Submodel 2 requires numerical integration, which is performed using the `Stan` function `integrate_1d`. Previous versions of `Stan` report numerical errors when performing this integration, so we require a `Stan`/`rstan` version of `2.26` or higher. At the time of writing this version of `rstan` is not on `CRAN`, but sources and binaries can be obtained from the `stan-dev` GitHub.
+
+<!--  _Need to think about where to put this?_ -> I think it should go here? Maybe in the discussion?
     However, as @mauff_joint_2020 note, commonly employed versions of the two-stage estimation process produce biased results. 
-    In @mauff_joint_2020 this bias is removed via importance sampling with appropriate weights, which is similar to our two stage sampler in Section
+    In @mauff_joint_2020 this bias is removed via importance sampling with appropriate weights, which is similar to our two stage sampler in Section -->
 
-- see diagnostics in appendix 
-- posterior median is the only point estimate that makes sense in this situation (mean/mode not well defined for a mixture of discrete / continuous components)
+#### Results
 
-```{r psi_2_comparion, fig.cap = "Comparison of $\\psi_{2}$ using melding and propagating the subposterior median of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ alone into stage two."}
+To understand the impact and importance of accounting for uncertainty in the event times and longitudinal submodel parameters, we compare the posterior distribution for the survival submodel parameters $\psi_{2}$ in four different settings:
+
+1. The chained melded posterior, which accounts for the uncertainty in both $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+1. Fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to their respective subposterior medians. Note that fixing $\phi_{1 \cap 2}$ to its posterior mean would be nonsensical, as it results in non-integer values for the $\delta_{i}$s.
+1. Fixing $\phi_{1 \cap 2}$ and melding over $\phi_{2 \cap 3}$, which accounts for only the uncertainty in the longitudinal submodel.
+1. Fixing $\phi_{2 \cap 3}$ and melding over $\phi_{1 \cap 2}$, which accounts for only the uncertainty in the event time submodel.
+
+Figure \ref{fig:psi_2_comparison} displays the density estimates of the four aforementioned posterior distributions.
+We see that accounting for the uncertainty in the event time submodel is critical, as the two posterior distributions with fixed $\phi_{1 \cap 2}$ are overconfident and biased.
+In this straightforward example accounting for the uncertainty in $\phi_{2 \cap 3}$ appears seems less important. 
+The difference between the chained melded posterior and the posterior with $\phi_{2 \cap 3}$ fixed is minimal, however a small difference between the posteriors is visible for $\alpha$.
+
+```{r psi_2_comparison, fig.cap = "Comparison of posterior distributions of $\\psi_{2}$ using chained melding, propagating the subposterior median of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ into stage two, and combinations thereof."}
 knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
 ```
 
-- fixing event time underestimates the true uncertainty and introduces bias.
-- Fixing the longitudinal submodel seems to have minimal effect, but this is probably due to the simplicity of the model. It is well known that the longitudinal submodel in a joint model can markedly influence the posterior of the survival model, particularly if it is poor fit to the longitudinal data.
+- _do we want a PPC plot for the various methods as well? Probably not, as Weibull is not exactly the best fit to this data_.
+- _what else is there to talk about here? Uncertainty is good, is it obviously good enough?_
 
 # Discussion
 
-_what have we introduced_
+We have introduced the chained melded model, and illustrated the process by which multiple sources of information are combined to obtained the chained melded posterior.
+Our examples demonstrate that practitioners are combining multiple sources of information in this 'chained' way, and that ignoring the uncertainty in any submodel component can produce biased, over-confident inference.
 
-- We have introduced the chained melded model, and illustrated the process by which multiple sources of information are combined to obtained the melded posterior.
-- Our two examples demonstrate that practitioners are already employing modelling processes that combine multiple sources of information, and that ignoring the uncertainty in any submodel component can produce biased, over-confident inference.
-- We note one interesting contribution of this work is that it makes explicit the, often informal, process of summarising and approximating models for use in subsequent analyses. 
+We note one contribution of this work is to make explicit the, often informal, process of summarising and approximating submodels for use in subsequent analyses.
+The two most common, we believe, approximation strategies are
+    1. Approximating the subposterior of the common quantity with a normal distribution, which is reused as a prior in stage two.
+    2. Taking only a point estimate of the subposterior, and treating it as data in stage two.
+These strategies may, but not always, produce acceptable approximations to the chained melded model.
+It is interesting to note that many 'preprocessing' steps in an analysis pipeline can be thought of as 'summary by point estimate', where data are denoised or otherwise cleaned via models for future use. 
+Such strategies are implementations of 'multi-phase' inference [@lin_trio_2014], and present additional statistical issues not discussed here.
 
 _some discussion of seq/para_
 
@@ -613,19 +637,12 @@ _some discussion of seq/para_
     - What assumptions must be satisfied for the process to be 'exchangeable' w.r.t the order in which data become available? 
 - We describe the independence criteria necessary for the sequential process to yield the same posterior as the chained melded model, and note that in general they do not yield the same posterior.
     - How should one set $\pd_{1}(\phi_{1 \cap 2})$ when one does not yet know what $\pd_{2}, \pd_{3},  \ldots$ are? Or set $\pd_{\text{pool}}$ when only $\pd_{1}, \pd_{2}$ are known, but there an unknown number of additional models to consider?
+    - issue is with prior specification in the absence of other models, which is then too concentrated / in appropriate when other, related models are added is similar to the issue discussed in Section 4.4.3 of @jacob_better_2017-1.
 - This is related to the idea that an inference process can/should be externally Bayesian, where by combining the data first then updating all the priors, should give the same result as independently updating the priors then combining the resulting posteriors.
     - Such a concept is not immediately applicable here, as it asks the process to satisfy strange criteria such as $\pd_{1}(\phi_{1 \cap 2} \mid Y_{3})\pd_{2}(\phi_{1 \cap 2} \mid Y_{3}) = \pd_{\text{meld}}^{12}(\phi_{1 \cap 2} \mid Y_{3})$ among others?
+    
 
-_approx strategies as they relate to other inference methods_
-
-- We also detail two approximation strategies, that we believe are used in practice a great deal.
-    1. The first approximates the subposterior of the common quantity with a Normal approximation, which is then used as a prior in stage two,
-    2. The second is simpler, taking only a point estimate of the subposterior, and treating it as data in stage two.
-- These strategies may admit acceptable approximations to the chained melded model, but in some instances they will produced biased and over-confident inference.
-- It is  interesting to note that many 'preprocessing' steps in an analysis pipeline can be thought of as 'summary by point estimate', the latter strategy, where data are denoised or otherwise cleaned via models, for future use. 
-- Such strategies are implementations of 'multi-phase' inference [@lin_trio_2014] 
-
-## Advantages
+## Advantages - for introduction?
 
 - better understand submodels, and components thereof
     - priors / prior predictive distributions / posterior predictive distributions / posterior pathologies therein
@@ -641,27 +658,9 @@ _approx strategies as they relate to other inference methods_
 
 ## Sequential vs parallel sampler vs Normal approximation vs other estimation techniques?
 
-## Why can't we do melding twice (need better name for section)
-
-- Astute reader may ask why we cannot apply Markov melding twice - the answer is that ordering matters.   
-    - Explaining why relies on too much notation for an introduction, and requires us to have introduced the new melded model.
-    - It feels like a very weird detour to take before looking at examples, so I guess this has to go in the discussion? 
-    - Maybe it should just be an appendix, with a brief note in the main text 
-   
-    - Get text tidy from earlier version.
-
-
 ## Conflict
 
 - Hopefully I'll address this in the next chapter
-
-## fundamental issues with modular methods
-
-- The issue in original markov melding that we point out in Section 4 points to a much larger tension, that bayesian inference is only coherent once you know the joint model you wish to use in the last stage of modelling
-    - This isn't true, PoE is still coherent 
-    - issue is with prior specification in the absence of other models, which is then too concentrated / in appropriate when other, related models are postulated.
-        - same issue discussed in Section 4.4.3 of @jacob_better_2017-1.
-
 
 <!-- -------------------- END OF MAIN BODY OF DOCUMENT -------------------- -->
 \newpage
@@ -733,6 +732,8 @@ knitr::include_graphics("plots/owls-example/stage-one-diagnostics-fecundity.png"
 knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
 ```
 
+\newpage
+
 # Diagnostics for the Survival example
 
 ## Stage one diagnostics
@@ -773,8 +774,3 @@ knitr::include_graphics("plots/surv-example/stage-two-phi-23-diags.png")
 ```{r surv_ex_stage_two_diag_psi_2, fig.cap = "Stage two trace and rank plots for the parameters in $\\boldsymbol{\\psi}_{2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
 knitr::include_graphics("plots/surv-example/stage-two-psi-2-diags.png")
 ```
-
-# Markov melding is sensitive to the order in which the submodels are considered
-
-- Maths / argument goes here, in text sentence goes something like "A possible two-step approach for combining these models is to apply Markov melding to submodels 1 and 2 in step one, then apply it again to the result of step one and submodel 3. However, as we show in Appendix \ref{the-right-appendix-name}, this result of this process is dependent on whether one considers submodels 1 and 2 in step one, or submodels 2 and 3. This dependence is undesirable, and to address it we now develop a modified version of markov melding that is order insensitive."
-- I think the lingo to use here is that it is 'incoherent, insofar as observing Y_{1}, Y_{2}, and Y_{3}' in any order should lead to the same posterior

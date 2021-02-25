@@ -26,7 +26,7 @@ base_plot <- ggplot(simulated_data, aes(x = time, y = measurement)) +
   ylab(expression(italic(z))) +
   xlab(expression(italic(t))) +
   scale_x_continuous(
-    breaks = seq(from = 0, to = 1, length.out = 4),
+    breaks = seq(from = 0, to = 1, length.out = 3),
     labels = function(x) round(x, digits = 2),
     limits = c(0, 1)
   ) +

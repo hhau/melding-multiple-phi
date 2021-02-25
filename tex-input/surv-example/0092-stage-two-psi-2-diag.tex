@@ -1,15 +1,21 @@
-\begin{table}
 
-\caption{\label{tab:surv-stage-two-diag-psi-2}Stage two numeric diagnostics for $\psi_{2}$ in the survival example}
-\centering
-\begin{tabular}[t]{lrrrrrr}
+\begin{longtable}[t]{lrrrrrr}
+\caption{\label{tab:surv-stage-two-diag-psi-2}Stage two numeric diagnostics for $\psi_{2}$ in the survival example}\\
 \toprule
   & Mean & $q_{0.05}$ & $q_{0.95}$ & $\widehat{R}$ & $\widehat{\text{ESS}}_{B}$ & $\widehat{\text{ESS}}_{T}$\\
 \midrule
-\cellcolor{gray!6}{$\theta_{0}$} & \cellcolor{gray!6}{0.42} & \cellcolor{gray!6}{-0.46} & \cellcolor{gray!6}{1.29} & \cellcolor{gray!6}{1.10} & \cellcolor{gray!6}{32} & \cellcolor{gray!6}{133}\\
-$\theta_{1}$ & 0.54 & 0.26 & 0.82 & 1.20 & 17 & 138\\
-\cellcolor{gray!6}{$\gamma$} & \cellcolor{gray!6}{16.33} & \cellcolor{gray!6}{14.46} & \cellcolor{gray!6}{18.08} & \cellcolor{gray!6}{1.02} & \cellcolor{gray!6}{139} & \cellcolor{gray!6}{244}\\
-$\alpha$ & -0.23 & -0.52 & 0.04 & 1.03 & 103 & 168\\
+\endfirsthead
+\caption[]{Stage two numeric diagnostics for $\psi_{2}$ in the survival example \textit{(continued)}}\\
+\toprule
+  & Mean & $q_{0.05}$ & $q_{0.95}$ & $\widehat{R}$ & $\widehat{\text{ESS}}_{B}$ & $\widehat{\text{ESS}}_{T}$\\
+\midrule
+\endhead
+
+\endfoot
 \bottomrule
-\end{tabular}
-\end{table}
+\endlastfoot
+\cellcolor{gray!6}{$\theta_{0}$} & \cellcolor{gray!6}{-0.45} & \cellcolor{gray!6}{-1.65} & \cellcolor{gray!6}{0.69} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{4554} & \cellcolor{gray!6}{8889}\\
+$\theta_{1}$ & 0.26 & -0.07 & 0.61 & 1 & 9295 & 15161\\
+\cellcolor{gray!6}{$\gamma$} & \cellcolor{gray!6}{7.23} & \cellcolor{gray!6}{4.02} & \cellcolor{gray!6}{10.58} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{11294} & \cellcolor{gray!6}{17823}\\
+$\alpha$ & -0.51 & -1.17 & 0.05 & 1 & 3823 & 7811\\*
+\end{longtable}

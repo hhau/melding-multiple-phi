@@ -1,83 +1,89 @@
-\begin{table}
 
-\caption{Numerical diagnostics for $\phi_{1 \cap 2}$ when $\phi_{2 \cap 3}$ is fixed and submodels $\pd_{1}$ and $\pd_{2}$ are melded.}
-\centering
-\begin{tabular}[t]{lrrrrrr}
+\begin{longtable}[t]{lrrrrrr}
+\caption{Numerical diagnostics for $\phi_{1 \cap 2}$ when $\phi_{2 \cap 3}$ is fixed and submodels $\pd_{1}$ and $\pd_{2}$ are melded.}\\
 \toprule
   & Mean & $q_{0.05}$ & $q_{0.95}$ & $\widehat{R}$ & $\widehat{\text{ESS}}_{B}$ & $\widehat{\text{ESS}}_{T}$\\
 \midrule
-\cellcolor{gray!6}{$T_{1}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$T_{2}$ & 0.87 & 0.75 & 1.00 & 1.82 & 10 & 59\\
-\cellcolor{gray!6}{$T_{3}$} & \cellcolor{gray!6}{0.94} & \cellcolor{gray!6}{0.82} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{2.29} & \cellcolor{gray!6}{9} & \cellcolor{gray!6}{24995}\\
-$T_{4}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$T_{5}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$T_{6}$ & 0.85 & 0.72 & 0.93 & 1.40 & 16 & 19\\
-\cellcolor{gray!6}{$T_{7}$} & \cellcolor{gray!6}{0.94} & \cellcolor{gray!6}{0.76} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.44} & \cellcolor{gray!6}{10} & \cellcolor{gray!6}{24995}\\
-$T_{8}$ & 0.96 & 0.77 & 1.00 & 2.32 & 6 & 24995\\
-\cellcolor{gray!6}{$T_{9}$} & \cellcolor{gray!6}{0.75} & \cellcolor{gray!6}{0.53} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{2.11} & \cellcolor{gray!6}{8} & \cellcolor{gray!6}{24995}\\
-$T_{10}$ & 0.75 & 0.65 & 0.97 & 2.13 & 7 & 24995\\
-\cellcolor{gray!6}{$T_{11}$} & \cellcolor{gray!6}{0.95} & \cellcolor{gray!6}{0.82} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.75} & \cellcolor{gray!6}{8} & \cellcolor{gray!6}{24995}\\
-$T_{12}$ & 0.88 & 0.77 & 0.99 & 2.03 & 7 & 6\\
-\cellcolor{gray!6}{$T_{13}$} & \cellcolor{gray!6}{0.97} & \cellcolor{gray!6}{0.88} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.47} & \cellcolor{gray!6}{10} & \cellcolor{gray!6}{24995}\\
-$T_{14}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$T_{15}$} & \cellcolor{gray!6}{0.89} & \cellcolor{gray!6}{0.79} & \cellcolor{gray!6}{0.99} & \cellcolor{gray!6}{1.83} & \cellcolor{gray!6}{8} & \cellcolor{gray!6}{7}\\
-$T_{16}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$T_{17}$} & \cellcolor{gray!6}{0.93} & \cellcolor{gray!6}{0.84} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.71} & \cellcolor{gray!6}{8} & \cellcolor{gray!6}{24995}\\
-$T_{18}$ & 0.82 & 0.67 & 1.00 & 1.92 & 7 & 24995\\
-\cellcolor{gray!6}{$T_{19}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$T_{20}$ & 0.86 & 0.70 & 0.98 & 1.74 & 8 & 6\\
-\cellcolor{gray!6}{$T_{21}$} & \cellcolor{gray!6}{0.79} & \cellcolor{gray!6}{0.66} & \cellcolor{gray!6}{0.91} & \cellcolor{gray!6}{1.79} & \cellcolor{gray!6}{7} & \cellcolor{gray!6}{6}\\
-$T_{22}$ & 0.82 & 0.66 & 0.99 & 1.51 & 17 & 16\\
-\cellcolor{gray!6}{$T_{23}$} & \cellcolor{gray!6}{0.86} & \cellcolor{gray!6}{0.77} & \cellcolor{gray!6}{0.97} & \cellcolor{gray!6}{1.45} & \cellcolor{gray!6}{11} & \cellcolor{gray!6}{30}\\
-$T_{24}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$T_{25}$} & \cellcolor{gray!6}{0.85} & \cellcolor{gray!6}{0.62} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{2.15} & \cellcolor{gray!6}{7} & \cellcolor{gray!6}{24995}\\
-$T_{26}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$T_{27}$} & \cellcolor{gray!6}{0.89} & \cellcolor{gray!6}{0.75} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.94} & \cellcolor{gray!6}{7} & \cellcolor{gray!6}{24995}\\
-$T_{28}$ & 0.83 & 0.63 & 1.00 & 1.78 & 10 & 24995\\
-\cellcolor{gray!6}{$T_{29}$} & \cellcolor{gray!6}{0.98} & \cellcolor{gray!6}{0.93} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.57} & \cellcolor{gray!6}{9} & \cellcolor{gray!6}{24995}\\
-$T_{30}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$T_{31}$} & \cellcolor{gray!6}{0.76} & \cellcolor{gray!6}{0.66} & \cellcolor{gray!6}{0.93} & \cellcolor{gray!6}{1.95} & \cellcolor{gray!6}{9} & \cellcolor{gray!6}{8}\\
-$T_{32}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$T_{33}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$T_{34}$ & 0.92 & 0.73 & 1.00 & 1.73 & 8 & 24995\\
-\cellcolor{gray!6}{$T_{35}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$T_{36}$ & 0.98 & 0.80 & 1.00 & 1.73 & 8 & 24995\\
-\cellcolor{gray!6}{$\delta_{1}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$\delta_{2}$ & 0.99 & 1.00 & 1.00 & 1.03 & 99 & 24995\\
-\cellcolor{gray!6}{$\delta_{3}$} & \cellcolor{gray!6}{0.62} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.58} & \cellcolor{gray!6}{9} & \cellcolor{gray!6}{24995}\\
-$\delta_{4}$ & 0.00 & 0.00 & 0.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{5}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$\delta_{6}$ & 1.00 & 1.00 & 1.00 & 1.01 & 1126 & 24995\\
-\cellcolor{gray!6}{$\delta_{7}$} & \cellcolor{gray!6}{0.60} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.54} & \cellcolor{gray!6}{9} & \cellcolor{gray!6}{24995}\\
-$\delta_{8}$ & 0.40 & 0.00 & 1.00 & 2.06 & 7 & 24995\\
-\cellcolor{gray!6}{$\delta_{9}$} & \cellcolor{gray!6}{0.87} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{2.44} & \cellcolor{gray!6}{6} & \cellcolor{gray!6}{24995}\\
-$\delta_{10}$ & 1.00 & 1.00 & 1.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{11}$} & \cellcolor{gray!6}{0.66} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.52} & \cellcolor{gray!6}{9} & \cellcolor{gray!6}{24995}\\
-$\delta_{12}$ & 1.00 & 1.00 & 1.00 & 1.01 & 254 & 24995\\
-\cellcolor{gray!6}{$\delta_{13}$} & \cellcolor{gray!6}{0.44} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.80} & \cellcolor{gray!6}{7} & \cellcolor{gray!6}{24995}\\
-$\delta_{14}$ & 0.00 & 0.00 & 0.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{15}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.02} & \cellcolor{gray!6}{208} & \cellcolor{gray!6}{24995}\\
-$\delta_{16}$ & 0.00 & 0.00 & 0.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{17}$} & \cellcolor{gray!6}{0.85} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.64} & \cellcolor{gray!6}{8} & \cellcolor{gray!6}{24995}\\
-$\delta_{18}$ & 0.91 & 0.00 & 1.00 & 2.83 & 6 & 24995\\
-\cellcolor{gray!6}{$\delta_{19}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$\delta_{20}$ & 1.00 & 1.00 & 1.00 & 1.01 & 218 & 24995\\
-\cellcolor{gray!6}{$\delta_{21}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{2770} & \cellcolor{gray!6}{24995}\\
-$\delta_{22}$ & 1.00 & 1.00 & 1.00 & 1.00 & 9487 & 24995\\
-\cellcolor{gray!6}{$\delta_{23}$} & \cellcolor{gray!6}{0.99} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.01} & \cellcolor{gray!6}{284} & \cellcolor{gray!6}{24995}\\
-$\delta_{24}$ & 0.00 & 0.00 & 0.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{25}$} & \cellcolor{gray!6}{0.95} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.45} & \cellcolor{gray!6}{11} & \cellcolor{gray!6}{24995}\\
-$\delta_{26}$ & 0.00 & 0.00 & 0.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{27}$} & \cellcolor{gray!6}{0.74} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.92} & \cellcolor{gray!6}{7} & \cellcolor{gray!6}{24995}\\
-$\delta_{28}$ & 0.86 & 0.00 & 1.00 & 1.54 & 9 & 24995\\
-\cellcolor{gray!6}{$\delta_{29}$} & \cellcolor{gray!6}{0.36} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.69} & \cellcolor{gray!6}{8} & \cellcolor{gray!6}{24995}\\
-$\delta_{30}$ & 0.00 & 0.00 & 0.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{31}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{4003} & \cellcolor{gray!6}{24995}\\
-$\delta_{32}$ & 0.00 & 0.00 & 0.00 & 1.00 & 24995 & 24995\\
-\cellcolor{gray!6}{$\delta_{33}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$\delta_{34}$ & 0.70 & 0.00 & 1.00 & 1.87 & 7 & 24995\\
-\cellcolor{gray!6}{$\delta_{35}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
-$\delta_{36}$ & 0.27 & 0.00 & 1.00 & 1.97 & 7 & 24995\\
+\endfirsthead
+\caption[]{Numerical diagnostics for $\phi_{1 \cap 2}$ when $\phi_{2 \cap 3}$ is fixed and submodels $\pd_{1}$ and $\pd_{2}$ are melded. \textit{(continued)}}\\
+\toprule
+  & Mean & $q_{0.05}$ & $q_{0.95}$ & $\widehat{R}$ & $\widehat{\text{ESS}}_{B}$ & $\widehat{\text{ESS}}_{T}$\\
+\midrule
+\endhead
+
+\endfoot
 \bottomrule
-\end{tabular}
-\end{table}
+\endlastfoot
+\cellcolor{gray!6}{$T_{1}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{25014} & \cellcolor{gray!6}{24995}\\
+$T_{2}$ & 0.97 & 0.83 & 1.00 & 1 & 13102 & 24995\\
+\cellcolor{gray!6}{$T_{3}$} & \cellcolor{gray!6}{0.99} & \cellcolor{gray!6}{0.90} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{11334} & \cellcolor{gray!6}{24995}\\
+$T_{4}$ & 1.00 & 1.00 & 1.00 & 1 & 25018 & 24995\\
+\cellcolor{gray!6}{$T_{5}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
+$T_{6}$ & 0.91 & 0.75 & 1.00 & 1 & 6681 & 24995\\
+\cellcolor{gray!6}{$T_{7}$} & \cellcolor{gray!6}{0.99} & \cellcolor{gray!6}{0.98} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{16729} & \cellcolor{gray!6}{24995}\\
+$T_{8}$ & 1.00 & 1.00 & 1.00 & 1 & 22845 & 24995\\
+\cellcolor{gray!6}{$T_{9}$} & \cellcolor{gray!6}{0.81} & \cellcolor{gray!6}{0.56} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{2485} & \cellcolor{gray!6}{24995}\\
+$T_{10}$ & 0.80 & 0.69 & 0.94 & 1 & 6062 & 3081\\
+\cellcolor{gray!6}{$T_{11}$} & \cellcolor{gray!6}{0.99} & \cellcolor{gray!6}{0.91} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{19751} & \cellcolor{gray!6}{24995}\\
+$T_{12}$ & 0.95 & 0.82 & 1.00 & 1 & 11912 & 24995\\
+\cellcolor{gray!6}{$T_{13}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{22245} & \cellcolor{gray!6}{24995}\\
+$T_{14}$ & 1.00 & 1.00 & 1.00 & 1 & 25010 & 24995\\
+\cellcolor{gray!6}{$T_{15}$} & \cellcolor{gray!6}{0.96} & \cellcolor{gray!6}{0.81} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{11245} & \cellcolor{gray!6}{24995}\\
+$T_{16}$ & 1.00 & 1.00 & 1.00 & 1 & 24112 & 24995\\
+\cellcolor{gray!6}{$T_{17}$} & \cellcolor{gray!6}{0.98} & \cellcolor{gray!6}{0.88} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{12999} & \cellcolor{gray!6}{24995}\\
+$T_{18}$ & 0.94 & 0.74 & 1.00 & 1 & 7165 & 24995\\
+\cellcolor{gray!6}{$T_{19}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
+$T_{20}$ & 0.98 & 0.85 & 1.00 & 1 & 6541 & 24995\\
+\cellcolor{gray!6}{$T_{21}$} & \cellcolor{gray!6}{0.91} & \cellcolor{gray!6}{0.74} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{8703} & \cellcolor{gray!6}{24995}\\
+$T_{22}$ & 0.92 & 0.72 & 1.00 & 1 & 5301 & 24995\\
+\cellcolor{gray!6}{$T_{23}$} & \cellcolor{gray!6}{0.97} & \cellcolor{gray!6}{0.82} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{9463} & \cellcolor{gray!6}{24995}\\
+$T_{24}$ & 1.00 & 1.00 & 1.00 & 1 & 24995 & 24995\\
+\cellcolor{gray!6}{$T_{25}$} & \cellcolor{gray!6}{0.97} & \cellcolor{gray!6}{0.81} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{8008} & \cellcolor{gray!6}{24995}\\
+$T_{26}$ & 1.00 & 1.00 & 1.00 & 1 & 25018 & 24995\\
+\cellcolor{gray!6}{$T_{27}$} & \cellcolor{gray!6}{0.97} & \cellcolor{gray!6}{0.84} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{12215} & \cellcolor{gray!6}{24995}\\
+$T_{28}$ & 0.99 & 0.93 & 1.00 & 1 & 10717 & 24995\\
+\cellcolor{gray!6}{$T_{29}$} & \cellcolor{gray!6}{0.99} & \cellcolor{gray!6}{0.94} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{21176} & \cellcolor{gray!6}{24995}\\
+$T_{30}$ & 1.00 & 1.00 & 1.00 & 1 & 25010 & 24995\\
+\cellcolor{gray!6}{$T_{31}$} & \cellcolor{gray!6}{0.88} & \cellcolor{gray!6}{0.65} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{3612} & \cellcolor{gray!6}{24995}\\
+$T_{32}$ & 1.00 & 1.00 & 1.00 & 1 & 24995 & 24995\\
+\cellcolor{gray!6}{$T_{33}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24099} & \cellcolor{gray!6}{24995}\\
+$T_{34}$ & 0.99 & 0.93 & 1.00 & 1 & 16980 & 24995\\
+\cellcolor{gray!6}{$T_{35}$} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
+$T_{36}$ & 1.00 & 1.00 & 1.00 & 1 & 22095 & 24995\\
+\cellcolor{gray!6}{$\delta_{1}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{25014} & \cellcolor{gray!6}{25014}\\
+$\delta_{2}$ & 0.33 & 0.00 & 1.00 & 1 & 12562 & 24995\\
+\cellcolor{gray!6}{$\delta_{3}$} & \cellcolor{gray!6}{0.16} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{10970} & \cellcolor{gray!6}{24995}\\
+$\delta_{4}$ & 0.00 & 0.00 & 0.00 & 1 & 25018 & 25018\\
+\cellcolor{gray!6}{$\delta_{5}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
+$\delta_{6}$ & 0.70 & 0.00 & 1.00 & 1 & 4904 & 24995\\
+\cellcolor{gray!6}{$\delta_{7}$} & \cellcolor{gray!6}{0.06} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{16319} & \cellcolor{gray!6}{24995}\\
+$\delta_{8}$ & 0.02 & 0.00 & 0.00 & 1 & 22759 & 22759\\
+\cellcolor{gray!6}{$\delta_{9}$} & \cellcolor{gray!6}{0.81} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{2007} & \cellcolor{gray!6}{24995}\\
+$\delta_{10}$ & 0.99 & 1.00 & 1.00 & 1 & 2227 & 24995\\
+\cellcolor{gray!6}{$\delta_{11}$} & \cellcolor{gray!6}{0.24} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{16504} & \cellcolor{gray!6}{24995}\\
+$\delta_{12}$ & 0.62 & 0.00 & 1.00 & 1 & 10373 & 24995\\
+\cellcolor{gray!6}{$\delta_{13}$} & \cellcolor{gray!6}{0.04} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{22208} & \cellcolor{gray!6}{22208}\\
+$\delta_{14}$ & 0.00 & 0.00 & 0.00 & 1 & 25010 & 25010\\
+\cellcolor{gray!6}{$\delta_{15}$} & \cellcolor{gray!6}{0.39} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{10706} & \cellcolor{gray!6}{24995}\\
+$\delta_{16}$ & 0.00 & 0.00 & 0.00 & 1 & 24074 & 24074\\
+\cellcolor{gray!6}{$\delta_{17}$} & \cellcolor{gray!6}{0.21} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{12081} & \cellcolor{gray!6}{24995}\\
+$\delta_{18}$ & 0.46 & 0.00 & 1.00 & 1 & 6399 & 24995\\
+\cellcolor{gray!6}{$\delta_{19}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
+$\delta_{20}$ & 0.16 & 0.00 & 1.00 & 1 & 6136 & 24995\\
+\cellcolor{gray!6}{$\delta_{21}$} & \cellcolor{gray!6}{0.71} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{7401} & \cellcolor{gray!6}{24995}\\
+$\delta_{22}$ & 0.54 & 0.00 & 1.00 & 1 & 4496 & 24995\\
+\cellcolor{gray!6}{$\delta_{23}$} & \cellcolor{gray!6}{0.25} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{9020} & \cellcolor{gray!6}{24995}\\
+$\delta_{24}$ & 0.00 & 0.00 & 0.00 & 1 & 24995 & 24995\\
+\cellcolor{gray!6}{$\delta_{25}$} & \cellcolor{gray!6}{0.26} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{7418} & \cellcolor{gray!6}{24995}\\
+$\delta_{26}$ & 0.00 & 0.00 & 0.00 & 1 & 25018 & 25018\\
+\cellcolor{gray!6}{$\delta_{27}$} & \cellcolor{gray!6}{0.28} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{11493} & \cellcolor{gray!6}{24995}\\
+$\delta_{28}$ & 0.08 & 0.00 & 1.00 & 1 & 10508 & 24995\\
+\cellcolor{gray!6}{$\delta_{29}$} & \cellcolor{gray!6}{0.16} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{19988} & \cellcolor{gray!6}{24995}\\
+$\delta_{30}$ & 0.00 & 0.00 & 0.00 & 1 & 25010 & 25010\\
+\cellcolor{gray!6}{$\delta_{31}$} & \cellcolor{gray!6}{0.67} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{2738} & \cellcolor{gray!6}{24995}\\
+$\delta_{32}$ & 0.00 & 0.00 & 0.00 & 1 & 24995 & 24995\\
+\cellcolor{gray!6}{$\delta_{33}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24157} & \cellcolor{gray!6}{24157}\\
+$\delta_{34}$ & 0.09 & 0.00 & 1.00 & 1 & 16700 & 24995\\
+\cellcolor{gray!6}{$\delta_{35}$} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{0.00} & \cellcolor{gray!6}{1} & \cellcolor{gray!6}{24995} & \cellcolor{gray!6}{24995}\\
+$\delta_{36}$ & 0.03 & 0.00 & 0.00 & 1 & 21567 & 21567\\*
+\end{longtable}

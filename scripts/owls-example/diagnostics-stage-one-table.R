@@ -49,6 +49,7 @@ res$Parameter <- res$Parameter %>%
 kable_res <- kable(
   x = res,
   format = "latex",
+  digits = 2,
   booktabs = TRUE,
   escape = FALSE
 ) %>%  

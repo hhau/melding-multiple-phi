@@ -141,10 +141,11 @@ write_diagnostics_to_file <- function(
     col.names = col_latex_names,
     escape = FALSE,
     booktabs = T,
+    longtable = T,
     linesep = "",
     ...
   ) %>%
-    kable_styling(latex_options = "striped")
+    kable_styling(latex_options = c("striped", "repeat_header"))
   
   invisible(cat(formatted_kable, file = output_filename))
 }

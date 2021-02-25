@@ -210,8 +210,14 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 # Results
 
-- Very happy:
+- The one at a time mixing is much improved:
 
 ```{r new_mixing_plots}
- knitr::include_graphics("../plots/surv-example/point-est-3-meld-12-phi-12-event-only-diag-new.png")
- ```
+ knitr::include_graphics("../plots/surv-example/point-est-3-meld-12-phi-12-event-only-diag.png")
+```
+
+- And we now get the expected but not perfect plot when comparing the posterior for $\psi_{2}$ under the various methods:
+
+```{r psi_two_comparison}
+knitr::include_graphics("../plots/surv-example/psi-2-method-comparison.png")
+```

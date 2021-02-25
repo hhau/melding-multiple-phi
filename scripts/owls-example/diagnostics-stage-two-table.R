@@ -48,6 +48,7 @@ res <- kable(
     x = stage_two_table, 
     format = "latex",
     booktabs = TRUE,
+    digits = 2,
     escape = FALSE
   ) %>%  
   kable_styling(latex_options = c("striped",  "hold_position")) %>% 

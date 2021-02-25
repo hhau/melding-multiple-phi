@@ -37,22 +37,13 @@ plot_tbl <- bind_rows(
     method = as.factor(method)
   )
 
-## there's one iteration that has a massive outlier, and it's throwing
-## off all the plots.
-
-outlier_id <- plot_tbl %>% 
-  group_by(.variable) %>%
-  filter(.value == min(.value)) %>%
-  pull(.iteration) %>%
-  unique()
-
 p1 <- ggplot(
-  plot_tbl %>% filter(.iteration != outlier_id), 
-  aes(x = .value, col = method, lty = method)
+  plot_tbl, 
+  aes(x = .value, colour = method, linetype = method)
 ) +
   geom_density() +
   facet_wrap(vars(.variable), scales = "free", labeller = label_parsed) +
-  labs(col = "Method", lty = "Method") +
+  labs(colour = "Method", linetype = "Method") +
   scale_colour_manual(
     values = c(
       "melding" = highlight_col,
@@ -71,16 +62,17 @@ p1 <- ggplot(
     values = c(
       "melding" = "solid",
       "point" = "solid",
-      "point-1-meld-23" = "3313",
-      "point-3-meld-12" = "3313"
+      "point-1-meld-23" = "3111",
+      "point-3-meld-12" = "3111"
     ),
     labels = list(
       "melding" = "Chained melding",
       "point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$"),
       "point-1-meld-23" = TeX("Fix $\\phi_{1 \\bigcap 2}$, meld $\\phi_{2 \\bigcap 3}$"),
       "point-3-meld-12" = TeX("Meld $\\phi_{1 \\bigcap 2}$, fix $\\phi_{2 \\bigcap 3}$")
-    ) 
-  )
+    )
+  ) +
+  theme(axis.title = element_blank())
 
 ggsave_halfheight(
   filename = "plots/surv-example/psi-2-method-comparison.pdf",
