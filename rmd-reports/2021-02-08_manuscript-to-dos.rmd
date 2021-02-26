@@ -25,19 +25,17 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 - [ ] very clear on what the contributions of this work are
     - _this will take a number of re works, so I don't have to get it perfect each time_
 
-
 # Example introduction
 
-- [ ] is this worth having a separate section?
-- [ ] introduce the survival example 
-- [ ] emphasise why each of the examples is interesting / what angle of the problem it explores.
-    - [ ] IPM is the simplest real example of the type of modelling we are interested in
-    - [ ] Survival is another example of a type of modelling that is currently happening, but may be conceptually easier in our proposed framework.
+- [x] introduce the survival example 
+- [x] emphasise why each of the examples is interesting / what angle of the problem it explores.
+    - [x] IPM is the simplest real example of the type of modelling we are interested in
+    - [x] Survival is another example of a type of modelling that is currently happening, but may be conceptually easier in our proposed framework.
 
 # Model specification
 
 - [x] things like 'appropriate joint model' and 'valid joint density' are imprecise and should be removed
-- [ ] ~~don't think using the word 'adjacent' / describing it is worth the effort.~~
+- [-] ~~don't think using the word 'adjacent' / describing it is worth the effort.~~
     - I later think otherwise
 - [x] bit more specific about the conditions for the submodels
     - [ ] this is covered in 3.2
@@ -46,6 +44,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 # model coherency
 
+- [ ] some of these results are wrong (specifically 3ii). I need to figure out what exactly I want to say (still unclear) and how exactly one might prove such a a thing.
 - [x] rewrite
     - [x] decide if we should use \cap in this section
         - no.
@@ -56,17 +55,18 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 # posterior estimation 
 
 - [ ] citations for multi-stage samplers 
-- [ ] include normal approximations an propagation of point estimates 
+- [x] include normal approximations an propagation of point estimates 
 - [ ] is the maths really necessary? might be worth putting into the appendix and just summarising in the main text
+    - yes
 
 # examples
 
 - [ ] Figure 6 needs a legend (owls example)
 
 - [ ] emphasises that the examples are proofs of existence / people already modelling in this manner 
-- [ ] the second model can't really be done as a joint model? You'd have to do some form of gibbs? nah, but it would be difficult to get it all working simultaneously.
-- [ ] the work to get the second example working / showing what we want it to show.
-- [ ] the effect sizes in the survival setting need to be reduced 
+- [x] the second model can't really be done as a joint model? You'd have to do some form of gibbs? nah, but it would be difficult to get it all working simultaneously.
+- [x] the work to get the second example working / showing what we want it to show.
+- [x] the effect sizes in the survival setting need to be reduced 
 
 # conclusion
 
@@ -74,3 +74,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 - [ ] 7.5 is probably not worth discussing again.
 - [ ] 7.7 is the most interesting imo
 - [ ] 7.6 is worth discussing and citing.
+
+# Appendices
+
+- [ ] Add math justification for individual at a time updating.
