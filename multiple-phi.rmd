@@ -107,17 +107,19 @@ We will show that Markov melding framework developed in Section \ref{model-speci
 
 ### Survival analysis with longitudinal data and uncertain event times
 
+<!-- looks like a good list of very relevant literature, but need to think through the structure and argument you're making here -->
+
 Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with event data.
 Complicated longitudinal process require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with event data.
-This motivates a two-stage approach, where the longitudinal submodel is fit first and its output is used in the event submodel [@tsiatis_joint_2004; @mauff_joint_2020].
+This motivates a two-stage approach, where the longitudinal submodel is fit first and its output <!-- output a bit informal --> is used in the event submodel [@tsiatis_joint_2004; @mauff_joint_2020].
 
 In some settings the time at which the relevant event occurs is inherently uncertain.
 This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred from other information.
 _first hitting time_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@sweeting_estimating_2010; @yu_semi-parametric_2009].
-Another setting in which inherently uncertain event times can arise is record linkage [@harron_methodological_2015], and incorporating the uncertainty into standard survival models is not straightforward [@wang_integrative_2020].
+Another setting in which inherently uncertain event times can arise is record linkage [@harron_methodological_2015], and incorporating the uncertainty into standard survival models is not straightforward [@wang_integrative_2020] <!-- this needs more elaboration. can you explain what Wang manage, and why it is hard/what we offer beyond Wang? -->.
 
-It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis; modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
-Specifically, we consider the event time as an uncertain submodel output from a simplified threshold crossing model, which we denote $\pd_{1}$, and as the response in the survival model $\pd_{2}$. 
+<!-- strengthen this argument --> It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis; modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
+Specifically, we consider the event time as an uncertain submodel output <!-- "submodel output" a bit vague/informal --> from a simplified threshold crossing model, which we denote $\pd_{1}$, and as the response in the survival model $\pd_{2}$. 
 The uncertain event time is thus the common quantity $\phi_{1 \cap 2}$.
 We treat the longitudinal submodel, $\pd_{3}$, separately, as is common in two-stage survival modelling, and denote the individual-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
 The high level inter-submodel relationships are displayed in Figure \ref{fig:surv-simple-dag}.
