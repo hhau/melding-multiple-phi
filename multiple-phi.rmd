@@ -34,59 +34,55 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
 
 # Introduction
 
-- Considering multiple, diverse data presents a substantial challenge for statisticians .
-    - If the data differ in structure, contain different types of measurements, or target related but non-identical populations of interest, then specifying a coherent joint model for each source of data presents a substantial challenge.
-    - A more feasible approach may be to specify, and validate, individual submodels for each source of data, then combine 
+_I don't really know what I'd like to introduce here? I don't have the motivation for this work down to an exact idea. Also, hard not to self-plagarise / rework the melding paper yet again_. 
+
+Considering multiple, diverse data allows statisticians to model more complex phenomena than a single source of data alone. 
+However, analysing all available data can present substantial challenges.
+If the data differ in structure, contain different types of measurements, or capture related but non-identical populations of interest, then specifying a  joint model for all data is a considerable task.
+One possible approach is to specify individual submodels for each source of data, then combine the submodels for posterior inference.
+This process has many names; the submodels are sometimes called _modules_ [@liu_modularization_2009; @jacob_better_2017-1], and the joining of them is termed _fusion_ [@dai_bayesian_2021-1; @lahat_multimodal_2015-1] or _melding_ [@goudie_joining_2019].
+The key advantage of these ideas is that development and validation is easier, or sometimes only possible, because submodels are smaller and relate to only one source of data.
+
+A common assumption of the aforementioned methods is that all $\Nm$ submodels have the same quantity $\phi$ in common.
+To relax this assumption, we extend Markov melding [@goudie_joining_2019] to enable the combination of submodels that share quantities in a pairwise manner.
+Consider the simplest case of 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$, where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$.
+We call our extension _chained Markov melding_, as the submodels are 'chained' together.
+
+The computational effort required to fit a complex, multi-response model is a burden to the model development process.
+Our chained melded model, and modular inference methods, have a number of desirable computational properties that reduce this burden. 
+By considering the submodel as the minimum computational unit, we may be able to parallelise aspects of the computation, and use less expensive computational techniques for some submodels.
+Reusing previous software implementations of submodels, and where available subposterior samples, may also be possible.
+We propose a multi-stage posterior estimation method that samples the subposterior of $\pd_{1}$ and $\pd_{3}$ in parallel, and the samples are then reused in later stages.
+Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can also aid understanding the contribution of each submodel to the final posterior.
 
 - Applied researchers often collect multiple disparate data sets, and wish to combine them after the fact
     - Describe why and what they do
-    - We are presenting a more formal, general form of the things that are done already
+    - We are presenting a more formal, general form of the things that are done already? 
+        - _This is true in the IPM case, but I guess less so in the other one?_
 
-- Markov melding introduction
-    - @goudie_joining_2019 introduced Markov melding, a methodology for combining probabilistic models in a principled way. 
-    - The aforementioned applied research does not always fit into the Markov melding methodology, which explicitly requires all $\Nm$ submodels to have the same quantity $\phi$ in common. 
-    - In the applications we consider, we have a number of submodels that share quantities in a pair wise manner. <!-- Not clear what this means, cut straight to next sentence -->
-    - Specifically, our examples contain 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$; where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$. 
-    - We will demonstrate that Markov melding, as introduced in @goudie_joining_2019, _can produce a melded model that may not be the one of interest_?, and we devise an extension to the melded model that permits the desired model combination.
-
-- Computation for multiple models is also challenging
-    - The computational effort required to fit a complex, multi-response model may prove prohibitive.
-    - If instead we consider the submodel as the minimum computational unit, we may be able to parallelise certain aspects of the computation, and use less expensive computational techniques for some submodels.
-    - The melding framework also allows us to reuse the submodel computation when targeting the bigger joint model.
-    - In a sense we would like to do Sequential importance sampling / refine our estimates, without needing to re-evaluate the submodels.
-    - Also like to better understand each submodel, and each submodels contribution to the join model.
-
-
-<!-- - Why do we need new methodology? What problem are we solving. -->
-
-- Other advantages to modularised inference
-    - understand submodels on their own and when they are combined
-    - use multiple software packages, which means we can reuse other implementations
-    - reuse posterior samples / computations 
-
-## Advantages - for introduction?
-
-- better understand submodels, and components thereof
-    - priors / prior predictive distributions / posterior predictive distributions / posterior pathologies therein
-- mostly re use existing implementations
-- refines other components of submodels, where as using parametric approximation to subposterior as a prior in latter models does not.
+- One other avenue, when computation is difficult, is to summarise complex aspects of the joint models into point estimates or prior distributions. 
 
 ## Other relevant references that I'm not sure how to include just yet.
 
+### Newer things
+
 - @donnat_bayesian_2020 -- Bayesian combination of disparate data types
 - @lee_bayesian_2020 -- combination of multiple Acylic graphs. This makes the Gaussian assumption that Massa makes, and More of a covariance estimation technique.
+- @lahat_multimodal_2015 -- multimodal stuff feels related, for example @li_generalized_2020, but data fusion is not an exact concept, and the relationship to melding is not clear to me yet.
+- @parsons_evaluating_2020 -- This is value of information with multiple data sources, with the idea being
+
+### Older things
 
 - @lee_model_2000 -- this is an example of the type of model discussed in Lee and Whitmore's Statistical science overview paper, so probably not needed.
 - @pennell_bayesian_2010 -- similarly, this is another threshold regression, but very Bayesian.
+- _Should this be expanded and reworked into the intro as a kind of literature review?_ There's a lot to cover (modular inference / multi stage samplers / applications of both)?_
 
-- @lahat_multimodal_2015 -- multimodal stuff feels related, for example @li_generalized_2020, but data fusion is not an exact concept, and the relationship to melding is not clear to me yet.
-- @parsons_evaluating_2020 -- This is value of information with multiple data sources, with the idea being 
+## Example introduction
 
-# Example introduction
+Our motivation for this idea is pragmatic, and particularly inspired by applications that can be recast, and more easily understood,  as components of our chained melded model.
+We introduce these models now to familiarise the reader with types of data and a subset of the domains in which modular inference methods are useful.
 
-- We will now outline two applications that combine three submodels in the manner described in the introduction.
-
-## An Integrated population model for little owls
+### An Integrated population model for little owls
  
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] allow for precise estimation of population level quantities.
 @schaub_local_2006 and @abadi_estimation_2010 use an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
@@ -99,7 +95,7 @@ We will show that this example, and IPMs in general, can be expressed in the Mar
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
-## Survival analysis with longitudinal data and uncertain event times
+### Survival analysis with longitudinal data and uncertain event times
 
 Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with event data.
 Complicated longitudinal process require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with event data.
@@ -197,6 +193,13 @@ knitr::include_graphics("plots/pooling-tests/version-two.pdf")
 ```
 
 # Coherency of the chained melded model
+
+- _I think a few of these results are wrong. Maybe this should just be a paragraph?_
+    - 3 ii) is definitely wrong.
+    - 3 i) doesn't required independence 
+- _Some discussion of the M = 3 case in text, with reference to the general case (if I can figure out what that even means) in the appendix_
+- _I think I can also put together a discussion of what it means to be externally Bayesian in this context now?_.
+    - _no_
 
 A reasonable requirement for a modular inference method is that the final posterior distribution should not, at least theoretically, depend on the order in which data are observed or integrated into the model.
 In the context of belief distributions, @bissiri_general_2016 call this property 'coherence', which we will co-opt.
@@ -645,7 +648,7 @@ knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
 
 We have introduced the chained melded model, and illustrated the process by which multiple sources of information are combined to obtained the chained melded posterior.
 Our examples demonstrate that practitioners are combining multiple sources of information in this 'chained' way, and that ignoring the uncertainty in any submodel component can produce biased, over-confident inference.
-- Rehash what exactly we got out of the examples -- simple cases, framework makes it conceptually easier.
+- Rehash what exactly we got out of the examples -- simple cases, framework makes it conceptually easier?
 
 One contribution of this work is to make explicit the often informal process of summarising and/or approximating submodels for use in subsequent analyses.
 The two most common, we believe, approximation strategies are
@@ -654,6 +657,9 @@ The two most common, we believe, approximation strategies are
 These strategies may, but not always, produce acceptable approximations to the chained melded model.
 It is interesting to note that many 'preprocessing' steps in an analysis pipeline can be thought of as 'summary by point estimate', where data are denoised or otherwise cleaned via models for future use. 
 Such strategies are implementations of 'multi-phase' inference [@lin_trio_2014], and present additional statistical issues not discussed here.
+
+- Discussion of estimation methods
+- refines other components of submodels, where as using a parametric approximation to subposterior as a prior in latter models does not
 
 _some discussion of seq/para_
 
@@ -664,7 +670,6 @@ _some discussion of seq/para_
     - issue is with prior specification in the absence of other models, which is then too concentrated / in appropriate when other, related models are added is similar to the issue discussed in Section 4.4.3 of @jacob_better_2017-1.
 - This is related to the idea that an inference process can/should be externally Bayesian, where by combining the data first then updating all the priors, should give the same result as independently updating the priors then combining the resulting posteriors.
     - Such a concept is not immediately applicable here, as it asks the process to satisfy strange criteria such as $\pd_{1}(\phi_{1 \cap 2} \mid Y_{3})\pd_{2}(\phi_{1 \cap 2} \mid Y_{3}) = \pd_{\text{meld}}^{12}(\phi_{1 \cap 2} \mid Y_{3})$ among others?
-    
 
 ## Disadvantages
 

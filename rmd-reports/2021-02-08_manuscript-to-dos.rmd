@@ -18,6 +18,9 @@ options(width = 9999)
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 
+- [ ] change github link for zenodo doi
+- [ ] write abstract and use to submit to conferences
+
 # introduction
 
 - [ ] pragmatism argument
@@ -52,7 +55,9 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 - [ ] decide if this goes in the appendix or in the main text
     - I want this in the main text of the thesis, but I'm not sure what it adds to the paper.
 
-# posterior estimation 
+- [ ] I think there is a way to make the Externally Bayesian argument make sense.
+
+# posterior estimation
 
 - [ ] citations for multi-stage samplers 
 - [x] include normal approximations an propagation of point estimates 
@@ -77,4 +82,4 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 # Appendices
 
-- [ ] Add math justification for individual at a time updating.
+- [ ] Add math justification from weekly report for individual at a time updating.

@@ -221,3 +221,58 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```{r psi_two_comparison}
 knitr::include_graphics("../plots/surv-example/psi-2-method-comparison.png")
 ```
+
+# Retrying to say something along the lines of 'our log-pooling admits a joint model that is externally Bayesian'
+
+- To begin, the original definition of _externally Bayesian_ (EB) is that if one has $m = 1, \ldots, M$ experts each with prior knowledge about $\theta$, and data $Y$ is observed with a corresponding likelihood $\pd(Y \mid \theta)$, then the result obtained by updating each expert individually and combining the updated experts, should equal the result obtained by combining the experts priors and updating the resultant. If the combination process occurs using pooling function $g_{\text{pool}}$ then, mathematically,
+\[
+  g_{\text{pool}}\left(\pd_{1}(\theta), \ldots, \pd_{M}(\theta) \right) \pd(Y \mid \theta) = 
+  g_{\text{pool}}\left(\pd(Y \mid \theta)\pd_{1}(\theta), \ldots, \pd(Y \mid \theta)\pd_{M}(\theta) \right)
+\]
+- The logarithmic pooling function $g_{\text{pool, log}}\left(\pd_{1}(\theta), \ldots, \pd_{M}(\theta) \right) = \pd_{1}(\theta)^{\lambda_{1}} \cdots \pd_{M}(\theta)^{\lambda_{M}}$ is an (the only?) externally Bayesian pooling function.
+- An important constraint for EB to hold is that $\lambda_{1} + \cdots, \lambda_{M} = 1$, otherwise the likelihood on the RHS ends up with the wrong power.
+
+## Trying to apply it to Melding.
+
+- In the case of chained Markov melding we have priors -- ignoring for a moment the $\psi$s -- $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ and $\pd_{3}(\phi_{2 \cap 3})$, and likelihoods $\pd_{1}(Y_{1} \mid \phi_{1 \cap 2}), \pd_{2}(Y_{2} \mid \phi_{1 \cap 2}, \phi_{2 \cap 3})$ and $\pd_{3}(Y_{3} \mid \phi_{2 \cap 3})$.
+- The question of being externally Bayesian is then to find a pooling function $g_{\text{pool}}$ such that
+\begin{multline}
+  g_{\text{pool}}\left(
+    \pd_{1}(\phi_{1 \cap 2}), 
+    \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}), 
+    \pd_{3}(\phi_{2 \cap 3})
+  \right) 
+    \pd_{1}(Y_{1} \mid \phi_{1 \cap 2}) 
+    \pd_{2}(Y_{2} \mid \phi_{1 \cap 2}, \phi_{2 \cap 3}) 
+    \pd_{3}(Y_{3} \mid \phi_{2 \cap 3}) = \\
+  g_{\text{pool}}\left(
+    \pd_{1}(\phi_{1 \cap 2}) \pd_{1}(Y_{1} \mid \phi_{1 \cap 2}), 
+    \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \pd_{2}(Y_{2} \mid \phi_{1 \cap 2}, \phi_{2 \cap 3}),
+    \pd_{3}(\phi_{2 \cap 3}) \pd_{3}(Y_{3} \mid \phi_{2 \cap 3})
+  \right)
+\end{multline}
+- There is a small wrinkle here, in that the right hand side has terms that do not take into account all available information, as $\phi_{1 \cap 2}$ is informed by both $Y_{1}$ and $Y_{2}$. So $\pd_{1}(\phi_{1 \cap 2}) \pd_{1}(Y_{1} \mid \phi_{1 \cap 2})$ is not really the posterior for $Y_{1}$ given all available, relevant information.
+- Ploughing on through, it is clear any such function will need to be multiplicative, so let's try our logarithmic pooling function:
+\begin{multline}
+  \pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}}
+  \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}}
+  \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}
+  \pd_{1}(Y_{1} \mid \phi_{1 \cap 2}) 
+  \pd_{2}(Y_{2} \mid \phi_{1 \cap 2}, \phi_{2 \cap 3}) 
+  \pd_{3}(Y_{3} \mid \phi_{2 \cap 3}) = \\
+  \left(\pd_{1}(\phi_{1 \cap 2}) \pd_{1}(Y_{1} \mid \phi_{1 \cap 2})\right)^{\lambda_{1}}
+  \left(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \pd_{2}(Y_{2} \mid \phi_{1 \cap 2}, \phi_{2 \cap 3})\right)^{\lambda_{2}}
+  \left(\pd_{3}(\phi_{2 \cap 3}) \pd_{3}(Y_{3} \mid \phi_{2 \cap 3})\right)^{\lambda_{3}}
+\end{multline}
+- which is clearly only true when $\lambda_{1} = \lambda_{2} = \lambda_{3} = 1$, which is product of experts.
+
+# Manuscript updates
+
+- Finished writing the example up
+  - Not sure Figure 8 is in it's final form, might also include longitudinal submodel as a grouped-facet kinda thing?
+  - Do we need to present some other results from the second example? A PPC of the survival probs / curve / Kaplan-Meier plots?
+  - Pooled prior TBA -- I'm happy to keep doing PoE but it makes it hard to justify talking about the priors if we never use it.
+    - Priors also the only thing that make this methodologically distinct from melding twice.
+- first attempts at turning the introduction / conclusion dot points to text -- post-hoc justification for this idea/work is tricky.
+- Increasingly disatified with the theory section,
+  - some of it is wrong, and no progress on proving the general $M$ case (requires checking $(M - 1) \times (M - 1)!)$ cases / induction?)
