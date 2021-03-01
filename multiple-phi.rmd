@@ -86,7 +86,7 @@ Multi-stage samplers are used in many applied settings, including hierarchical m
 
 ## Example introduction
 
-Our motivation for this idea is pragmatic, and particularly inspired by applications that can be recast, and more easily understood,  as components of our chained melded model.
+Our motivation for this idea is pragmatic <!-- don't think we need to frame the framework part of this as pragmatic; maybe the computational approach is -->, and particularly inspired by applications that can be recast, and more easily understood,  as components of our chained melded model.
 We introduce these models now to familiarise the reader with types of data and a subset of the domains in which modular inference methods are useful.
 
 ### An Integrated population model for little owls
