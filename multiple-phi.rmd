@@ -34,8 +34,6 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
 
 # Introduction
 
-_I don't really know what I'd like to introduce here? I don't have the motivation for this work down to an exact idea. Also, hard not to self-plagarise / rework the melding paper yet again_. 
-
 <!-- don't think this is too much of a problem. It is all the same flavour of work, so the motivation is going to be similar. Clearly, for this paper, it needs to justify why the multiple phi is important -->
 
 Considering multiple, diverse data allows statisticians to model more complex phenomena than a single source of data alone. 
