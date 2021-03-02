@@ -30,6 +30,11 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 # Example introduction
 
+- [] the submodels should include their parameter arguments here -- we can drop them later
+- [ ] the tikz pictures should have the $\phi$'s duplicated and separated into each submodel so that we can see the problem not the solution.
+- [ ] acknowledge the first example is not necessarily surprising
+- [ ] submodels are not really independent, find a different descriptor
+- [ ] change third model to something that acknowledges the threshold regression idea, but without the stochastic process.
 - [x] introduce the survival example 
 - [x] emphasise why each of the examples is interesting / what angle of the problem it explores.
     - [x] IPM is the simplest real example of the type of modelling we are interested in
@@ -66,6 +71,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 # examples
 
+- [ ] I do think one of these examples needs to use a pooled prior that isn't PoE -- I guess ideally some combination of all of them? This is HPC job.
 - [ ] Figure 6 needs a legend (owls example)
 
 - [ ] emphasises that the examples are proofs of existence / people already modelling in this manner 

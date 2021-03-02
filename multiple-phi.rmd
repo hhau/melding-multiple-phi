@@ -34,53 +34,57 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
 
 # Introduction
 
-<!-- don't think this is too much of a problem. It is all the same flavour of work, so the motivation is going to be similar. Clearly, for this paper, it needs to justify why the multiple phi is important -->
+The Bayesian philosophy is appealing in part because the posterior distribution quantifies all sources of uncertainty. 
+However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is challenging. 
+Models that consider such data are necessary to describe complex phenomena at a useful precision.
+One possible approach begins by specifying individual submodels for each source of data.
+These submodels could informally guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
+Instead, it may be preferable to approximate such a joint model by joining the individual submodels together. 
 
-Considering multiple, diverse data allows statisticians to model more complex phenomena than a single source of data alone. 
-However, analysing all available data can present substantial challenges.
-If the data differ in structure, contain different types of measurements, or capture related but non-identical populations of interest, then specifying a  joint model for all data is a considerable task.
-One possible approach is to specify individual submodels for each source of data, then combine the submodels for posterior inference.
-This process has many names; the submodels are sometimes called _modules_ [@liu_modularization_2009; @jacob_better_2017-1], and the joining of them is termed _fusion_ [@dai_bayesian_2021-1; @lahat_multimodal_2015-1] or _melding_ [@goudie_joining_2019].
-<!-- this implies that all of these are identical ideas, which I don't think is correct -->
-The key advantage of these ideas is that development and validation is easier <!-- (RG phrasing is confusing here), or sometimes only possible-->, because submodels are smaller and relate to only one source of data.
+Composing disparate data and/or submodels to from the joint model is a well established idea and central to many methodologies.
+Meta-analyses and evidence synthesis methods are important modelling techniques that summarise many disparate data, often by complex, hierarchical joint models [@ades_multiparameter_2006; @presanis_synthesising_2014].
+Outside of the statical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
+More familiar to Bayesian statisticians are the family of _divide and conquer_ methods (D&C).
+These are useful in tall data settings, where the number of observations presents a computational challenge.
+D&C methods split the data into subsets, fit the same model to each subset to produce the subposteriors, and combine these subposteriors.
+Specific D&C methods include _consensus Monte Carlo_ [@scott_bayes_2016-1],
+the embarrassingly parallel MCMC algorithm of @neiswanger_asymptotically_2014, and subposterior averaging via the Wasserstein baryceter [@srivastava_scalable_2018].
+The _Bayesian Fusion_ method of @dai_monte_2019-1 combines these subposteriors exactly.
 
-A common assumption of the aforementioned methods is that all $\Nm$ submodels have the same quantity $\phi$ in common.
-<!-- explain here why this is needed in practice. at a minimum hint at the examples in the paper -->
+Sometimes we may wish to think of a joint model in distinct submodels or 'modules'.
+This is particularly important when one submodel is misspecified [@liu_modularization_2009; @jacob_better_2017-1] and we want to limit the flow of information out of the misspecified module [@lunn_bugs_2009; @plummer_cuts_2015].
+The resulting posterior distribution is called the _cut_ distribution. 
+_Semi-modular_ inference extends inter-module cuts to include all possible models in-between the standard Bayesian model and the cut model [@carmona_semi-modular_2020].
+Whilst the motivation is not to overcome difficulties in specifying the joint model, these are interesting examples of 'modular thinking'.
 
-<!-- move this "in this paper we XXX" paper later in the intro, after you have reviewed other work and motivated why this extension is needed -->
-To relax this assumption, we extend Markov melding [@goudie_joining_2019] to enable the combination of submodels that share quantities in a pairwise manner.
-Consider the simplest case of 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$, where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$.
-We call our extension _chained Markov melding_, as the submodels are 'chained' together.
+Applied researchers often collect multiple disparate data sets, or data of different modalities, and wish to combine them. 
+For example, @donnat_bayesian_2020 build an intricate hierarchical model to estimate true COVID-19 diagnosis that integrates both testing data and self-reported questionnaire data, and @parsons_evaluating_2020 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine. 
+Both applications clearly delineate between the numerous sources of data they consider.
+In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesizing_2018] are used to estimate population level quantities, e.g. reproduction and immigration rates, using multiple data on the same population.
+Such data have standard models associated with them, for example the Cormack—Jolly—Seber model [@lebreton_modeling_1992] is standard for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
+
+_Markov melding_ [@goudie_joining_2019] is a general statistical methodology for combining submodels.
+Specifically, it considers $M$ submodels that share some common quantity $\phi$.
+Each of the $\modelindex = 1, \ldots, M$ submodels also has distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$. 
+The assumption that all submodels contain the same $\phi$ is common to many of the aforementioned modular inference methods.
+However, we will later consider examples where the submodels do not relate in this way.
+Our examples consist of the simplest possible, yet useful IPM that does not satisfy the common $\phi$ assumption; and a survival analysis where the event times are unobserved, uncertain quantities.
+Specifically we consider the 3 submodel case, where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$.
+We extend Markov melding to enable the combination of submodels that share quantities in such a pairwise manner, and we call our extension _chained Markov melding_, as the submodels are 'chained' together.
 
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
 Our chained melded model, and modular inference methods, have a number of desirable computational properties that reduce this burden. 
 By considering the submodel as the minimum computational unit, we may be able to parallelise aspects of the computation, and use less expensive computational techniques for some submodels.
 Reusing previous software implementations of submodels, and where available subposterior samples, may also be possible.
 We propose a multi-stage posterior estimation method that samples the subposterior of $\pd_{1}$ and $\pd_{3}$ in parallel, and the samples are then reused in later stages.
-Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can also aid understanding the contribution of each submodel to the final posterior.
-
-<!-- move this earlier in the introduction -->
-- Applied researchers often collect multiple disparate data sets, and wish to combine them after the fact
-    - Describe why and what they do
-    - We are presenting a more formal, general form of the things that are done already? 
-        - _This is true in the IPM case, but I guess less so in the other one?_
-
-- One other avenue, when computation is difficult, is to summarise complex aspects of the joint models into point estimates or prior distributions. 
-
-## Other relevant references that I'm not sure how to include just yet.
-
-### Newer things
-
-- @donnat_bayesian_2020 -- Bayesian combination of disparate data types
-- @lee_bayesian_2020 -- combination of multiple Acylic graphs. This makes the Gaussian assumption that Massa makes, and More of a covariance estimation technique.
-- @lahat_multimodal_2015 -- multimodal stuff feels related, for example @li_generalized_2020, but data fusion is not an exact concept, and the relationship to melding is not clear to me yet.
-- @parsons_evaluating_2020 -- This is value of information with multiple data sources, with the idea being
+Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can aid in understanding the contribution of each submodel to the final posterior.
 
 ### Older things
 
 - @lee_model_2000 -- this is an example of the type of model discussed in Lee and Whitmore's Statistical science overview paper, so probably not needed.
 - @pennell_bayesian_2010 -- similarly, this is another threshold regression, but very Bayesian.
 - _Should this be expanded and reworked into the intro as a kind of literature review?_ There's a lot to cover (modular inference / multi stage samplers / applications of both)?_
+- both the FHT and threshold regression models are inseparable from the stochastic process definition of the first submodel. We could recast our first submodel as some kind of parametric homage to a FHT/TR model, but nothing more than that. 
 
 ## Example introduction
 
