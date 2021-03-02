@@ -70,7 +70,17 @@ res <- lapply(vars, function(a_var) {
   )
 
 res$param <- res$param %>% 
-  recode(!!!a_recode_vector) 
+  recode(!!!a_recode_vector)
+
+## add the legend -- pivot to appropriate tbl 
+# tbl_for_legend <- tidyr::pivot_longer(
+#   res,
+#   cols = ends_with("_quantile"),
+#   names_to = "quantile_type",
+#   values_to = "y_quantile"
+# ) --- nah, just make the plot as is and pull the legend
+# 
+# plot_for_legend <- ggplot(res, aes(x = ))
 
 plot_list <- lapply(unique(res$param), function(a_param) {
   plot_data <- filter(res, param == a_param)
