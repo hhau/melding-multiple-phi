@@ -36,14 +36,20 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
 
 _I don't really know what I'd like to introduce here? I don't have the motivation for this work down to an exact idea. Also, hard not to self-plagarise / rework the melding paper yet again_. 
 
+<!-- don't think this is too much of a problem. It is all the same flavour of work, so the motivation is going to be similar. Clearly, for this paper, it needs to justify why the multiple phi is important -->
+
 Considering multiple, diverse data allows statisticians to model more complex phenomena than a single source of data alone. 
 However, analysing all available data can present substantial challenges.
 If the data differ in structure, contain different types of measurements, or capture related but non-identical populations of interest, then specifying a  joint model for all data is a considerable task.
 One possible approach is to specify individual submodels for each source of data, then combine the submodels for posterior inference.
 This process has many names; the submodels are sometimes called _modules_ [@liu_modularization_2009; @jacob_better_2017-1], and the joining of them is termed _fusion_ [@dai_bayesian_2021-1; @lahat_multimodal_2015-1] or _melding_ [@goudie_joining_2019].
-The key advantage of these ideas is that development and validation is easier, or sometimes only possible, because submodels are smaller and relate to only one source of data.
+<!-- this implies that all of these are identical ideas, which I don't think is correct -->
+The key advantage of these ideas is that development and validation is easier <!-- (RG phrasing is confusing here), or sometimes only possible-->, because submodels are smaller and relate to only one source of data.
 
 A common assumption of the aforementioned methods is that all $\Nm$ submodels have the same quantity $\phi$ in common.
+<!-- explain here why this is needed in practice. at a minimum hint at the examples in the paper -->
+
+<!-- move this "in this paper we XXX" paper later in the intro, after you have reviewed other work and motivated why this extension is needed -->
 To relax this assumption, we extend Markov melding [@goudie_joining_2019] to enable the combination of submodels that share quantities in a pairwise manner.
 Consider the simplest case of 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$, where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$.
 We call our extension _chained Markov melding_, as the submodels are 'chained' together.
@@ -55,6 +61,7 @@ Reusing previous software implementations of submodels, and where available subp
 We propose a multi-stage posterior estimation method that samples the subposterior of $\pd_{1}$ and $\pd_{3}$ in parallel, and the samples are then reused in later stages.
 Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can also aid understanding the contribution of each submodel to the final posterior.
 
+<!-- move this earlier in the introduction -->
 - Applied researchers often collect multiple disparate data sets, and wish to combine them after the fact
     - Describe why and what they do
     - We are presenting a more formal, general form of the things that are done already? 
@@ -79,35 +86,40 @@ Multi-stage samplers are used in many applied settings, including hierarchical m
 
 ## Example introduction
 
-Our motivation for this idea is pragmatic, and particularly inspired by applications that can be recast, and more easily understood,  as components of our chained melded model.
+Our motivation for this idea is pragmatic <!-- don't think we need to frame the framework part of this as pragmatic; maybe the computational approach is -->, and particularly inspired by applications that can be recast, and more easily understood,  as components of our chained melded model.
 We introduce these models now to familiarise the reader with types of data and a subset of the domains in which modular inference methods are useful.
 
 ### An Integrated population model for little owls
- 
+
+<!-- do we want to frame this as a joining or a splitting example? -->
+
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] allow for precise estimation of population level quantities.
-@schaub_local_2006 and @abadi_estimation_2010 use an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
-The collect and model three types of data: capture-recapture data $Y_{1}$ and capture-recapture submodel $\pd_{1}$, population counts $Y_{2}$ and count data submodel $\pd_{2}$, and nest-record data $Y_{3}$ and fecundity submodel $\pd_{3}$.
-Importantly, $\pd_{1}$ has a parameter $\phi_{1 \cap 2}$ in common with $\pd_{2}$, and $\pd_{2}$ further has another parameter $\phi_{2 \cap 3}$ in common with $\pd_{3}$.
-Because of the shared parameters, we can form the IPM as the product of these independent submodels.
-This model combination step is prudent; no single source of data is sufficient to estimate all quantities of interest to the desired precision.
+@schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
+<!-- suggest writing out the arguments of the models at first use e.g. p_1(Y_1, \psi_1, \phi_{1\union2}) and then introduce the shorthand afterwards-->
+These authors collect <!- do they actually collect the data themselves? --> and model three types of data: capture-recapture data $Y_{1}$ and capture-recapture submodel $\pd_{1}$, population counts $Y_{2}$ and count data submodel $\pd_{2}$, and nest-record data $Y_{3}$ and fecundity submodel $\pd_{3}$.
+The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
+<!-- not sure what you mean: the models are not independent? i'm not even sure what independence of models means here? --> Because of the shared parameters, we can form the IPM as the product of these independent submodels.
+This model combination step is prudent <!-- not sure this is quite the word you mean -->; no single source of data is sufficient to estimate all quantities of interest to the desired precision.
 Figure \ref{fig:owls-simple-dag} is a simplified DAG of the IPM, showing the relationship between the three submodels.
-We will show that this example, and IPMs in general, can be expressed in the Markov melding framework developed in Section \ref{model-specification}.
+We will show that Markov melding framework developed in Section \ref{model-specification} provides a general framework describing how this example, and IPMs in general, can be integrated.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
 ### Survival analysis with longitudinal data and uncertain event times
 
+<!-- looks like a good list of very relevant literature, but need to think through the structure and argument you're making here -->
+
 Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with event data.
 Complicated longitudinal process require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with event data.
-This motivates a two-stage approach, where the longitudinal submodel is fit first and its output is used in the event submodel [@tsiatis_joint_2004; @mauff_joint_2020].
+This motivates a two-stage approach, where the longitudinal submodel is fit first and its output <!-- output a bit informal --> is used in the event submodel [@tsiatis_joint_2004; @mauff_joint_2020].
 
 In some settings the time at which the relevant event occurs is inherently uncertain.
 This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred from other information.
 _first hitting time_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@sweeting_estimating_2010; @yu_semi-parametric_2009].
-Another setting in which inherently uncertain event times can arise is record linkage [@harron_methodological_2015], and incorporating the uncertainty into standard survival models is not straightforward [@wang_integrative_2020].
+Another setting in which inherently uncertain event times can arise is record linkage [@harron_methodological_2015], and incorporating the uncertainty into standard survival models is not straightforward [@wang_integrative_2020] <!-- this needs more elaboration. can you explain what Wang manage, and why it is hard/what we offer beyond Wang? -->.
 
-It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis; modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
-Specifically, we consider the event time as an uncertain submodel output from a simplified threshold crossing model, which we denote $\pd_{1}$, and as the response in the survival model $\pd_{2}$. 
+<!-- strengthen this argument --> It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis; modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
+Specifically, we consider the event time as an uncertain submodel output <!-- "submodel output" a bit vague/informal --> from a simplified threshold crossing model, which we denote $\pd_{1}$, and as the response in the survival model $\pd_{2}$. 
 The uncertain event time is thus the common quantity $\phi_{1 \cap 2}$.
 We treat the longitudinal submodel, $\pd_{3}$, separately, as is common in two-stage survival modelling, and denote the individual-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
 The high level inter-submodel relationships are displayed in Figure \ref{fig:surv-simple-dag}.
