@@ -1,5 +1,5 @@
 ---
-title: "Chained Markov melding: Joining multiple models with pairwise commonalities"
+title: "Chained Markov melding: multiple models with pairwise commonalities"
 author: "Andrew Manderson"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 fontfamily: tgpagella
@@ -88,7 +88,7 @@ Multi-stage samplers are used in many applied settings, including hierarchical m
 
 ## Example introduction
 
-Our motivation for this idea is pragmatic <!-- don't think we need to frame the framework part of this as pragmatic; maybe the computational approach is -->, and particularly inspired by applications that can be recast, and more easily understood,  as components of our chained melded model.
+Our motivation arises from applications that can be recast, and perhaps more easily understood, as components of our chained melded model.
 We introduce these models now to familiarise the reader with types of data and a subset of the domains in which modular inference methods are useful.
 
 ### An Integrated population model for little owls
@@ -97,13 +97,12 @@ We introduce these models now to familiarise the reader with types of data and a
 
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] allow for precise estimation of population level quantities.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
-<!-- suggest writing out the arguments of the models at first use e.g. p_1(Y_1, \psi_1, \phi_{1\union2}) and then introduce the shorthand afterwards-->
-These authors collect <!- do they actually collect the data themselves? --> and model three types of data: capture-recapture data $Y_{1}$ and capture-recapture submodel $\pd_{1}$, population counts $Y_{2}$ and count data submodel $\pd_{2}$, and nest-record data $Y_{3}$ and fecundity submodel $\pd_{3}$.
+These authors collect and model three types of data: capture-recapture data $Y_{1}$ and capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, population counts $Y_{2}$ and count data submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$, and nest-record data $Y_{3}$ and fecundity submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
 The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
-<!-- not sure what you mean: the models are not independent? i'm not even sure what independence of models means here? --> Because of the shared parameters, we can form the IPM as the product of these independent submodels.
-This model combination step is prudent <!-- not sure this is quite the word you mean -->; no single source of data is sufficient to estimate all quantities of interest to the desired precision.
-Figure \ref{fig:owls-simple-dag} is a simplified DAG of the IPM, showing the relationship between the three submodels.
-We will show that Markov melding framework developed in Section \ref{model-specification} provides a general framework describing how this example, and IPMs in general, can be integrated.
+Because of the shared parameters, we can form the IPM as the product of these distinct submodels.
+This model combination step is important as no single source of data is sufficient to estimate all quantities of interest to the desired precision.
+Figure \ref{fig:owls-simple-dag} is a simplified DAG of the IPM, showing the relationships within the three submodels.
+We will show that the chained Markov melding framework developed in Section \ref{model-specification} describes how this example, and IPMs in general, are integrated.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
@@ -494,7 +493,7 @@ This allows us to use pre-existing implementations of the submodels.
 Specifically, the capture-recapture and count data submodels are written in BUGS [@lunn_bugs_2009], and the subposterior of the former is sampled via `rjags` [@plummer_rjags_2019]. 
 The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2021].
 We reuse the count data BUGS implementation for stage two of the multi-stage sampler, and implement the Metropolis-within-Gibbs sampler specified in Section \ref{parallel-sampler} via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
-A slightly modified version of the count data submodel used for the Normal approximation, which is also run through `rjags`.
+A slightly modified version of the count data submodel used for the normal approximation, which is also run through `rjags`.
 We highlight the use of different statistical software for each submodel, an advantage of this 'modular' approach to modelling.
 
 Code and data for all examples are available at [https://github.com/hhau/melding-multiple-phi](https://github.com/hhau/melding-multiple-phi). 
@@ -506,7 +505,7 @@ __TODO:__ Swap this for a Zenodo DOI
 knitr::include_graphics("plots/owls-example/subposteriors.pdf")
 ```
 
-```{r phi_qq_compare, fig.cap = "Quantile-Quantile plot of ($\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3}$) for the IPM posterior (y-axis) and melded posterior (x-axis). The empirical quantiles are displayed as a solid red line, and the optimal quantile is shown as a dashed black line. The melded posterior quantiles obtained using the Normal approximation are plotted as a dot-dash blue line."}
+```{r phi_qq_compare, fig.cap = "Quantile-Quantile plot of ($\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3}$) for the IPM posterior (y-axis) and melded posterior (x-axis). The empirical quantiles are displayed as a solid red line, and the optimal quantile is shown as a dashed black line. The melded posterior quantiles obtained using the normal approximation are plotted as a dot-dash blue line."}
 knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 ```
 We empirically validate our methodology and sampler by comparing the melded posterior samples to the original IPM posterior.
