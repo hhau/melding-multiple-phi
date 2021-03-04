@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 # Example introduction
 
 - [] the submodels should include their parameter arguments here -- we can drop them later
-- [ ] the tikz pictures should have the $\phi$'s duplicated and separated into each submodel so that we can see the problem not the solution.
+- [x] the tikz pictures should have the $\phi$'s duplicated and separated into each submodel so that we can see the problem not the solution.
 - [ ] acknowledge the first example is not necessarily surprising
 - [ ] submodels are not really independent, find a different descriptor
 - [ ] change third model to something that acknowledges the threshold regression idea, but without the stochastic process.
@@ -72,7 +72,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 # examples
 
 - [ ] I do think one of these examples needs to use a pooled prior that isn't PoE -- I guess ideally some combination of all of them? This is HPC job.
-- [ ] Figure 6 needs a legend (owls example)
+- [x] Figure 6 needs a legend (owls example)
 
 - [ ] emphasises that the examples are proofs of existence / people already modelling in this manner 
 - [x] the second model can't really be done as a joint model? You'd have to do some form of gibbs? nah, but it would be difficult to get it all working simultaneously.
