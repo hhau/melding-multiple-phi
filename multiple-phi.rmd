@@ -79,13 +79,6 @@ Reusing previous software implementations of submodels, and where available subp
 We propose a multi-stage posterior estimation method that samples the subposterior of $\pd_{1}$ and $\pd_{3}$ in parallel, and the samples are then reused in later stages.
 Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can aid in understanding the contribution of each submodel to the final posterior.
 
-### Older things
-
-- @lee_model_2000 -- this is an example of the type of model discussed in Lee and Whitmore's Statistical science overview paper, so probably not needed.
-- @pennell_bayesian_2010 -- similarly, this is another threshold regression, but very Bayesian.
-- _Should this be expanded and reworked into the intro as a kind of literature review?_ There's a lot to cover (modular inference / multi stage samplers / applications of both)?_
-- both the FHT and threshold regression models are inseparable from the stochastic process definition of the first submodel. We could recast our first submodel as some kind of parametric homage to a FHT/TR model, but nothing more than that. 
-
 ## Example introduction
 
 Our motivation arises from applications that can be recast, and perhaps more easily understood, as components of our chained melded model.
@@ -99,31 +92,45 @@ Integrated population models (IPMs) [@zipkin_synthesizing_2018] allow for precis
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
 These authors collect and model three types of data: capture-recapture data $Y_{1}$ and capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, population counts $Y_{2}$ and count data submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$, and nest-record data $Y_{3}$ and fecundity submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
 The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
-Because of the shared parameters, we can form the IPM as the product of these distinct submodels.
+Because of these shared quantities, we form the IPM as the product of these distinct submodels.
 This model combination step is important as no single source of data is sufficient to estimate all quantities of interest to the desired precision.
 Figure \ref{fig:owls-simple-dag} is a simplified DAG of the IPM, showing the relationships within the three submodels.
 We will show that the chained Markov melding framework developed in Section \ref{model-specification} describes how this example, and IPMs in general, are integrated.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
-### Survival analysis with longitudinal data and uncertain event times
+### Survival analysis with time varying covariates and uncertain event times
 
 <!-- looks like a good list of very relevant literature, but need to think through the structure and argument you're making here -->
 
-Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with event data.
-Complicated longitudinal process require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with event data.
-This motivates a two-stage approach, where the longitudinal submodel is fit first and its output <!-- output a bit informal --> is used in the event submodel [@tsiatis_joint_2004; @mauff_joint_2020].
+Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with time to event data.
+Complicated longitudinal processes require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with time to event data.
+This motivates a two-stage approach, where the longitudinal submodel is fit first and the fitted values are then used in the survival submodel [@tsiatis_joint_2004; @mauff_joint_2020].
 
 In some settings the time at which the relevant event occurs is inherently uncertain.
 This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred from other information.
-_first hitting time_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@sweeting_estimating_2010; @yu_semi-parametric_2009].
-Another setting in which inherently uncertain event times can arise is record linkage [@harron_methodological_2015], and incorporating the uncertainty into standard survival models is not straightforward [@wang_integrative_2020] <!-- this needs more elaboration. can you explain what Wang manage, and why it is hard/what we offer beyond Wang? -->.
+_First hitting time_, or _threshold regression_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@yu_semi-parametric_2009].
+These methods assume that relevant measurements are realisations from a specific, possibly latent, stochastic process, where the distribution of the threshold crossing time is known.
+A conceptually similar idea is presented in @lu_using_1993 and @sweeting_estimating_2010; both use hierarchical regression models instead of stochastic processes, and define the event time as when the estimated regression curve crosses the threshold.  
+Another setting in which inherently uncertain event times arise is record linkage [@harron_methodological_2015].
+Such settings are unique in that the true event time is assumed to be one of a finite set of possible times, with one possible event time arising from each matching record.
+Integrating this uncertainty into standard survival models is challenging but possible [@wang_integrative_2020], however these methods do not consider event times that are continuous[^wang].
 
-<!-- strengthen this argument --> It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis; modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
-Specifically, we consider the event time as an uncertain submodel output <!-- "submodel output" a bit vague/informal --> from a simplified threshold crossing model, which we denote $\pd_{1}$, and as the response in the survival model $\pd_{2}$. 
-The uncertain event time is thus the common quantity $\phi_{1 \cap 2}$.
-We treat the longitudinal submodel, $\pd_{3}$, separately, as is common in two-stage survival modelling, and denote the individual-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
-The high level inter-submodel relationships are displayed in Figure \ref{fig:surv-simple-dag}.
+[^wang]: @wang_integrative_2020 assume that the response is a finite mixture, where each mixture component is a point mass at the possible event times arising due to record linkage. Uncertainty is then incorporated by estimating the mixture weights.
+
+It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis.
+Doing so in a standard joint model is challenging, as incorporating uncertainty in the response requires complex methodology [@giganti_accounting_2020; @oh_considerations_2018; @oh_raking_2021] which do not explicitly include time-varying covariates.
+Similarly, incorporating time-varying covariates into a threshold regression model is nontrivial, and assumes the relevant covariates satisfy the Markov property [@lee_threshold_2010].
+ <!-- - Another is that integrating time dependent covariates into the FHT/TR models is non straightforward -- as far as I can tell the Markov assumption in Lee and Whitmore is equivalent to restricting the form of the longitudinal submodel to linear forms (non linear longitudinal regression models are non-Markovian / joint model that depend on the integral of the longitudinal model are definitely non-Markovian. This is discussed a bit in @lee_threshold_2010)
+    - it would help if our longitudinal model was non-linear so that we could have this benefit -- maybe making the regression quadratic.
+  - One motivation comes from the respiratory failure idea and its similarities to the degradation models. (what would the other, longitudinal covariate be?)
+    - This would be strengthened by using non-linear regression / splines for the first submodel. -->
+Modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
+Specifically, we consider the event time as an uncertain, latent submodel quantity in a simplified, hierarchical degradation model akin to @lu_using_1993. 
+We call this submodel the _uncertain event time_ submodel and denote it $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, and where $\phi_{1 \cap 2}$ is the latent event time.
+The survival submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ uses $\phi_{1 \cap 2}$, the common quantity, as the response. 
+We treat the longitudinal submodel, $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$, separately from the survival submodel, as is common in two-stage survival modelling, and denote the subject-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
+The high level submodel relationships are displayed as a DAG in Figure \ref{fig:surv-simple-dag}.
 
 \input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
@@ -135,7 +142,7 @@ Additionally, each submodel shares some quantity in common with adjacent submode
 By adjacent we mean related the manner depicted in Figure \ref{fig:owls-simple-dag}, where $\pd_{1}$ is adjacent to $\pd_{2}$ because they have $\phi_{1 \cap 2}$ in common.
 Our particular interest is in the $\Nm = 3$ submodel case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$.
 In this way, the submodels are connected in a manner akin to a chain.
-<!-- TODO: -->The appendix contains the more general $\Nm$-model case.
+The appendix contains the more general $\Nm$-model case.
 Each submodel is assumed to be a valid joint density function for all constituent quantities, and all submodel conditionals exist with appropriate support.
 
 [^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
@@ -403,6 +410,7 @@ Note that all stage two acceptance probabilities only contain terms from the sec
 ## Normal approximations to submodel components
 
 Normal approximations are commonly employed to summarise submodels for subsequent use in more complex models.
+For example, two-stage meta-analyses often use a normal distribution centred on each studies' effect estimate [@burke_meta-analysis_2017].
 Suppose we employ such an approximation to summarise the prior and posterior of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ under $\pd_{1}$ and $\pd_{3}$ respectively.
 In addition, assume that
 
