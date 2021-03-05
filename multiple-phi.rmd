@@ -662,8 +662,12 @@ The difference between the chained melded posterior and the posterior with $\phi
 knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
 ```
 
-- _do we want a PPC plot for the various methods as well? Probably not, as Weibull is not exactly the best fit to this data_.
-- _what else is there to talk about here? Uncertainty is good, is it obviously good enough?_
+
+```{r kaplan_meier_pc, fig.cap = "Survival probabilities for chained melded posterior and the posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\} fixed. The black lines are the Kaplan-Meier curves obtained using 500 representative stage two samples of $\\phi_{1 \\cap 2}$ from the chained melded posterior. The intervals are 80% posterior intervals, and the central lines are posterior means of average survival probability. The quantities relevant to the chained melded posterior are coloured red, and the fixed posterior blue."}
+knitr::include_graphics("plots/surv-example/kaplan-meier-pc.pdf")
+```
+
+- I don't full believe Figure \ref{kaplan_meier_pc} just yet. There is something going wrong numerically in the posterior predictive computations that I haven't figured out just yet
 
 # Discussion
 
