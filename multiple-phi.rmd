@@ -101,8 +101,6 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 ### Survival analysis with time varying covariates and uncertain event times
 
-<!-- looks like a good list of very relevant literature, but need to think through the structure and argument you're making here -->
-
 Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with time to event data.
 Complicated longitudinal processes require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with time to event data.
 This motivates a two-stage approach, where the longitudinal submodel is fit first and the fitted values are then used in the survival submodel [@tsiatis_joint_2004; @mauff_joint_2020].
