@@ -52,7 +52,10 @@ res <- pblapply(phi_12_thin_vec, cl = 6, function(iter_id) {
   base_df <- surv_obj[1, ] %>%
     mutate(time = 0, surv = 1, n.event = 0)
   
-  res <- rbind(base_df, surv_obj)
+  min_t_df <- surv_obj[1, ] %>%
+    mutate(time = 0.37, surv = 1, n.event = 0)
+  
+  res <- rbind(base_df, min_t_df, surv_obj)
 }) 
 
 plot_df <- bind_rows(res)
@@ -64,8 +67,8 @@ base_plot <- ggplot(
   data = plot_df, 
   aes(x = time, y = surv, group = iter_id)
 ) +
-  geom_step(alpha = 0.25) + 
-  scale_x_continuous(limits = c(0, 1)) +
+  geom_step(alpha = 0.1) + 
+  scale_x_continuous(limits = c(0.36, 1)) +
   geom_point(
     data = censor_df,
     inherit.aes = FALSE,
@@ -261,7 +264,7 @@ p1 <- base_plot +
   scale_colour_manual(
     values = c(
       chained = highlight_col,
-      fixed = blues[2]
+      fixed = blues[1]
     ),
     labels = list(
       chained = "Chained Melding",

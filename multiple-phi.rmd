@@ -663,11 +663,11 @@ knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
 ```
 
 
-```{r kaplan_meier_pc, fig.cap = "Survival probabilities for chained melded posterior and the posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\} fixed. The black lines are the Kaplan-Meier curves obtained using 500 representative stage two samples of $\\phi_{1 \\cap 2}$ from the chained melded posterior. The intervals are 80% posterior intervals, and the central lines are posterior means of average survival probability. The quantities relevant to the chained melded posterior are coloured red, and the fixed posterior blue."}
+```{r kaplan_meier_pc, fig.cap = "Survival probabilities for chained melded posterior and the posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ fixed. The black lines are the Kaplan-Meier curves obtained using 500 representative stage two samples of $\\phi_{1 \\cap 2}$ from the chained melded posterior. The intervals are 80\\% posterior intervals, and the central lines are posterior means of average survival probability. The quantities relevant to the chained melded posterior are coloured red, and the fixed posterior blue."}
 knitr::include_graphics("plots/surv-example/kaplan-meier-pc.pdf")
 ```
 
-- I don't full believe Figure \ref{kaplan_meier_pc} just yet. There is something going wrong numerically in the posterior predictive computations that I haven't figured out just yet
+- I don't full believe Figure \ref{fig:kaplan_meier_pc} just yet. There is something going wrong numerically in the posterior predictive computations that I haven't figured out just yet
 
 # Discussion
 
