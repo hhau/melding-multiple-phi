@@ -39,11 +39,11 @@ However, a joint model for all data and parameters is a prerequisite to posterio
 Models that consider such data are necessary to describe complex phenomena at a useful precision.
 One possible approach begins by specifying individual submodels for each source of data.
 These submodels could informally guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
-Instead, it may be preferable to approximate such a joint model by joining the individual submodels together. 
+Instead, it may be preferable to construct a joint model by formally joining the individual submodels together. 
 
 Composing disparate data and/or submodels to from the joint model is a well established idea and central to many methodologies.
-Meta-analyses and evidence synthesis methods are important modelling techniques that summarise many disparate data, often by complex, hierarchical joint models [@ades_multiparameter_2006; @presanis_synthesising_2014].
-Outside of the statical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
+Meta-analyses and evidence synthesis methods are important modelling techniques that summarise many disparate data, often using hierarchical models [@ades_multiparameter_2006; @presanis_synthesising_2014].
+Outside of the statistical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
 More familiar to Bayesian statisticians are the family of _divide and conquer_ methods (D&C).
 These are useful in tall data settings, where the number of observations presents a computational challenge.
 D&C methods split the data into subsets, fit the same model to each subset to produce the subposteriors, and combine these subposteriors.
@@ -73,7 +73,7 @@ Specifically we consider the 3 submodel case, where submodel 1 and 2 share a com
 We extend Markov melding to enable the combination of submodels that share quantities in such a pairwise manner, and we call our extension _chained Markov melding_, as the submodels are 'chained' together.
 
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
-Our chained melded model, and modular inference methods, have a number of desirable computational properties that reduce this burden. 
+Our chained melded model has a number of desirable computational properties that can reduce this burden. 
 By considering the submodel as the minimum computational unit, we may be able to parallelise aspects of the computation, and use less expensive computational techniques for some submodels.
 Reusing previous software implementations of submodels, and where available subposterior samples, may also be possible.
 We propose a multi-stage posterior estimation method that samples the subposterior of $\pd_{1}$ and $\pd_{3}$ in parallel, and the samples are then reused in later stages.
@@ -90,12 +90,10 @@ We introduce these models now to familiarise the reader with types of data and a
 
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] allow for precise estimation of population level quantities.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
-These authors collect and model three types of data: capture-recapture data $Y_{1}$ and capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, population counts $Y_{2}$ and count data submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$, and nest-record data $Y_{3}$ and fecundity submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
+These authors collect and model three types of data, illustrated in Figure \ref{fig:owls-simple-dag}: capture-recapture data $Y_{1}$ with associated capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$; population counts $Y_{2}$ with associated submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$; and nest-record data $Y_{3}$ with associated fecundity submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
 The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
-Because of these shared quantities, we form the IPM as the product of these distinct submodels.
 This model combination step is important as no single source of data is sufficient to estimate all quantities of interest to the desired precision.
-Figure \ref{fig:owls-simple-dag} is a simplified DAG of the IPM, showing the relationships within the three submodels.
-We will show that the chained Markov melding framework developed in Section \ref{model-specification} describes how this example, and IPMs in general, are integrated.
+We will show that the chained Markov melding framework developed in Section \ref{model-specification} shows how to integrate these submodels, and IPMs in general.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
@@ -135,12 +133,11 @@ The high level submodel relationships are displayed as a DAG in Figure \ref{fig:
 # Model specification
 
 Our intention is to combine submodels into a specific joint model which we call the _chained melded model_[^chained].
-Explicitly, we consider $\modelindex = 1, \ldots, \Nm$ submodels each with distinct data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
+Consider $\modelindex = 1, \ldots, \Nm$ submodels each with distinct data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
 Additionally, each submodel shares some quantity in common with adjacent submodels $\phi_{\modelindex \cap \modelindex'}$, where $\modelindex \neq \modelindex'$.
-By adjacent we mean related the manner depicted in Figure \ref{fig:owls-simple-dag}, where $\pd_{1}$ is adjacent to $\pd_{2}$ because they have $\phi_{1 \cap 2}$ in common.
-Our particular interest is in the $\Nm = 3$ submodel case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$.
-In this way, the submodels are connected in a manner akin to a chain.
-The appendix contains the more general $\Nm$-model case.
+
+We focus in the main text on the $\Nm = 3$ submodel special case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$;
+the appendix contains the general $\Nm$-model case.
 Each submodel is assumed to be a valid joint density function for all constituent quantities, and all submodel conditionals exist with appropriate support.
 
 [^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
@@ -157,7 +154,7 @@ We refer to Equation \eqref{eqn:melded-model-full} as the melded model, and note
 
 ## Pooled prior
 
-Completely specifying \eqref{eqn:melded-model-full} requires forming an appropriate joint prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+Specifying \eqref{eqn:melded-model-full} requires forming an appropriate joint prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 Markov melding proceeds by pooling [@ohagan_uncertain_2006] the submodel priors to form such a prior, denoted $\pd_{\text{pool}}$.
 We will do the same, however we have the additional complication that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ may have different supports.
 Consequently, we extend linear and logarithmic pooling to handle marginals with different supports, to produce a valid density for $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
@@ -198,8 +195,7 @@ The two dimensional density function $\pd_{2}$ has an additional parameter $\rho
 We set $\mu_{1} = -2.5, \mu_{2} = \left[\mu_{2, 1} \,\, \mu_{2, 2}\right]' = \left[0 \,\, 0\right]', \mu_{3} = 2.5, \sigma_{1}^{2} = \sigma_{2}^{2} = \sigma_{3}^{2} = 1$ and $\rho = 0.8$.
 In the logarithmic case we set $\lambda_{1} = \lambda_{3}$ and parameterise $\lambda_{2} = 1 - 2\lambda_{1}$, so that $\lambda_{1} + \lambda_{2} + \lambda_{3} = 1$ whilst limiting ourselves to varying only $\lambda_{1}$.
 Similarly, in the linear case we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
-
-Figure \ref{fig:pooled_densities_plot} displays the estimate of $\pd_{\text{pool}}$, and its constituent marginals, for 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
+We consider 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
 For both pooling methods, as $\lambda_{1}$ increases, the contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase. 
 As expected, using linear pooling produces a $\pd_{\text{pool}}$ with no correlation, due to the additive form of Equations \eqref{eqn:silly-linear-solution-1} and \eqref{eqn:silly-linear-solution-2}.
 A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ case, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
