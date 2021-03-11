@@ -1,8 +1,17 @@
 \begin{equation}
-  \pd_{\text{pool}} (\phi_{1 \cap 2}, \phi_{2 \cap 3}) \propto
-  g_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) =
+\begin{gathered}
+  \pd_{\text{pool}} (\phi_{1 \cap 2}, \phi_{2 \cap 3}) =
+  g_{\text{log}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) =
+  \frac{1}{K_{\text{log}}(\lambda)}
   \pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}} 
   \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}}
-  \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}.
+  \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}, \\
+  K_{\text{log}}(\lambda) = 
+  \int
+    \pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}} 
+    \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}}
+    \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}
+  \text{d}\phi_{1 \cap 2}, \phi_{2 \cap 3}
   \label{eqn:pooled-prior-overall}
+\end{gathered}
 \end{equation}

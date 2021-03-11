@@ -9,6 +9,7 @@ geometry: margin=2.25cm
 bibliography: bibliography/multi-phi-bib.bib
 csl: bibliography/journal-of-the-royal-statistical-society.csl
 link-citations: true
+indent: true
 hyperrefoptions:
   - backref
   - colorlinks=true
@@ -34,14 +35,14 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
 
 # Introduction
 
-The Bayesian philosophy is appealing in part because the posterior distribution quantifies all sources of uncertainty. 
-However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is challenging. 
+The Bayesian philosophy is appealing in part because the posterior distribution quantifies all sources of uncertainty.
+However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is challenging.
 Models that consider such data are necessary to describe complex phenomena at a useful precision.
 One possible approach begins by specifying individual submodels for each source of data.
 These submodels could informally guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
-Instead, it may be preferable to construct a joint model by formally joining the individual submodels together. 
+Instead, it may be preferable to construct a joint model by formally joining the individual submodels together.
 
-Composing disparate data and/or submodels to from the joint model is a well established idea and central to many methodologies.
+There is a general interest in integrating many sources of data into a single model, and some specific forms of combining data are well established.
 Meta-analyses and evidence synthesis methods are important modelling techniques that summarise many disparate data, often using hierarchical models [@ades_multiparameter_2006; @presanis_synthesising_2014].
 Outside of the statistical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
 More familiar to Bayesian statisticians are the family of _divide and conquer_ methods (D&C).
@@ -50,56 +51,72 @@ D&C methods split the data into subsets, fit the same model to each subset to pr
 Specific D&C methods include _consensus Monte Carlo_ [@scott_bayes_2016-1],
 the embarrassingly parallel MCMC algorithm of @neiswanger_asymptotically_2014, and subposterior averaging via the Wasserstein baryceter [@srivastava_scalable_2018].
 The _Bayesian Fusion_ method of @dai_monte_2019-1 combines these subposteriors exactly.
-
-Sometimes we may wish to think of a joint model in distinct submodels or 'modules'.
-This is particularly important when one submodel is misspecified [@liu_modularization_2009; @jacob_better_2017-1] and we want to limit the flow of information out of the misspecified module [@lunn_bugs_2009; @plummer_cuts_2015].
-The resulting posterior distribution is called the _cut_ distribution. 
-_Semi-modular_ inference extends inter-module cuts to include all possible models in-between the standard Bayesian model and the cut model [@carmona_semi-modular_2020].
-Whilst the motivation is not to overcome difficulties in specifying the joint model, these are interesting examples of 'modular thinking'.
+Decomposing a joint model into distinct submodels is particularly useful when one submodel is misspecified [@liu_modularization_2009; @jacob_better_2017-1; @carmona_semi-modular_2020] and we want to limit the flow of information out of the misspecified module [@lunn_bugs_2009; @plummer_cuts_2015].
 
 Applied researchers often collect multiple disparate data sets, or data of different modalities, and wish to combine them. 
 For example, @donnat_bayesian_2020 build an intricate hierarchical model to estimate true COVID-19 diagnosis that integrates both testing data and self-reported questionnaire data, and @parsons_evaluating_2020 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine. 
 Both applications clearly delineate between the numerous sources of data they consider.
-In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesizing_2018] are used to estimate population level quantities, e.g. reproduction and immigration rates, using multiple data on the same population.
+In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesizing_2018] are used to estimate population dynamics, e.g. reproduction and immigration rates, using multiple data on the same population.
 Such data have standard models associated with them, for example the Cormack—Jolly—Seber model [@lebreton_modeling_1992] is standard for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
 
 _Markov melding_ [@goudie_joining_2019] is a general statistical methodology for combining submodels.
-Specifically, it considers $M$ submodels that share some common quantity $\phi$.
-Each of the $\modelindex = 1, \ldots, M$ submodels also has distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$. 
-The assumption that all submodels contain the same $\phi$ is common to many of the aforementioned modular inference methods.
-However, we will later consider examples where the submodels do not relate in this way.
-Our examples consist of the simplest possible, yet useful IPM that does not satisfy the common $\phi$ assumption; and a survival analysis where the event times are unobserved, uncertain quantities.
-Specifically we consider the 3 submodel case, where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$.
-We extend Markov melding to enable the combination of submodels that share quantities in such a pairwise manner, and we call our extension _chained Markov melding_, as the submodels are 'chained' together.
+Specifically, it considers $\Nm$ submodels that share some common quantity $\phi$.
+Each of the $\modelindex = 1, \ldots, \Nm$ submodels also has distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$, which are combined into a joint model $\pd_{\text{meld}}(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm})$.
+<!-- something more here? -->
+
+It is unclear how to integrate models where there is no single quantity $\phi$ common to all submodels.
+We consider submodels that are linked in a chain structure.
+Specifically, in the $\Nm = 3$ case, submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a different quantity $\phi_{2 \cap 3}$. 
+We propose an extension to Markov melding, which we call _chained Markov melding_[^chained], which facilitates the combination of submodels that share quantities in this pairwise manner.
+Two examples serve to illustrate our methodology, which we introduce in the following section.
 
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
-Our chained melded model has a number of desirable computational properties that can reduce this burden. 
-By considering the submodel as the minimum computational unit, we may be able to parallelise aspects of the computation, and use less expensive computational techniques for some submodels.
-Reusing previous software implementations of submodels, and where available subposterior samples, may also be possible.
-We propose a multi-stage posterior estimation method that samples the subposterior of $\pd_{1}$ and $\pd_{3}$ in parallel, and the samples are then reused in later stages.
-Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can aid in understanding the contribution of each submodel to the final posterior.
+We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden. 
+By considering the submodel as the minimum computational unit, we can parallelise aspects of the computation, and use less computationally expensive techniques for some submodels.
+Reusing existing software implementations of submodels, and where available subposterior samples, is also possible. 
+Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020].
+
+[^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
 
 ## Example introduction
 
-Our motivation arises from applications that can be recast, and perhaps more easily understood, as components of our chained melded model.
-We introduce these models now to familiarise the reader with types of data and a subset of the domains in which modular inference methods are useful.
+- come back post rewrite subsections
+<!-- - the thing we want to say here is that these examples are illustrative applications of our methodology. 
+    - In what way are they illustrative? why are we considering them?
+      - The first one is illustrative because it shows that 'chains of submodels' is not just a made up structure. There are uses for this type of thinking.
+        - It would be nice to find an example of something that changed between the separate submodel analysis and the integrative one.
+        - This is what Rob was talking about with the change in prior between the two settings.
+          - not super hopeful here, ecology seems fairly adverse to informative priors when using IMPs. Those times when they do use an informative prior, it is for a specific case (e.g. known sex imbalance) and remains so in the IPM (it is a specific prior on an element in $\psi$)
+      - The second one is a little more tricky, but effectively the argument is that we want to do survival analysis where we have two longitudinal processes. We model the first one and derive our event time, and we think it's related to the second one. So we're doing joint models. The key difference is that the longitudinal processes are noisy, so the derived event times are also noisy.
+ -->
+We illustrate our methodology using two examples in which chains of submodels arise in the modelling process.
 
 ### An Integrated population model for little owls
 
 <!-- do we want to frame this as a joining or a splitting example? -->
 
-Integrated population models (IPMs) [@zipkin_synthesizing_2018] allow for precise estimation of population level quantities.
+Integrated population models (IPMs) [@zipkin_synthesizing_2018] combine multiple data to estimate key quantities governing the dynamics of a specific population.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
 These authors collect and model three types of data, illustrated in Figure \ref{fig:owls-simple-dag}: capture-recapture data $Y_{1}$ with associated capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$; population counts $Y_{2}$ with associated submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$; and nest-record data $Y_{3}$ with associated fecundity submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
 The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
-This model combination step is important as no single source of data is sufficient to estimate all quantities of interest to the desired precision.
-We will show that the chained Markov melding framework developed in Section \ref{model-specification} shows how to integrate these submodels, and IPMs in general.
+No single source of data is sufficient to estimate all quantities of interest.
+Thus it is necessary to integrate the three submodels into a single joint model, in order to produce acceptably precise estimates of fecundity and immigration rates.
+We will show that the chained Markov melding framework developed in Section \ref{model-specification} encapsulates the process of integrating these submodels, and IPMs in general.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
 ### Survival analysis with time varying covariates and uncertain event times
 
-Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with time to event data.
+- In our second example we consider modelling the time to respiratory failure amongst intensive care unit patients as a function of time-invariant (_baseline_) and time-varying (_longitudinal_) covariates.
+  - what is the longitudinal covariate.
+
+
+- Integrating longitudinal and standard time-to-event data that are available concurrently is popular, and is often referred to as a _joint model_ [@rizopoulos_joint_2012].
+
+
+In our second example we wish to synthesise data about a longitudinal process with data relating to a time-to-event process, where the event time is determined by a second longitudinal process crossing a pre-specified threshold.
+
+
 Complicated longitudinal processes require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with time to event data.
 This motivates a two-stage approach, where the longitudinal submodel is fit first and the fitted values are then used in the survival submodel [@tsiatis_joint_2004; @mauff_joint_2020].
 
@@ -107,7 +124,7 @@ In some settings the time at which the relevant event occurs is inherently uncer
 This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred from other information.
 _First hitting time_, or _threshold regression_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@yu_semi-parametric_2009].
 These methods assume that relevant measurements are realisations from a specific, possibly latent, stochastic process, where the distribution of the threshold crossing time is known.
-A conceptually similar idea is presented in @lu_using_1993 and @sweeting_estimating_2010; both use hierarchical regression models instead of stochastic processes, and define the event time as when the estimated regression curve crosses the threshold.  
+A conceptually similar idea is presented in @lu_using_1993 and @sweeting_estimating_2010; both use hierarchical regression models instead of stochastic processes, and define the event time as when the estimated regression curve crosses the threshold.
 Another setting in which inherently uncertain event times arise is record linkage [@harron_methodological_2015].
 Such settings are unique in that the true event time is assumed to be one of a finite set of possible times, with one possible event time arising from each matching record.
 Integrating this uncertainty into standard survival models is challenging but possible [@wang_integrative_2020], however these methods do not consider event times that are continuous[^wang].
@@ -132,63 +149,104 @@ The high level submodel relationships are displayed as a DAG in Figure \ref{fig:
 
 # Model specification
 
-Our intention is to combine submodels into a specific joint model which we call the _chained melded model_[^chained].
-Consider $\modelindex = 1, \ldots, \Nm$ submodels each with distinct data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
-Additionally, each submodel shares some quantity in common with adjacent submodels $\phi_{\modelindex \cap \modelindex'}$, where $\modelindex \neq \modelindex'$.
+Consider $\modelindex = 1, \ldots, \Nm$ submodels each with data $Y_{\modelindex}$ and parameters $\theta_{\modelindex}$ denoted $\pd_{\modelindex}(\theta_{\modelindex}, Y_{\modelindex})$.
+We assume that the submodels are connected in a manner akin to a chain and so can be ordered such that only 'adjacent’ submodels in the chain have parameters in common.
+Specifically we assume that submodels $\modelindex$ and $\modelindex + 1$ have some parameters $\phi_{\modelindex \cap \modelindex + 1}$ in common for $\modelindex = 1, \ldots, \Nm - 1$.
+For notational convenience define $\phi_{1} = \phi_{1 \cap 2}, \phi_{\Nm} = \phi_{\Nm-1 \cap \Nm}$ and $\phi_{\modelindex} = \phi_{\modelindex - 1 \cap \modelindex} \cup \phi_{\modelindex \cap \modelindex + 1}, \modelindex = 2, \ldots, \Nm - 1$, so that $\phi_{\modelindex}$ denotes the parameters in model $\modelindex$ shared with another model.
+The model-specific parameters of model $\modelindex$ are thus $\psi_\modelindex = \theta_\modelindex \setminus \phi_\modelindex$.
 
-We focus in the main text on the $\Nm = 3$ submodel special case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$;
-the appendix contains the general $\Nm$-model case.
-Each submodel is assumed to be a valid joint density function for all constituent quantities, and all submodel conditionals exist with appropriate support.
+We focus in the main text on the $\Nm = 3$ submodel special case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$; Appendix \ref{general-case-of-the-chained-melded-model-and-pooled-prior} contains the general $\Nm$-model case.
+All submodels, and marginal and conditional distributions thereof, have density functions that are assumed to exist and integrate to one.
+When considering conditional distributions we assume that the parameter being conditioned on has support in the relevant region. 
 
-[^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
+## Markov melding
 
-## Chained melded model
+We now review Markov melding [@goudie_joining_2019] before detailing our proposed extension.
+As noted in the introduction, Markov melding is a method for combining $\Nm$ submodels $\pd_{1}(\phi, \psi_{1}, Y_{1}), \ldots, \pd_{\Nm}(\phi, \psi_{\Nm}, Y_{\Nm})$ which share the same $\phi$.
+When the submodel prior marginals $\pd_{\modelindex}(\phi)$ are identical, i.e. $\pd_{\modelindex}(\phi) = \pd(\phi)$ for all $\modelindex$, it is possible to combine the submodels using _Markov combination_ [@dawid_hyper_1993-1; @massa_combining_2010]
+\input{tex-input/orig-markov-melding/0010-markov-combination.tex}
+Markov combination is not immediately applicable when submodel prior marginals are distinct, so Goudie _et al._&nbsp;define a _marginal replacement_ procedure, where individual submodel prior marginals are replaced with a common marginal $\pd_{\text{pool}}(\phi)$
+\input{tex-input/orig-markov-melding/0011-marginal-replacement.tex}
+where $\pd_{\text{pool}}(\phi) = h(\pd_{1}(\phi), \ldots, \pd_{\Nm}(\phi))$ is the result of a pooling function $h$ that appropriately summarises all prior marginals.
+This ensures the prior marginals are the same in all submodels.
+Goudie _et al._&nbsp;show that $\pd_{\text{repl}, \modelindex}$ minimises the Kullback–Leibler (KL) divergence between a distribution $\q(\phi, \psi_{\modelindex}, Y_{\modelindex})$ and $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$ under the constraint that $\q(\phi) = \pd_{\text{pool}}(\phi)$, and that marginal replacement is valid when $\phi$ is a deterministic function of the other parameters in submodel $\modelindex$.
+Markov melding joins the submodels via the Markov combination of the marginally replaced submodels
+\input{tex-input/orig-markov-melding/0012-markov-melding.tex}
 
-We begin by defining the chained melded model in terms of submodel conditional distributions
+### Pooled prior
+
+Goudie _et al._&nbsp;proposed forming $\pd_{\text{pool}}(\phi)$ using one of several forms of linear or logarithmic prior pooling [@ohagan_uncertain_2006]
+\input{tex-input/orig-markov-melding/0020-orig-pooling.tex}
+where $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$ are nonnegative weights, which are chosen subjectively to ensure $\pd_{\text{pool}}(\phi)$ appropriately represents prior knowledge about the common quantity.
+Two special cases of pooling are of particular interest.
+_Product of experts (PoE) pooling_  [@hinton_training_2002] is a special case of logarithmic pooling that occurs when $\lambda_{\modelindex} = 1$ for all $\modelindex$.
+_Dictatorial pooling_ is a special case of either pooling method when $\lambda_{\modelindex'} = 1$ and $\lambda_{\modelindex} = 0$ for all $\modelindex \neq \modelindex'$.
+
+## Chained Markov melding
+
+-_this is not correct at the moment_. 
+
+We now define the chained melded model by extending the marginal replacement procedure to submodels linked in a chain-like way.
+For $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$, marginal replacement results in
+\input{tex-input/multiple-phi/0001-chained-marginal-replacement.tex}
+where $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = g(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$ is a pooling function that appropriately summarises all submodel prior marginals, $\pd_{\text{pool}}(\phi_{1 \cap 2}) = \int \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \text{d} \phi_{2 \cap 3}$ and equivalently for $\pd_{\text{pool}}(\phi_{2 \cap 3})$.
+The final equalities in Equations \eqref{eqn:chained-marginal-replacement-one} and \eqref{eqn:chained-marginal-replacement-two} hold because $\pd_{\text{repl}, 1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ is, by definition, independent of $\phi_{2 \cap 3}$ and likewise $\pd_{\text{repl}, 3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ does not depend on $\phi_{1 \cap 2}$.
+Applying the marginal replacement procedure to the second submodel yields
+\input{tex-input/multiple-phi/0002-submodel-two-marginal-replacement.tex}
+The marginal replacements retain the attractive properties of the original marginal replacement procedure.
+Specifically, they permit one or both of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to be the result of a deterministic function of other submodel parameters, and the following KL divergences are minimised
+\input{tex-input/multiple-phi/0003-chained-marginal-replacement-kl.tex}
+Finally, we form the chained melded model by taking the product of the marginally replaced submodels
 \input{tex-input/multiple-phi/0010-melded-model-cond.tex}
-where the specification of each submodel is conditional on the quantities it has in common with adjacent submodels, and we impose a joint prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ which we will return to momentarily.
-However, these conditional distributions of are not always analytically tractable.
-Each conditional distribution can be written in terms of the submodel joint density and appropriate marginal, and we rewrite the right hand side of Equation \eqref{eqn:melded-model-cond} as
-\input{tex-input/multiple-phi/0012-melded-model-full.tex}
-We refer to Equation \eqref{eqn:melded-model-full} as the melded model, and note that it is proportional to the melded posterior $\pd_{\text{meld}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, \psi_{3} \mid Y_{1}, Y_{2}, Y_{3})$.
 
-## Pooled prior
+### Pooled prior
 
 Specifying \eqref{eqn:melded-model-full} requires forming an appropriate joint prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-Markov melding proceeds by pooling [@ohagan_uncertain_2006] the submodel priors to form such a prior, denoted $\pd_{\text{pool}}$.
-We will do the same, however we have the additional complication that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ may have different supports.
-Consequently, we extend linear and logarithmic pooling to handle marginals with different supports, to produce a valid density for $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+As in the Markov melding setting, we would like to choose the pooling function $g$ to appropriately represent prior knowledge about the common quantities.
+This is not a trivial task given the many possibilities for pooling functions and pooling weights, which we detail in the following sections.
+Hence, it is important to assess the ensuing pooled prior is indeed an appropriate summary of prior knowledge, and we recommend producing prior predictive visualisations of the pooled prior as part of a Bayesian workflow [@gelman_bayesian_2020].
 
-Throughout we assume that $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are normalised, integrable probability density functions, that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ admits proper marginals for $\pd_{2}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{2 \cap 3})$, and proper conditionals for $\pd_{2}(\phi_{1 \cap 2} \mid \phi_{2 \cap 3})$ and $\pd_{2}(\phi_{2 \cap 3} \mid \phi_{1 \cap 2})$.
-For simplicity we will also assume that $\phi_{1 \cap 2} \in \mathbb{R}^{d_{1}}$ and $\phi_{2 \cap 3} \in \mathbb{R}^{d_{2}}$, and the supports of $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, and $\pd_{2}(\phi_{2 \cap 3})$ are $\mathbb{R}^{d_{1}}, \mathbb{R}^{d_{1}} \times \mathbb{R}^{d_{2}}$, and $\mathbb{R}^{d_{2}}$ respectively.
+A complication encountered in the chained melding setting is that Equations \eqref{eqn:orig-pooling-linear} and \eqref{eqn:orig-pooling-logarithmic} are not immediately applicable.
+The interpretation Equation \eqref{eqn:orig-pooling-linear} is particularly unclear when the submodels marginal distributions are of different parameters.
+We now propose extensions to logarithmic, linear, and dictatorial pooling for use in the case of chained melding.
 
 #### Linear pooling
 
-We propose the following two-step linear pooling approach.
-The first step forms intermediary pooling densities via standard linear pooling, using appropriate marginals with common support
+Our generalisation of linear pooling to handle marginals of different variables involves two steps.
+The first step forms intermediary pooling densities via standard linear pooling, using appropriate marginals the relevant quantity
 \input{tex-input/multiple-phi/0054-silly-linear-solution.tex}
+where $\lambda = (\lambda_{1, 1}, \lambda_{1, 2}, \lambda_{2, 1}, \lambda_{2, 2})$ is vector of nonnegative pooling weights.
+We discuss the choice of $\lambda$ in the follow section.
 In step two we form the pooled prior as the product of the intermediaries
 \input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
-Equation \eqref{eqn:silly-linear-overall} implies that our linear pooling process will always produce a pooled prior with no correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, which may be undesirable.
-It is possible to induce correlation between independent marginal distributions via copulas [@nelsen_introduction_2006] and other techniques [@lin_recent_2014], but these methods are less intuitive than capturing dependence in the pooling process.
+Clearly, this prior assumes a priori independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ which may be undesirable, particularly if this independence was not present under $\pd_2(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 
-#### Logarithmic pooling.
+#### Logarithmic pooling
 
-A multiplicative alternative to linear pooling is logarithmic pooling.
+Extending logarithmic pooling for chained Markov melding is straightforward.
 We define the logarithmically pooled prior to be 
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-This is a valid probability density function for $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, due to our assumption that all prior marginal distributions are proper. 
-Unlike linear pooling, correlation present in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ will persist in $\pd_{\text{pool}}$.
-Product-of-experts pooling is a special case of logarithmic pooling that occurs when $\lambda_{\modelindex} = 1, \, \forall \modelindex$.
+for nonnegative weights $\lambda = (\lambda_{1}, \lambda_{2}, \lambda_{3})$.
+One advantage of logarithmic pooling is that does not necessarily imply a priori independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+When $\lambda_{1} = \lambda_{2} = \lambda_{3} = 1$ we obtain the special case of Product-of-experts pooling [@hinton_training_2002]. 
 
+#### Dictatorial pooling 
+
+Chained Markov melding does not admit a direct analogue to the dictatorial pooling notion of Section \ref{pooled-prior} because not all submodel prior marginals contain all common quantities.
+Indeed dictatorial pooling in the chained melding setting is not well defined[^dictdef] for $\Nm > 3$.
+However, in the $\Nm = 3$ we propose that a sensible definition of dictatorial pooling is a choice of $g$ such that
+\input{tex-input/multiple-phi/0057-dictatorial-pooling.tex}
+as the marginal priors for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are associated with just one submodel.
+Equation \eqref{eqn:dictatorial-pooling-one} can result from choosing $\lambda = (1, 0, 0, 1)$ in linear pooling, or $\lambda = (1, 0, 1)$ in logarithmic pooling.
+Equation \eqref{eqn:dictatorial-pooling-two} can only arise by setting $\lambda = (0, 1, 0)$ under logarithmic pooling.
+
+[^dictdef]: Consider $\Nm = 4$. It is not possible to chose a subset of $\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}, \phi_{3 \cap 4}), \pd_{4}(\phi_{3 \cap 4})$ that results in marginal priors for $(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \phi_{3 \cap 4})$ that are all specific to only one submodel.
 
 ### Pooling weights
 
 Choosing values for the pooling weights ($\lambda$) is an important step in specifying $\pd_{\text{pool}}$.
-To understand how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}$, we pool some simple marginal distributions and visualise the result. 
-We recommend producing such prior predictive visualisations as part of a Bayesian workflow [@gelman_bayesian_2020], to ensure the pooled prior is fit for purpose.
-
-Specifically, we pool the following marginal normal distributions
+Figure \ref{fig:pooled_densities_plot} illustrates how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}$ when pooling normal distributions.
+Specifically, we pool
 \input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
 where $\text{N}(\phi; \mu, \sigma^{2})$ is the normal density function with mean $\mu$ and standard deviation $\sigma$.
 The two dimensional density function $\pd_{2}$ has an additional parameter $\rho$, which controls the intra-submodel marginal correlation.
@@ -196,11 +254,12 @@ We set $\mu_{1} = -2.5, \mu_{2} = \left[\mu_{2, 1} \,\, \mu_{2, 2}\right]' = \le
 In the logarithmic case we set $\lambda_{1} = \lambda_{3}$ and parameterise $\lambda_{2} = 1 - 2\lambda_{1}$, so that $\lambda_{1} + \lambda_{2} + \lambda_{3} = 1$ whilst limiting ourselves to varying only $\lambda_{1}$.
 Similarly, in the linear case we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
 We consider 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
-For both pooling methods, as $\lambda_{1}$ increases, the contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase. 
-As expected, using linear pooling produces a $\pd_{\text{pool}}$ with no correlation, due to the additive form of Equations \eqref{eqn:silly-linear-solution-1} and \eqref{eqn:silly-linear-solution-2}.
-A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ case, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
-The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$.
-Correlation is preserved for all $\lambda_{1} \neq 0.5$, and Appendix \ref{log-pooling-gaussian-densities} analytically shows that $\lambda_{2}$ controls the quantity of correlation present in $\pd_{\text{pool}}$ in this setting./
+
+For both pooling methods, as the weight $\lambda_{1}$ associated with models $\pd_{1}$ and $\pd_{3}$ increases, the contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase.
+Note the lack of correlation in $\pd_{\text{pool}}$ under linear pooling, due to \eqref{eqn:silly-linear-overall}.
+A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ and $\lambda_{1} = 0.375$ cases, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
+The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$, and does not result in a priori independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+Appendix \ref{log-pooling-gaussian-densities} analytically shows that $\lambda_{2}$ controls the quantity of correlation present in $\pd_{\text{pool}}$ in this setting.
 
 ```{r pooled_densities_plot, fig.cap = "Contour plots of $\\pd_{\\text{pool}}$ (red) under logarithmic and linear pooling (left and right column respectively). The values of $\\lambda_{1}$ are indicated in the plot titles, and the constituent marginal densities are shown in blue."}
 knitr::include_graphics("plots/pooling-tests/version-two.pdf")
@@ -431,15 +490,13 @@ If instead we opt for product-of-experts pooling, all $\mu_{\text{de}}$ and $\Si
 ## Little owls
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
-Because the population count model includes a parameter also contained in the nest-record model, and has two parameters in common with the capture-recapture model, the IPM can be viewed as a chained melded model.
-This IPM is one of the simplest cases of both an application requiring multiple sources of data to obtain sufficient precision, and chained Markov melding. 
 
 ### Submodels
 
 @finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010.
 We consider variant from @finke_efficient_2019 with the highest marginal likelihood.
 Before we detail the specifics of our chosen model, we need to introduce some notation. 
-Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, Two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
+Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
 
 #### Capture recapture: $\pd_{1}$
 
@@ -476,14 +533,14 @@ A Poisson model is employed, with fecundity (reproductive) rate $\rho$
 However, our choice to use the 'best' model of @finke_efficient_2019 renders many of the quantities independent of time.
 The specific parameterisation we employ is
 \input{tex-input/owls-example/0040-parameterisation-info.tex}
-thus the quantities common to the submodels are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
+thus the quantities in common between the submodels are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
 Our definition of $\phi_{1 \cap 2}$ does not include $\alpha_{1}$ as it is male specific and does not exist in $\pd_{2}$.
 To align the notation of this example with the melding notation we define, for all permitted values of $a, s$ and $t$, $Y_{1} = \boldsymbol{M}_{a, s}$, $\psi_{1} = \pi_{s, t}$; $Y_{2} = y_{t}$, $\psi_{2} = (\boldsymbol{x}_{t}, \eta, \text{sur}_{t}, \text{imm}_{t})$; and $Y_{3} = (N_{t}, n_{t})$, $\psi_{3} = \varnothing$.
 We use the priors of @abadi_estimation_2010 for the parameters in each submodel.
 The components of $\alpha$ present in $\pd_{1}$ and $\pd_{2}$ are assigned independent $\text{N}(0, 100^2)$ priors which are truncated to $[-10, 10]$. 
 A $\text{U}(0, 10)$ prior is assigned to $\rho$ in $\pd_{2}$ and $\pd_{3}$.
 
-Completing the specification of $\pd_{\text{meld}}$ requires us to choose $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+Completing the specification of $\pd_{\text{meld}}$ requires choosing $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 So that we can appropriately compare the melded posterior with the IPM posterior $\pd_{\text{meld}}$ we opt for product-of-experts pooling: $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \propto \pd_{1}(\phi_{1 \cap 2}) \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \pd_{3}(\phi_{2 \cap 3})$.
 
 - _Should I also run a variant that forms $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via one of our pooling methods?_
@@ -690,6 +747,12 @@ _some discussion of seq/para_
 - This is related to the idea that an inference process can/should be externally Bayesian, where by combining the data first then updating all the priors, should give the same result as independently updating the priors then combining the resulting posteriors.
     - Such a concept is not immediately applicable here, as it asks the process to satisfy strange criteria such as $\pd_{1}(\phi_{1 \cap 2} \mid Y_{3})\pd_{2}(\phi_{1 \cap 2} \mid Y_{3}) = \pd_{\text{meld}}^{12}(\phi_{1 \cap 2} \mid Y_{3})$ among others?
 
+- _other related work we haven't found a home for just yet_
+  - @niculescu-mizil_inductive_2012, some interesting discussion of the prior in a similar methodological setup (transfer learning and Bayesian networks)
+
+- other pooling thoughts
+  - Re: linear pooling / pooling more generally. It is possible to induce correlation between independent marginal distributions via copulas [@nelsen_introduction_2006] and other techniques [@lin_recent_2014], but these methods are less intuitive than capturing dependence in the pooling process.
+
 ## Disadvantages
 
 - Submodels may conflict with each other
@@ -716,9 +779,9 @@ _some discussion of seq/para_
 \renewcommand{\thesection}{\Alph{section}}
 \setcounter{section}{0}
 
-# General $\Nm$ case of the melded model, pooled priors.
+# General case of the chained melded model and pooled prior
 
-## Model
+## Chained melded model
 
 Denote $\boldsymbol{\phi} = (\phi_{1 \cap 2}, \ldots, \phi_{\Nm - 1 \cap \Nm}), \boldsymbol{\psi} = (\psi_{1}, \ldots, \psi_{\Nm})$, and $\boldsymbol{Y} = (Y_{1}, \ldots, Y_{\Nm})$.
 The $\Nm$ model chained melded model is 
@@ -730,7 +793,7 @@ The $\Nm$ model chained melded model is
 
 The general $\Nm$ model linear pooled prior is
 \input{tex-input/multiple-phi/0080-M-model-linear-pooling.tex}
-where, for $\modelindex \neq 1$,
+where, for $2 \leq \modelindex \leq \Nm - 2$,
 \input{tex-input/multiple-phi/0081-M-model-linear-pooling-marg.tex}
 
 #### Logarithmic pooling

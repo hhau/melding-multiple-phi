@@ -1,0 +1,11 @@
+\begin{equation}
+\begin{aligned}
+  \pd_{\text{meld}}(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm}) &= 
+  \pd_{\text{pool}}(\phi) \prod_{\modelindex = 1}^{\Nm} \pd_{\text{repl}, \modelindex}(\psi_{\modelindex}, Y_{\modelindex} \mid \phi), \\ &= 
+  \pd_{\text{pool}}(\phi) \prod_{\modelindex = 1}^{\Nm} \frac{
+    \pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})
+  } {
+    \pd_{\modelindex}(\phi)
+  }.
+\end{aligned}
+\end{equation}

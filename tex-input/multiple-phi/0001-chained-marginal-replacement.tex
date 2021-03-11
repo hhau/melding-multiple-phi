@@ -1,0 +1,31 @@
+\begin{gather}
+  \pd_{\text{repl}, 1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1}) = 
+    \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})
+    \frac{
+      \pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})
+    } {
+      \pd_{1}(\phi_{1 \cap 2})
+    }
+  = 
+    \pd_{\text{pool}}(\phi_{1 \cap 2})
+    \frac{
+      \pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})
+    } {
+      \pd_{1}(\phi_{1 \cap 2})
+    } \label{eqn:chained-marginal-replacement-one} \\
+  \pd_{\text{repl}, 3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3}) = 
+    \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})
+    \frac{
+      \pd_{1}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})
+    } {
+      \pd_{1}(\phi_{2 \cap 3})
+    }
+  =
+    \pd_{\text{pool}}(\phi_{2 \cap 3})
+    \frac{
+      \pd_{1}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})
+    } {
+      \pd_{1}(\phi_{2 \cap 3})
+    }
+  \label{eqn:chained-marginal-replacement-two}
+\end{gather}
