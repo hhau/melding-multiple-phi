@@ -1,31 +1,34 @@
 \begin{figure}[tb]
   \centering
-  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.5cm}]
+  \begin{tikzpicture}[> = stealth, node distance = 1cm, thick, state/.style={draw = none, minimum width = 1cm}]
   % nodes
   \node [state] (y-1) {$Y_{1}$};
   \node [state] [above = of y-1] (psi-1) {$\psi_{1}$};
   \node [state] [right = of y-1] (phi-12) {$\phi_{1 \cap 2}$};
+
+  \node [state] [right = of phi-12] (phi-12-p2) {$\phi_{1 \cap 2}$};
   
   \node [state] [right = 3cm of psi-1] (psi-2) {$\psi_{2}$};
   \node [state] [right = of psi-2] (y-2) {$Y_{2}$};
-  \node [state] [below right = 0.5cm and 1cm of y-2] (phi-23) {$\phi_{2 \cap 3}$};
-  \node [state] [right = 3cm of y-2] (psi-3) {$\psi_{3}$};
+  \node [state] [below right = 0.25cm and 1cm of y-2] (phi-23-p2) {$\phi_{2 \cap 3}$};
+  \node [state] [right = of phi-23-p2] (phi-23) {$\phi_{2 \cap 3}$};
+  \node [state] [above right = 0.25cm and 1cm of phi-23] (psi-3) {$\psi_{3}$};
   \node [state] [below = of psi-3] (y-3) {$Y_{3}$};
 
   % edges (arrows)
   \path [->] (psi-1) edge (y-1);
   \path [->, dotted] (psi-1) edge (phi-12);
-  \path [->] (psi-2) edge (phi-12);
+  \path [->] (psi-2) edge (phi-12-p2);
   \path [->] (psi-3) edge (y-3);
   \path [->] (psi-3) edge (phi-23);
-  \path [->] (phi-23) edge (phi-12);
+  \path [->] (phi-23-p2) edge (phi-12-p2);
   \path [->] (phi-23) edge (y-3);
-  \path [->] (y-2) edge (phi-12);
+  \path [->] (y-2) edge (phi-12-p2);
 
   % bounding boxes
   \node (model-1) [draw = mymidblue, fit = (psi-1) (y-1) (phi-12), inner sep = 0.05cm, solid] {};
   \node (model-1-label) [yshift = 1.5ex, mymidblue] at (model-1.north west) {$\pd_{1}$};
-  \node (model-2) [draw = black, fit = (phi-12) (psi-2) (phi-23) (y-2), inner sep = 0.25cm, solid] {};
+  \node (model-2) [draw = black, fit = (phi-12-p2) (psi-2) (phi-23-p2) (y-2), inner sep = 0.1cm, solid] {};
   \node (model-2-label) [yshift = 1.5ex] at (model-2.north) {$\pd_{2}$};
   \node (model-3) [draw = myredhighlight, fit = (phi-23) (psi-3) (y-3), inner sep = 0.05cm, solid] {};
   \node (model-3-label) [yshift = 1.5ex, myredhighlight] at (model-3.north east) {$\pd_{3}$};

@@ -1,33 +1,36 @@
 \begin{figure}[tb]
   \centering
-  \begin{tikzpicture}[> = stealth, node distance = 1.5cm, thick, state/.style={draw = none, minimum width = 1.5cm}]
+  \begin{tikzpicture}[> = stealth, node distance = 1cm, thick, state/.style={draw = none, minimum width = 1cm}]
   % nodes
   \node [state] (y-2) {$Y_{2}$};
   \node [state] [above = of y-2] (psi-2) {$\psi_{2}$};
   \node [state] [right = of psi-2] (phi-23) {$\phi_{2 \cap 3}$};
   \node [state] [left = of psi-2] (phi-12) {$\phi_{1 \cap 2}$};
 
-  \node [state] [right = of phi-23] (psi-3) {$\psi_{3}$};
+  \node [state] [right = of phi-23] (phi-23-p3) {$\phi_{2 \cap 3}$};
+  \node [state] [left = of phi-12] (phi-12-p1) {$\phi_{1 \cap 2}$};
+
+  \node [state] [right = of phi-23-p3] (psi-3) {$\psi_{3}$};
   \node [state] [below = of psi-3] (y-3) {$Y_{3}$};
 
-  \node [state] [left = of phi-12] (psi-1) {$\psi_{1}$};
+  \node [state] [left = of phi-12-p1] (psi-1) {$\psi_{1}$};
   \node [state] [below = of psi-1] (y-1) {$Y_{1}$};
 
   % edges (arrows)
   \path [->] (psi-1) edge (y-1);
   \path [->] (psi-2) edge (y-2);
   \path [->] (psi-3) edge (y-3);
-  \path [->] (phi-12) edge (y-1);
+  \path [->] (phi-12-p1) edge (y-1);
   \path [->] (phi-12) edge (y-2);
   \path [->] (phi-23) edge (y-2);
-  \path [->] (phi-23) edge (y-3);
+  \path [->] (phi-23-p3) edge (y-3);
 
   % bounding boxes
-  \node (model-1) [draw = mymidblue, fit = (psi-1) (y-1) (phi-12), inner sep = 0.05cm, solid] {};
+  \node (model-1) [draw = mymidblue, fit = (psi-1) (y-1) (phi-12-p1), inner sep = 0.05cm, solid] {};
   \node (model-1-label) [yshift = 1.5ex, mymidblue] at (model-1.north west) {$\pd_{1}$};
-  \node (model-2) [draw = black, fit = (phi-12) (psi-2) (phi-23) (y-2), inner sep = 0.25cm, solid] {};
+  \node (model-2) [draw = black, fit = (phi-12) (psi-2) (phi-23) (y-2), inner sep = 0.10cm, solid] {};
   \node (model-2-label) [yshift = 1.5ex] at (model-2.north) {$\pd_{2}$};
-  \node (model-3) [draw = myredhighlight, fit = (phi-23) (psi-3) (y-3), inner sep = 0.05cm, solid] {};
+  \node (model-3) [draw = myredhighlight, fit = (phi-23-p3) (psi-3) (y-3), inner sep = 0.05cm, solid] {};
   \node (model-3-label) [yshift = 1.5ex, myredhighlight] at (model-3.north east) {$\pd_{3}$};
   \end{tikzpicture}
   \caption{A simplified DAG of the integrated population model (IPM) for the little owls. The capture-recapture submodel is surrounded by the blue line, the population count submodel by the black line, and the fecundity submodel by the red line. The combination of all the submodels forms the IPM.}

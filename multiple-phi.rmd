@@ -1,5 +1,5 @@
 ---
-title: "Chained Markov melding: Joining multiple models with pairwise commonalities"
+title: "Chained Markov melding: multiple models with pairwise commonalities"
 author: "Andrew Manderson"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 fontfamily: tgpagella
@@ -34,59 +34,54 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align =
 
 # Introduction
 
-_I don't really know what I'd like to introduce here? I don't have the motivation for this work down to an exact idea. Also, hard not to self-plagarise / rework the melding paper yet again_. 
+The Bayesian philosophy is appealing in part because the posterior distribution quantifies all sources of uncertainty. 
+However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is challenging. 
+Models that consider such data are necessary to describe complex phenomena at a useful precision.
+One possible approach begins by specifying individual submodels for each source of data.
+These submodels could informally guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
+Instead, it may be preferable to construct a joint model by formally joining the individual submodels together. 
 
-<!-- don't think this is too much of a problem. It is all the same flavour of work, so the motivation is going to be similar. Clearly, for this paper, it needs to justify why the multiple phi is important -->
+Composing disparate data and/or submodels to from the joint model is a well established idea and central to many methodologies.
+Meta-analyses and evidence synthesis methods are important modelling techniques that summarise many disparate data, often using hierarchical models [@ades_multiparameter_2006; @presanis_synthesising_2014].
+Outside of the statistical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
+More familiar to Bayesian statisticians are the family of _divide and conquer_ methods (D&C).
+These are useful in tall data settings, where the number of observations presents a computational challenge.
+D&C methods split the data into subsets, fit the same model to each subset to produce the subposteriors, and combine these subposteriors.
+Specific D&C methods include _consensus Monte Carlo_ [@scott_bayes_2016-1],
+the embarrassingly parallel MCMC algorithm of @neiswanger_asymptotically_2014, and subposterior averaging via the Wasserstein baryceter [@srivastava_scalable_2018].
+The _Bayesian Fusion_ method of @dai_monte_2019-1 combines these subposteriors exactly.
 
-Considering multiple, diverse data allows statisticians to model more complex phenomena than a single source of data alone. 
-However, analysing all available data can present substantial challenges.
-If the data differ in structure, contain different types of measurements, or capture related but non-identical populations of interest, then specifying a  joint model for all data is a considerable task.
-One possible approach is to specify individual submodels for each source of data, then combine the submodels for posterior inference.
-This process has many names; the submodels are sometimes called _modules_ [@liu_modularization_2009; @jacob_better_2017-1], and the joining of them is termed _fusion_ [@dai_bayesian_2021-1; @lahat_multimodal_2015-1] or _melding_ [@goudie_joining_2019].
-<!-- this implies that all of these are identical ideas, which I don't think is correct -->
-The key advantage of these ideas is that development and validation is easier <!-- (RG phrasing is confusing here), or sometimes only possible-->, because submodels are smaller and relate to only one source of data.
+Sometimes we may wish to think of a joint model in distinct submodels or 'modules'.
+This is particularly important when one submodel is misspecified [@liu_modularization_2009; @jacob_better_2017-1] and we want to limit the flow of information out of the misspecified module [@lunn_bugs_2009; @plummer_cuts_2015].
+The resulting posterior distribution is called the _cut_ distribution. 
+_Semi-modular_ inference extends inter-module cuts to include all possible models in-between the standard Bayesian model and the cut model [@carmona_semi-modular_2020].
+Whilst the motivation is not to overcome difficulties in specifying the joint model, these are interesting examples of 'modular thinking'.
 
-A common assumption of the aforementioned methods is that all $\Nm$ submodels have the same quantity $\phi$ in common.
-<!-- explain here why this is needed in practice. at a minimum hint at the examples in the paper -->
+Applied researchers often collect multiple disparate data sets, or data of different modalities, and wish to combine them. 
+For example, @donnat_bayesian_2020 build an intricate hierarchical model to estimate true COVID-19 diagnosis that integrates both testing data and self-reported questionnaire data, and @parsons_evaluating_2020 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine. 
+Both applications clearly delineate between the numerous sources of data they consider.
+In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesizing_2018] are used to estimate population level quantities, e.g. reproduction and immigration rates, using multiple data on the same population.
+Such data have standard models associated with them, for example the Cormack—Jolly—Seber model [@lebreton_modeling_1992] is standard for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
 
-<!-- move this "in this paper we XXX" paper later in the intro, after you have reviewed other work and motivated why this extension is needed -->
-To relax this assumption, we extend Markov melding [@goudie_joining_2019] to enable the combination of submodels that share quantities in a pairwise manner.
-Consider the simplest case of 3 submodels $\pd_{\modelindex}, \modelindex = 1 \ldots, 3$, where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$.
-We call our extension _chained Markov melding_, as the submodels are 'chained' together.
+_Markov melding_ [@goudie_joining_2019] is a general statistical methodology for combining submodels.
+Specifically, it considers $M$ submodels that share some common quantity $\phi$.
+Each of the $\modelindex = 1, \ldots, M$ submodels also has distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$. 
+The assumption that all submodels contain the same $\phi$ is common to many of the aforementioned modular inference methods.
+However, we will later consider examples where the submodels do not relate in this way.
+Our examples consist of the simplest possible, yet useful IPM that does not satisfy the common $\phi$ assumption; and a survival analysis where the event times are unobserved, uncertain quantities.
+Specifically we consider the 3 submodel case, where submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a common quantity $\phi_{2 \cap 3}$.
+We extend Markov melding to enable the combination of submodels that share quantities in such a pairwise manner, and we call our extension _chained Markov melding_, as the submodels are 'chained' together.
 
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
-Our chained melded model, and modular inference methods, have a number of desirable computational properties that reduce this burden. 
+Our chained melded model has a number of desirable computational properties that can reduce this burden. 
 By considering the submodel as the minimum computational unit, we may be able to parallelise aspects of the computation, and use less expensive computational techniques for some submodels.
 Reusing previous software implementations of submodels, and where available subposterior samples, may also be possible.
 We propose a multi-stage posterior estimation method that samples the subposterior of $\pd_{1}$ and $\pd_{3}$ in parallel, and the samples are then reused in later stages.
-Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can also aid understanding the contribution of each submodel to the final posterior.
-
-<!-- move this earlier in the introduction -->
-- Applied researchers often collect multiple disparate data sets, and wish to combine them after the fact
-    - Describe why and what they do
-    - We are presenting a more formal, general form of the things that are done already? 
-        - _This is true in the IPM case, but I guess less so in the other one?_
-
-- One other avenue, when computation is difficult, is to summarise complex aspects of the joint models into point estimates or prior distributions. 
-
-## Other relevant references that I'm not sure how to include just yet.
-
-### Newer things
-
-- @donnat_bayesian_2020 -- Bayesian combination of disparate data types
-- @lee_bayesian_2020 -- combination of multiple Acylic graphs. This makes the Gaussian assumption that Massa makes, and More of a covariance estimation technique.
-- @lahat_multimodal_2015 -- multimodal stuff feels related, for example @li_generalized_2020, but data fusion is not an exact concept, and the relationship to melding is not clear to me yet.
-- @parsons_evaluating_2020 -- This is value of information with multiple data sources, with the idea being
-
-### Older things
-
-- @lee_model_2000 -- this is an example of the type of model discussed in Lee and Whitmore's Statistical science overview paper, so probably not needed.
-- @pennell_bayesian_2010 -- similarly, this is another threshold regression, but very Bayesian.
-- _Should this be expanded and reworked into the intro as a kind of literature review?_ There's a lot to cover (modular inference / multi stage samplers / applications of both)?_
+Multi-stage samplers are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020], and can aid in understanding the contribution of each submodel to the final posterior.
 
 ## Example introduction
 
-Our motivation for this idea is pragmatic <!-- don't think we need to frame the framework part of this as pragmatic; maybe the computational approach is -->, and particularly inspired by applications that can be recast, and more easily understood,  as components of our chained melded model.
+Our motivation arises from applications that can be recast, and perhaps more easily understood, as components of our chained melded model.
 We introduce these models now to familiarise the reader with types of data and a subset of the domains in which modular inference methods are useful.
 
 ### An Integrated population model for little owls
@@ -95,46 +90,54 @@ We introduce these models now to familiarise the reader with types of data and a
 
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] allow for precise estimation of population level quantities.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
-<!-- suggest writing out the arguments of the models at first use e.g. p_1(Y_1, \psi_1, \phi_{1\union2}) and then introduce the shorthand afterwards-->
-These authors collect <!- do they actually collect the data themselves? --> and model three types of data: capture-recapture data $Y_{1}$ and capture-recapture submodel $\pd_{1}$, population counts $Y_{2}$ and count data submodel $\pd_{2}$, and nest-record data $Y_{3}$ and fecundity submodel $\pd_{3}$.
+These authors collect and model three types of data, illustrated in Figure \ref{fig:owls-simple-dag}: capture-recapture data $Y_{1}$ with associated capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$; population counts $Y_{2}$ with associated submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$; and nest-record data $Y_{3}$ with associated fecundity submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
 The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
-<!-- not sure what you mean: the models are not independent? i'm not even sure what independence of models means here? --> Because of the shared parameters, we can form the IPM as the product of these independent submodels.
-This model combination step is prudent <!-- not sure this is quite the word you mean -->; no single source of data is sufficient to estimate all quantities of interest to the desired precision.
-Figure \ref{fig:owls-simple-dag} is a simplified DAG of the IPM, showing the relationship between the three submodels.
-We will show that Markov melding framework developed in Section \ref{model-specification} provides a general framework describing how this example, and IPMs in general, can be integrated.
+This model combination step is important as no single source of data is sufficient to estimate all quantities of interest to the desired precision.
+We will show that the chained Markov melding framework developed in Section \ref{model-specification} shows how to integrate these submodels, and IPMs in general.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
-### Survival analysis with longitudinal data and uncertain event times
+### Survival analysis with time varying covariates and uncertain event times
 
-<!-- looks like a good list of very relevant literature, but need to think through the structure and argument you're making here -->
-
-Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with event data.
-Complicated longitudinal process require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with event data.
-This motivates a two-stage approach, where the longitudinal submodel is fit first and its output <!-- output a bit informal --> is used in the event submodel [@tsiatis_joint_2004; @mauff_joint_2020].
+Joint models for longitudinal and survival data [@rizopoulos_joint_2012] are popular models when longitudinal, often biomarker, data are available concurrently with time to event data.
+Complicated longitudinal processes require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with time to event data.
+This motivates a two-stage approach, where the longitudinal submodel is fit first and the fitted values are then used in the survival submodel [@tsiatis_joint_2004; @mauff_joint_2020].
 
 In some settings the time at which the relevant event occurs is inherently uncertain.
 This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred from other information.
-_first hitting time_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@sweeting_estimating_2010; @yu_semi-parametric_2009].
-Another setting in which inherently uncertain event times can arise is record linkage [@harron_methodological_2015], and incorporating the uncertainty into standard survival models is not straightforward [@wang_integrative_2020] <!-- this needs more elaboration. can you explain what Wang manage, and why it is hard/what we offer beyond Wang? -->.
+_First hitting time_, or _threshold regression_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@yu_semi-parametric_2009].
+These methods assume that relevant measurements are realisations from a specific, possibly latent, stochastic process, where the distribution of the threshold crossing time is known.
+A conceptually similar idea is presented in @lu_using_1993 and @sweeting_estimating_2010; both use hierarchical regression models instead of stochastic processes, and define the event time as when the estimated regression curve crosses the threshold.  
+Another setting in which inherently uncertain event times arise is record linkage [@harron_methodological_2015].
+Such settings are unique in that the true event time is assumed to be one of a finite set of possible times, with one possible event time arising from each matching record.
+Integrating this uncertainty into standard survival models is challenging but possible [@wang_integrative_2020], however these methods do not consider event times that are continuous[^wang].
 
-<!-- strengthen this argument --> It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis; modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
-Specifically, we consider the event time as an uncertain submodel output <!-- "submodel output" a bit vague/informal --> from a simplified threshold crossing model, which we denote $\pd_{1}$, and as the response in the survival model $\pd_{2}$. 
-The uncertain event time is thus the common quantity $\phi_{1 \cap 2}$.
-We treat the longitudinal submodel, $\pd_{3}$, separately, as is common in two-stage survival modelling, and denote the individual-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
-The high level inter-submodel relationships are displayed in Figure \ref{fig:surv-simple-dag}.
+[^wang]: @wang_integrative_2020 assume that the response is a finite mixture, where each mixture component is a point mass at the possible event times arising due to record linkage. Uncertainty is then incorporated by estimating the mixture weights.
+
+It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis.
+Doing so in a standard joint model is challenging, as incorporating uncertainty in the response requires complex methodology [@giganti_accounting_2020; @oh_considerations_2018; @oh_raking_2021] which do not explicitly include time-varying covariates.
+Similarly, incorporating time-varying covariates into a threshold regression model is nontrivial, and assumes the relevant covariates satisfy the Markov property [@lee_threshold_2010].
+ <!-- - Another is that integrating time dependent covariates into the FHT/TR models is non straightforward -- as far as I can tell the Markov assumption in Lee and Whitmore is equivalent to restricting the form of the longitudinal submodel to linear forms (non linear longitudinal regression models are non-Markovian / joint model that depend on the integral of the longitudinal model are definitely non-Markovian. This is discussed a bit in @lee_threshold_2010)
+    - it would help if our longitudinal model was non-linear so that we could have this benefit -- maybe making the regression quadratic.
+  - One motivation comes from the respiratory failure idea and its similarities to the degradation models. (what would the other, longitudinal covariate be?)
+    - This would be strengthened by using non-linear regression / splines for the first submodel. -->
+Modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
+Specifically, we consider the event time as an uncertain, latent submodel quantity in a simplified, hierarchical degradation model akin to @lu_using_1993. 
+We call this submodel the _uncertain event time_ submodel and denote it $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, and where $\phi_{1 \cap 2}$ is the latent event time.
+The survival submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ uses $\phi_{1 \cap 2}$, the common quantity, as the response. 
+We treat the longitudinal submodel, $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$, separately from the survival submodel, as is common in two-stage survival modelling, and denote the subject-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
+The high level submodel relationships are displayed as a DAG in Figure \ref{fig:surv-simple-dag}.
 
 \input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
 # Model specification
 
 Our intention is to combine submodels into a specific joint model which we call the _chained melded model_[^chained].
-Explicitly, we consider $\modelindex = 1, \ldots, \Nm$ submodels each with distinct data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
+Consider $\modelindex = 1, \ldots, \Nm$ submodels each with distinct data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
 Additionally, each submodel shares some quantity in common with adjacent submodels $\phi_{\modelindex \cap \modelindex'}$, where $\modelindex \neq \modelindex'$.
-By adjacent we mean related the manner depicted in Figure \ref{fig:owls-simple-dag}, where $\pd_{1}$ is adjacent to $\pd_{2}$ because they have $\phi_{1 \cap 2}$ in common.
-Our particular interest is in the $\Nm = 3$ submodel case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$.
-In this way, the submodels are connected in a manner akin to a chain.
-<!-- TODO: -->The appendix contains the more general $\Nm$-model case.
+
+We focus in the main text on the $\Nm = 3$ submodel special case, where submodels $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ have $\phi_{1 \cap 2}$ in common, and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$ both contain $\phi_{2 \cap 3}$;
+the appendix contains the general $\Nm$-model case.
 Each submodel is assumed to be a valid joint density function for all constituent quantities, and all submodel conditionals exist with appropriate support.
 
 [^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
@@ -151,7 +154,7 @@ We refer to Equation \eqref{eqn:melded-model-full} as the melded model, and note
 
 ## Pooled prior
 
-Completely specifying \eqref{eqn:melded-model-full} requires forming an appropriate joint prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+Specifying \eqref{eqn:melded-model-full} requires forming an appropriate joint prior for $(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 Markov melding proceeds by pooling [@ohagan_uncertain_2006] the submodel priors to form such a prior, denoted $\pd_{\text{pool}}$.
 We will do the same, however we have the additional complication that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ may have different supports.
 Consequently, we extend linear and logarithmic pooling to handle marginals with different supports, to produce a valid density for $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
@@ -192,8 +195,7 @@ The two dimensional density function $\pd_{2}$ has an additional parameter $\rho
 We set $\mu_{1} = -2.5, \mu_{2} = \left[\mu_{2, 1} \,\, \mu_{2, 2}\right]' = \left[0 \,\, 0\right]', \mu_{3} = 2.5, \sigma_{1}^{2} = \sigma_{2}^{2} = \sigma_{3}^{2} = 1$ and $\rho = 0.8$.
 In the logarithmic case we set $\lambda_{1} = \lambda_{3}$ and parameterise $\lambda_{2} = 1 - 2\lambda_{1}$, so that $\lambda_{1} + \lambda_{2} + \lambda_{3} = 1$ whilst limiting ourselves to varying only $\lambda_{1}$.
 Similarly, in the linear case we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
-
-Figure \ref{fig:pooled_densities_plot} displays the estimate of $\pd_{\text{pool}}$, and its constituent marginals, for 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
+We consider 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
 For both pooling methods, as $\lambda_{1}$ increases, the contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase. 
 As expected, using linear pooling produces a $\pd_{\text{pool}}$ with no correlation, due to the additive form of Equations \eqref{eqn:silly-linear-solution-1} and \eqref{eqn:silly-linear-solution-2}.
 A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ case, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
@@ -402,6 +404,7 @@ Note that all stage two acceptance probabilities only contain terms from the sec
 ## Normal approximations to submodel components
 
 Normal approximations are commonly employed to summarise submodels for subsequent use in more complex models.
+For example, two-stage meta-analyses often use a normal distribution centred on each studies' effect estimate [@burke_meta-analysis_2017].
 Suppose we employ such an approximation to summarise the prior and posterior of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ under $\pd_{1}$ and $\pd_{3}$ respectively.
 In addition, assume that
 
@@ -492,7 +495,7 @@ This allows us to use pre-existing implementations of the submodels.
 Specifically, the capture-recapture and count data submodels are written in BUGS [@lunn_bugs_2009], and the subposterior of the former is sampled via `rjags` [@plummer_rjags_2019]. 
 The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2021].
 We reuse the count data BUGS implementation for stage two of the multi-stage sampler, and implement the Metropolis-within-Gibbs sampler specified in Section \ref{parallel-sampler} via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
-A slightly modified version of the count data submodel used for the Normal approximation, which is also run through `rjags`.
+A slightly modified version of the count data submodel used for the normal approximation, which is also run through `rjags`.
 We highlight the use of different statistical software for each submodel, an advantage of this 'modular' approach to modelling.
 
 Code and data for all examples are available at [https://github.com/hhau/melding-multiple-phi](https://github.com/hhau/melding-multiple-phi). 
@@ -504,7 +507,7 @@ __TODO:__ Swap this for a Zenodo DOI
 knitr::include_graphics("plots/owls-example/subposteriors.pdf")
 ```
 
-```{r phi_qq_compare, fig.cap = "Quantile-Quantile plot of ($\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3}$) for the IPM posterior (y-axis) and melded posterior (x-axis). The empirical quantiles are displayed as a solid red line, and the optimal quantile is shown as a dashed black line. The melded posterior quantiles obtained using the Normal approximation are plotted as a dot-dash blue line."}
+```{r phi_qq_compare, fig.cap = "Quantile-Quantile plot of ($\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3}$) for the IPM posterior (y-axis) and melded posterior (x-axis). The empirical quantiles are displayed as a solid red line, and the optimal quantile is shown as a dashed black line. The melded posterior quantiles obtained using the normal approximation are plotted as a dot-dash blue line."}
 knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 ```
 We empirically validate our methodology and sampler by comparing the melded posterior samples to the original IPM posterior.
@@ -653,8 +656,12 @@ The difference between the chained melded posterior and the posterior with $\phi
 knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
 ```
 
-- _do we want a PPC plot for the various methods as well? Probably not, as Weibull is not exactly the best fit to this data_.
-- _what else is there to talk about here? Uncertainty is good, is it obviously good enough?_
+
+```{r kaplan_meier_pc, fig.cap = "Survival probabilities for chained melded posterior and the posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ fixed. The black lines are the Kaplan-Meier curves obtained using 500 representative stage two samples of $\\phi_{1 \\cap 2}$ from the chained melded posterior. The intervals are 80\\% posterior intervals, and the central lines are posterior means of average survival probability. The quantities relevant to the chained melded posterior are coloured red, and the fixed posterior blue."}
+knitr::include_graphics("plots/surv-example/kaplan-meier-pc.pdf")
+```
+
+- I don't full believe Figure \ref{fig:kaplan_meier_pc} just yet. There is something going wrong numerically in the posterior predictive computations that I haven't figured out just yet
 
 # Discussion
 

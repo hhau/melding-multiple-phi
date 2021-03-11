@@ -72,15 +72,50 @@ res <- lapply(vars, function(a_var) {
 res$param <- res$param %>% 
   recode(!!!a_recode_vector)
 
-## add the legend -- pivot to appropriate tbl 
-# tbl_for_legend <- tidyr::pivot_longer(
-#   res,
-#   cols = ends_with("_quantile"),
-#   names_to = "quantile_type",
-#   values_to = "y_quantile"
-# ) --- nah, just make the plot as is and pull the legend
-# 
-# plot_for_legend <- ggplot(res, aes(x = ))
+legend_tbl <- res %>% 
+  select(-starts_with("stand")) %>% 
+  tidyr::pivot_longer(
+  cols = c(meld_quantile, normal_approx_quantile),
+  names_to = 'quantile_type',
+  values_to = 'meld_quantile'
+) %>% 
+  mutate(param = as.factor(param))
+
+legend_plot <- ggplot(
+  legend_tbl, 
+  aes(
+    x = meld_quantile, 
+    y = orig_quantile, 
+    colour = quantile_type, 
+    linetype = quantile_type
+  )
+) +
+  geom_line() +
+  facet_grid(cols = vars(param), labeller = label_parsed) +
+  scale_colour_manual(
+    values = c(
+      normal_approx_quantile = blues[2],
+      meld_quantile = highlight_col
+    ),
+    labels = c(
+      normal_approx_quantile = "Normal Approx.",
+      meld_quantile = "Chained Melded"
+    )
+  ) + 
+  scale_linetype_manual(
+    values = c(
+      normal_approx_quantile = "dotdash",
+      meld_quantile = "solid"
+    ),
+    labels = c(
+      normal_approx_quantile = "Normal Approx.",
+      meld_quantile = "Chained Melded"
+    )
+  ) +
+  labs(colour = "Posterior:", linetype = "Posterior:") +
+  theme(legend.position = "bottom")
+
+legend_guide <- lemon::g_legend(legend_plot)
 
 plot_list <- lapply(unique(res$param), function(a_param) {
   plot_data <- filter(res, param == a_param)
@@ -143,7 +178,9 @@ plot_3 <- plot_list[[3]] + xlab("Melded quantile")
 # load this afterwards because it redefines the + operator
 library(patchwork)
 
-combined_plot <- plot_2 + plot_3 + plot_1
+combined_plot <- (plot_2 + plot_3 + plot_1) / 
+  (plot_spacer() + legend_guide + plot_spacer()) + 
+  plot_layout(heights = c(9, 1))
 
 ggsave_fullpage(
   filename = "plots/owls-example/orig-meld-qq-compare.pdf",
