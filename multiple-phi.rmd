@@ -9,7 +9,6 @@ geometry: margin=2.25cm
 bibliography: bibliography/multi-phi-bib.bib
 csl: bibliography/journal-of-the-royal-statistical-society.csl
 link-citations: true
-indent: true
 hyperrefoptions:
   - backref
   - colorlinks=true
@@ -80,20 +79,10 @@ Multi-stage samplers can aid in understanding the contribution of each submodel 
 
 ## Example introduction
 
-- come back post rewrite subsections
-<!-- - the thing we want to say here is that these examples are illustrative applications of our methodology. 
-    - In what way are they illustrative? why are we considering them?
-      - The first one is illustrative because it shows that 'chains of submodels' is not just a made up structure. There are uses for this type of thinking.
-        - It would be nice to find an example of something that changed between the separate submodel analysis and the integrative one.
-        - This is what Rob was talking about with the change in prior between the two settings.
-          - not super hopeful here, ecology seems fairly adverse to informative priors when using IMPs. Those times when they do use an informative prior, it is for a specific case (e.g. known sex imbalance) and remains so in the IPM (it is a specific prior on an element in $\psi$)
-      - The second one is a little more tricky, but effectively the argument is that we want to do survival analysis where we have two longitudinal processes. We model the first one and derive our event time, and we think it's related to the second one. So we're doing joint models. The key difference is that the longitudinal processes are noisy, so the derived event times are also noisy.
- -->
-We illustrate our methodology using two examples in which chains of submodels arise in the modelling process.
+We illustrate our methodology using two examples, for which we now provide a high-level overview.
+Our examples show that chain like inter-submodel relationships arise in many applied settings
 
 ### An Integrated population model for little owls
-
-<!-- do we want to frame this as a joining or a splitting example? -->
 
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] combine multiple data to estimate key quantities governing the dynamics of a specific population.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
@@ -107,44 +96,33 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 ### Survival analysis with time varying covariates and uncertain event times
 
-- In our second example we consider modelling the time to respiratory failure amongst intensive care unit patients as a function of time-invariant (_baseline_) and time-varying (_longitudinal_) covariates.
-  - what is the longitudinal covariate.
+#### If we go with the example motivation
 
+- _the numbers in the example need changing to match PF ratios, and we need to justify our use of simulated data / which covariate we are thinking of as longitudinal_.
+- _I also don't actually think threshold regression is very relevant. It is a competitor to PH cox models, not those with time varying covariates, and is other wise much the same as standard survival analysis, using a slightly wider variety of baseline hazards (derived from the stochastic process origins)_.
 
-- Integrating longitudinal and standard time-to-event data that are available concurrently is popular, and is often referred to as a _joint model_ [@rizopoulos_joint_2012].
+Our second example considers the time to onset of acute respiratory distress syndrome (ARDS) amongst patients in intensive care units, and factors that influence the onset of ARDS.
+A patient can be said to be experiencing ARDS if the ratio of the partial pressure of arterial blood oxygen (Pao\textsubscript{2}) to the faction of inspired oxygen (Fio\textsubscript{2}) is less than 300mmHg [@the_ards_definition_task_force_acute_2012].
+The laboratory test results required to calculate a patient's Pao\textsubscript{2}/Fio\textsubscript{2} ratio are not always available.
+An alternative is to consider the ratio of peripheral oxygen saturation (Spo\textsubscript{2}) to Fio\textsubscript{2}, as the former can be obtained from a pulse oximeter, a device typically worn on the finger tip that produces immediate measurements.
+The Spo\textsubscript{2}/Fio\textsubscript{2} ratio can then be converted to a Pao\textsubscript{2}/Fio\textsubscript{2} by various formula [@pandharipande_derivation_2009-1; @brown_nonlinear_2016-1].
+However, the noise introduced by the Spo\textsubscript{2} measurements [@nitzan_pulse_2014] and the conversion formula yield a Pao\textsubscript{2}/Fio\textsubscript{2} value that is contaminated by statistically nonneglible amounts of noise.
+This results in uncertainty about time of onset of ARDS.
 
+Factors that influence the time-to-onset of ARDS are both longitudinal and time invariant.
+Both types of data can be considered in _joint models_ [@rizopoulos_joint_2012], which are composed of two distinct submodels, one for each data type.
+Failing to incorporate the uncertainty surrounding the event time may result overconfident and/or biased estimates of the parameters in the joint model.
 
-In our second example we wish to synthesise data about a longitudinal process with data relating to a time-to-event process, where the event time is determined by a second longitudinal process crossing a pre-specified threshold.
+The uncertainty surrounding the event time is not unique to this example. 
+Incorporating uncertainty in the event time into joint models is challenging, and no general framework exists for doing so.
+Setting specific methodologies include: @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation to account for measurement error in the event time.
 
-
-Complicated longitudinal processes require flexible regression models, often including many subject specific parameters, and can be computationally challenging to fit jointly with time to event data.
-This motivates a two-stage approach, where the longitudinal submodel is fit first and the fitted values are then used in the survival submodel [@tsiatis_joint_2004; @mauff_joint_2020].
-
-In some settings the time at which the relevant event occurs is inherently uncertain.
-This can be due to the definition of the event, for example the time when a measurable but noisy quantity crosses a prescribed threshold, or because the event of interest is inherently unobservable and must be inferred from other information.
-_First hitting time_, or _threshold regression_ models [@lee_threshold_2006] are used in threshold crossing settings, and applications include kidney failure [@diggle_real-time_2015], dementia diagnosis [@hashemi_latent_2003], and disease transmission [@yu_semi-parametric_2009].
-These methods assume that relevant measurements are realisations from a specific, possibly latent, stochastic process, where the distribution of the threshold crossing time is known.
-A conceptually similar idea is presented in @lu_using_1993 and @sweeting_estimating_2010; both use hierarchical regression models instead of stochastic processes, and define the event time as when the estimated regression curve crosses the threshold.
-Another setting in which inherently uncertain event times arise is record linkage [@harron_methodological_2015].
-Such settings are unique in that the true event time is assumed to be one of a finite set of possible times, with one possible event time arising from each matching record.
-Integrating this uncertainty into standard survival models is challenging but possible [@wang_integrative_2020], however these methods do not consider event times that are continuous[^wang].
-
-[^wang]: @wang_integrative_2020 assume that the response is a finite mixture, where each mixture component is a point mass at the possible event times arising due to record linkage. Uncertainty is then incorporated by estimating the mixture weights.
-
-It seems desirable to integrate both uncertain event times and longitudinal data in a survival analysis.
-Doing so in a standard joint model is challenging, as incorporating uncertainty in the response requires complex methodology [@giganti_accounting_2020; @oh_considerations_2018; @oh_raking_2021] which do not explicitly include time-varying covariates.
-Similarly, incorporating time-varying covariates into a threshold regression model is nontrivial, and assumes the relevant covariates satisfy the Markov property [@lee_threshold_2010].
- <!-- - Another is that integrating time dependent covariates into the FHT/TR models is non straightforward -- as far as I can tell the Markov assumption in Lee and Whitmore is equivalent to restricting the form of the longitudinal submodel to linear forms (non linear longitudinal regression models are non-Markovian / joint model that depend on the integral of the longitudinal model are definitely non-Markovian. This is discussed a bit in @lee_threshold_2010)
-    - it would help if our longitudinal model was non-linear so that we could have this benefit -- maybe making the regression quadratic.
-  - One motivation comes from the respiratory failure idea and its similarities to the degradation models. (what would the other, longitudinal covariate be?)
-    - This would be strengthened by using non-linear regression / splines for the first submodel. -->
-Modular inference methods, and chained Markov melding in particular, offer conceptually straightforward approaches.
-Specifically, we consider the event time as an uncertain, latent submodel quantity in a simplified, hierarchical degradation model akin to @lu_using_1993. 
-We call this submodel the _uncertain event time_ submodel and denote it $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, and where $\phi_{1 \cap 2}$ is the latent event time.
-The survival submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ uses $\phi_{1 \cap 2}$, the common quantity, as the response. 
+Chained Markov melding offers a conceptually straightforward, Bayesian approach to incorporating uncertain event times.
+Specifically, we consider the event time as a submodel-derived quantity from a hierarchical regression model akin to @lu_using_1993. 
+We call this submodel the _uncertain event time_ submodel and denote it $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, where $\phi_{1 \cap 2}$ is the event time.
+The survival submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ uses $\phi_{1 \cap 2}$, the common quantity, as the response.
 We treat the longitudinal submodel, $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$, separately from the survival submodel, as is common in two-stage survival modelling, and denote the subject-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
 The high level submodel relationships are displayed as a DAG in Figure \ref{fig:surv-simple-dag}.
-
 \input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
 # Model specification
@@ -182,7 +160,7 @@ Two special cases of pooling are of particular interest.
 _Product of experts (PoE) pooling_  [@hinton_training_2002] is a special case of logarithmic pooling that occurs when $\lambda_{\modelindex} = 1$ for all $\modelindex$.
 _Dictatorial pooling_ is a special case of either pooling method when $\lambda_{\modelindex'} = 1$ and $\lambda_{\modelindex} = 0$ for all $\modelindex \neq \modelindex'$.
 
-## Chained Markov melding
+## Chained Markov melding_
 
 -_this is not correct at the moment_. 
 
@@ -265,128 +243,6 @@ Appendix \ref{log-pooling-gaussian-densities} analytically shows that $\lambda_{
 knitr::include_graphics("plots/pooling-tests/version-two.pdf")
 ```
 
-# Coherency of the chained melded model
-
-- _I think a few of these results are wrong. Maybe this should just be a paragraph?_
-    - 3 ii) is definitely wrong.
-    - 3 i) doesn't required independence 
-- _Some discussion of the M = 3 case in text, with reference to the general case (if I can figure out what that even means) in the appendix_
-- _I think I can also put together a discussion of what it means to be externally Bayesian in this context now?_.
-    - _no_
-
-A reasonable requirement for a modular inference method is that the final posterior distribution should not, at least theoretically, depend on the order in which data are observed or integrated into the model.
-In the context of belief distributions, @bissiri_general_2016 call this property 'coherence', which we will co-opt.
-Specifically, in the $\Nm = 3$ case, it seems desirable that the chained melded model be the same if either $\pd_{1}$ or $\pd_{3}$ are integrated with submodel $\pd_{2}$ first.
-We will show that the form proposed in Equation \eqref{eqn:melded-model-full} satisfies this property, whilst the model produced by applying the melding method of @goudie_joining_2019 is, in general, sensitive to the order of integration.
-    <!-- 
-        - should we also check p(13)2?
-            - (13)2 is the same as original melding with \phi = (\phi_{1 \cap 2}, \phi_{2 \cap 3}),
-            - but the strategy doesn't generalise to higher $M$ (M = 4 immediately disproves)
-
-        - say we had 9 models, and the first three formed \pd_{1}, the second three formed \pd_{2} and the remaining $\pd_{3}$. Would we apply melding here twice? No, we would think about this as chained melding with M = 9 models.
-    -->
-
-## Applying Markov melding twice
-
-The general thing I want to be able to say is
-
-
-The idea is that they can only possibly be equal if there is prior independence between the common quantities in each submodel.
-If this is missing, then for any, non product-of-experts, choice of weight functions
-
-Denote the original melding operator with $\circledast$. 
-Its output is 
-\input{tex-input/noncommutativity/0005-def-usual-melded-model.tex}
-where $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$ for some pooling function $g^{12}$.
-We denote the parameter space of the output as $\boldsymbol{\Theta}_{12} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, so that any prior marginal distribution of $\pd_{\text{meld}}^{12}$ can be derived by integrating out the irrelevant components of $\boldsymbol{\Theta}_{12}$.
-For example,  
-\input{tex-input/noncommutativity/0006-example-melded-marginal-definition.tex}
-where $\boldsymbol{\Theta}_{12} \setminus \phi_{2 \cap 3}$ is $\boldsymbol{\Theta}_{12}$ without $\phi_{2 \cap 3}$.
-
-To integrate third submodel, we apply the original operator to $\pd_{\text{meld}}^{12}$ and $\pd_{3}$
-\input{tex-input/noncommutativity/0007-iterated-application-melding.tex}
-so that the parentheses in the superscript of $\pd_{\text{meld}}^{(12)3}$ indicate the order in which the submodels are melded.
-As before we define $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$, but for a potentially different choice of pooling function $g^{(12)3}$.
-
-It will be convenient to consider the following, expanded form of Equation \eqref{eqn:iterated-application-melding-two}
-\input{tex-input/noncommutativity/0013-expanded-double-melded-model.tex}
-and the equivalent expression for $\pd_{\text{meld}}^{1(23)}$, which we derive by careful inspection of the superscripts
-\input{tex-input/noncommutativity/0018-symmetric-expanded-double-melded-model.tex}
-
-## Does melding twice produce the same model as the chained melded model?
-
-For Equations \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model} to be equal to the model defined in Equation \eqref{eqn:melded-model-full}, the following equalities must hold:
-\input{tex-input/noncommutativity/0040-coinciding-equalities.tex}
-It is clear from Equation \eqref{eqn:coinciding-equalities-one} that one necessary condition is for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to be _a priori_ independent in $\pd_{2}$.
-
-### Melded marginal equality
-
-By inspecting Equation \eqref{eqn:coinciding-equalities-one} we note the additional necessary condition that $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
-To see when this is true, consider the following derivation
-\input{tex-input/noncommutativity/0015-verify-dictatorial-pooling.tex}
-Hence, for $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$ to hold we require $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$.
-This is _dictatorial pooling_, where one submodel's prior marginal is used as a prior in the melded model.
-An identical argument can be used to show that $\pd_{\text{meld}}^{23}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ requires the equivalent choice of dictatorial pooling for $\phi_{2 \cap 3}$, i.e. $\pd_{\text{pool}}^{23}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
-
-### Pooling equality
-
-Without any loss of generality, we examine only the $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ equality in Equation \eqref{eqn:coinciding-equalities-two} for further necessary conditions.
-There are three decisions to be made about the method of pooling used on the right hand side (RHS) of this equality:
-
-1. Form $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via the logarithmic pooling method of Equation \eqref{eqn:pooled-prior-overall}.
-    
-    Logarithmic pooling results in a RHS proportional to $\pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}} \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}} \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}$.
-    Hence both $g^{12}$ and $g^{(12)3}$ are logarithmic pooling functions; if either were a linear pooling function we would get more than one term, and if either were dictatorial the left hand side (LHS) would exclude either $\pd_{1}(\phi_{1 \cap 2})$ or $\pd_{3}(\phi_{2 \cap 3})$.
-    Thus,
-    \input{tex-input/noncommutativity/0041-pooling-equality-rhs-log.tex}
-    for arbitrary positives weights $\lambda_{\cdot}$.
-    Equation \eqref{eqn:pooling-equality-rhs-log} holds iff $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2})\pd_{2}(\phi_{2 \cap 3})$ and $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$. 
-    We have shown earlier that is only true if dictatorial pooling is used for $g^{12}$.
-    But if $g^{12}$ is dictatorial, then the LHS of Equation \eqref{eqn:pooling-equality-rhs-log} would not contain a $\pd_{1}(\phi_{1 \cap 2})$ term, which is a contradiction.
-    Hence, Equation \eqref{eqn:pooling-equality-rhs-log} is not true in general.
-
-    A special case of logarithmic pooling is that of product of experts, where $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{1}(\phi_{1 \cap 2})\pd_{2}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{\text{meld}}^{12}(\phi_{2 \cap 3})\pd_{3}(\phi_{2 \cap 3})$.
-    In this specific instance all prior terms cancel, and only terms containing data remain in the melded model, so Equation \eqref{eqn:pooling-equality-rhs-log} is trivially true (both sides are equal to 1).
-
-2. From $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via the linear pooling method of Equations \eqref{eqn:silly-linear-solution-1} -- \eqref{eqn:silly-linear-overall}.
-
-    If linear pooling is used then the RHS contains 4 terms.
-    Thus both $g^{12}$ and $g^{1(23)}$ are linear -- all other combinations of pooling functions produce fewer than four terms -- and results in
-    \input{tex-input/noncommutativity/0042-pooling-equality-rhs-lin.tex}
-    Equation \eqref{eqn:pooling-equality-rhs-lin} again requires $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, which we have shown to only be possible under dictatorial pooling.
-    Thus we arrive at the same contradiction as before.
-
-3. Use dictatorial pooling.
-    
-    There are two valid dictatorial pooling choices for the RHS:
-
-    i. Set $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-
-        If one chooses $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{2}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$, then Equation \eqref{eqn:coinciding-equalities-two} simplifies to $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, which is true iff the prior independence assumption is satisfied.
-        Additionally, we require $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, which as we have noted, is only true if $g^{12}$ is dictatorial.
-        In this case, unlike previous cases, $g^{12}$ is exactly the dictatorial pooling function we require.
-
-    i. Set $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3})$.
-
-        Satisfying Equation \eqref{eqn:coinciding-equalities-two} is possible in this case if $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{1}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{3}(\phi_{2 \cap 3})$.
-
-So in general, applying the original melding operator twice does not result in the same model as \eqref{eqn:melded-model-full}, except in cases where $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are a priori independent in $\pd_{2}$ and specific forms of dictatorial pooling are used.
-
-## Is the original operator commutative? 
-
-Commutativity of the original operator would imply that $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$.
-By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model}, we find that the original melding operator is only commutative if 
-\input{tex-input/noncommutativity/0016-commutativity-condition.tex}
-which implies the following equalities
-\input{tex-input/noncommutativity/0014-orig-melding-commutative-equalities.tex}
-Showing one of the equalities in Equation \eqref{eqn:orig-melding-commutative-equalities-1} and \eqref{eqn:orig-melding-commutative-equalities-2} implies its partner equality is also true. 
-Consider the first equality
-\input{tex-input/noncommutativity/0017-pooling-equality.tex}
-Assume that $g^{12}$ and $g^{1(23)}$ are both linear or logarithmic pooling functions.
-For Equation \eqref{eqn:pooling-equality} to be true, $\pd_{2}(\phi_{1 \cap 2}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2})$, which is the same result we require in Equation \eqref{eqn:orig-melding-commutative-equalities-2}.
-We have already shown that this is only true when using certain forms of dictatorial pooling.
-Hence, the original operator is commutative under in the same settings in which applying the original melding operator twice results in the chained melded model.
- 
 # Posterior estimation
 
 We now present two multi-stage MCMC methods for generating samples from the melded posterior.
@@ -581,19 +437,9 @@ It is also an example of estimating an intricate model without ever simultaneous
 
 ## Uncertain event times in joint longitudinal and survival models.
 
-Standard survival analyses consider the event times and censoring indicators as known, fixed quantities.
-However, in some settings the survival times are contaminated with nontrivial measurement error [@gu_semiparametric_2015; @meier_discrete_2003; @oh_considerations_2018; @snapinn_survival_1998;@wang_integrative_2020], or are derived from a, possibly highly complex, model for some other measurable quantity of the individual [see @lee_threshold_2006 for a review; and @szczesniak_dynamic_2020 for recent application].
-Integrating the output of such models into standard parametric or Cox proportional hazards survival models is challenging, but we believe it is made conceptually and computational easier by our chained melding framework.
+- what: brief overview of the submodels, relate to @lu_using_1993 and @sweeting_estimating_2010
 
-The integration of complex regression models into survival models is routine in the Joint modelling framework [@rizopoulos_joint_2012].
-Such model complexity is often warranted due to the wide variety of behaviours of the longitudinal process. 
-The associated computational cost motivates two stage estimation procedures [@ye_semiparametric_2008; @mauff_joint_2020] which reduce the computation required.
-Such two stage processes are, in effect, considering a separate submodel for the longitudinal data, and we do the same in our example.
-We argue that considering the models for the event times and longitudinal process separately is not an unreasonable modelling choice, and choosing to unite them in the survival model is a natural application of the chained melding method.
-
-To highlight the chained melding process, and not obscure it behind individual submodel complexity, we use simpler versions of the threshold crossing, survival, and longitudinal submodels.
-We use a subject specific linear model with constant threshold, a parametric Weibull model, and a distinct linear subject specific linear model for the respective submodels.
-Data are simulated in a manner that is realistic, but avoids multiple types of censoring in the survival model and missing data.
+- why we're using simulated data
 
 ### Submodels
 
@@ -691,9 +537,9 @@ Numerical diagnostics including the split-$\widehat{R}$, bulk and tail effective
 
 [^stanver]: Submodel 2 requires numerical integration, which is performed using the `Stan` function `integrate_1d`. Previous versions of `Stan` report numerical errors when performing this integration, so we require a `Stan`/`rstan` version of `2.26` or higher. At the time of writing this version of `rstan` is not on `CRAN`, but sources and binaries can be obtained from the `stan-dev` GitHub.
 
-<!--  _Need to think about where to put this?_ -> I think it should go here? Maybe in the discussion?
-    However, as @mauff_joint_2020 note, commonly employed versions of the two-stage estimation process produce biased results. 
-    In @mauff_joint_2020 this bias is removed via importance sampling with appropriate weights, which is similar to our two stage sampler in Section -->
+Of note is the relationship between our parallel two stage sampler and the two stage, importance sampling approach of @mauff_joint_2020.
+However the two stage estimation process of @mauff_joint_2020 is only applicable to joint models, i.e. they do not consider uncertainty arising from $\pd_{1}$.
+They also require, for each iteration of the importance sampler, estimates of the marginal likelihood of the survival data $\pd_{2}(\phi_{1 \cap 2})$. 
 
 #### Results
 
@@ -811,6 +657,129 @@ The choice of $\lambda_{2}$ is critical; by controlling the contribution of $\pd
 The left hand column of Figure \ref{fig:pooled_densities_plot} illustrates this phenomena.
 When $\lambda_{1} = \lambda_{3} = 0 \implies \lambda_{2} = 1$, all correlation in $\pd_{2}$ is present in $\pd_{\text{pool}}$.
 The correlation decreases for increasing values of $\lambda_{1}$ until $\lambda_{1} = \lambda_{3} = 0.5 \implies \lambda_{2} = 0$, where no correlation persists.
+
+# Coherency of the chained melded model
+
+- _I think a few of these results are wrong. Maybe this should just be a paragraph?_
+    - 3 ii) is definitely wrong.
+    - 3 i) doesn't required independence 
+- _Some discussion of the M = 3 case in text, with reference to the general case (if I can figure out what that even means) in the appendix_
+- _I think I can also put together a discussion of what it means to be externally Bayesian in this context now?_.
+    - _no_
+
+A reasonable requirement for a modular inference method is that the final posterior distribution should not, at least theoretically, depend on the order in which data are observed or integrated into the model.
+In the context of belief distributions, @bissiri_general_2016 call this property 'coherence', which we will co-opt.
+Specifically, in the $\Nm = 3$ case, it seems desirable that the chained melded model be the same if either $\pd_{1}$ or $\pd_{3}$ are integrated with submodel $\pd_{2}$ first.
+We will show that the form proposed in Equation \eqref{eqn:melded-model-full} satisfies this property, whilst the model produced by applying the melding method of @goudie_joining_2019 is, in general, sensitive to the order of integration.
+    <!-- 
+        - should we also check p(13)2?
+            - (13)2 is the same as original melding with \phi = (\phi_{1 \cap 2}, \phi_{2 \cap 3}),
+            - but the strategy doesn't generalise to higher $M$ (M = 4 immediately disproves)
+
+        - say we had 9 models, and the first three formed \pd_{1}, the second three formed \pd_{2} and the remaining $\pd_{3}$. Would we apply melding here twice? No, we would think about this as chained melding with M = 9 models.
+    -->
+
+## Applying Markov melding twice
+
+The general thing I want to be able to say is
+
+
+The idea is that they can only possibly be equal if there is prior independence between the common quantities in each submodel.
+If this is missing, then for any, non product-of-experts, choice of weight functions
+
+Denote the original melding operator with $\circledast$. 
+Its output is 
+\input{tex-input/noncommutativity/0005-def-usual-melded-model.tex}
+where $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$ for some pooling function $g^{12}$.
+We denote the parameter space of the output as $\boldsymbol{\Theta}_{12} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, so that any prior marginal distribution of $\pd_{\text{meld}}^{12}$ can be derived by integrating out the irrelevant components of $\boldsymbol{\Theta}_{12}$.
+For example,  
+\input{tex-input/noncommutativity/0006-example-melded-marginal-definition.tex}
+where $\boldsymbol{\Theta}_{12} \setminus \phi_{2 \cap 3}$ is $\boldsymbol{\Theta}_{12}$ without $\phi_{2 \cap 3}$.
+
+To integrate third submodel, we apply the original operator to $\pd_{\text{meld}}^{12}$ and $\pd_{3}$
+\input{tex-input/noncommutativity/0007-iterated-application-melding.tex}
+so that the parentheses in the superscript of $\pd_{\text{meld}}^{(12)3}$ indicate the order in which the submodels are melded.
+As before we define $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$, but for a potentially different choice of pooling function $g^{(12)3}$.
+
+It will be convenient to consider the following, expanded form of Equation \eqref{eqn:iterated-application-melding-two}
+\input{tex-input/noncommutativity/0013-expanded-double-melded-model.tex}
+and the equivalent expression for $\pd_{\text{meld}}^{1(23)}$, which we derive by careful inspection of the superscripts
+\input{tex-input/noncommutativity/0018-symmetric-expanded-double-melded-model.tex}
+
+## Does melding twice produce the same model as the chained melded model?
+
+For Equations \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model} to be equal to the model defined in Equation \eqref{eqn:melded-model-full}, the following equalities must hold:
+\input{tex-input/noncommutativity/0040-coinciding-equalities.tex}
+It is clear from Equation \eqref{eqn:coinciding-equalities-one} that one necessary condition is for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to be _a priori_ independent in $\pd_{2}$.
+
+### Melded marginal equality
+
+By inspecting Equation \eqref{eqn:coinciding-equalities-one} we note the additional necessary condition that $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
+To see when this is true, consider the following derivation
+\input{tex-input/noncommutativity/0015-verify-dictatorial-pooling.tex}
+Hence, for $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$ to hold we require $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$.
+This is _dictatorial pooling_, where one submodel's prior marginal is used as a prior in the melded model.
+An identical argument can be used to show that $\pd_{\text{meld}}^{23}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ requires the equivalent choice of dictatorial pooling for $\phi_{2 \cap 3}$, i.e. $\pd_{\text{pool}}^{23}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
+
+### Pooling equality
+
+Without any loss of generality, we examine only the $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ equality in Equation \eqref{eqn:coinciding-equalities-two} for further necessary conditions.
+There are three decisions to be made about the method of pooling used on the right hand side (RHS) of this equality:
+
+1. Form $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via the logarithmic pooling method of Equation \eqref{eqn:pooled-prior-overall}.
+    
+    Logarithmic pooling results in a RHS proportional to $\pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}} \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}} \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}$.
+    Hence both $g^{12}$ and $g^{(12)3}$ are logarithmic pooling functions; if either were a linear pooling function we would get more than one term, and if either were dictatorial the left hand side (LHS) would exclude either $\pd_{1}(\phi_{1 \cap 2})$ or $\pd_{3}(\phi_{2 \cap 3})$.
+    Thus,
+    \input{tex-input/noncommutativity/0041-pooling-equality-rhs-log.tex}
+    for arbitrary positives weights $\lambda_{\cdot}$.
+    Equation \eqref{eqn:pooling-equality-rhs-log} holds iff $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2})\pd_{2}(\phi_{2 \cap 3})$ and $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$. 
+    We have shown earlier that is only true if dictatorial pooling is used for $g^{12}$.
+    But if $g^{12}$ is dictatorial, then the LHS of Equation \eqref{eqn:pooling-equality-rhs-log} would not contain a $\pd_{1}(\phi_{1 \cap 2})$ term, which is a contradiction.
+    Hence, Equation \eqref{eqn:pooling-equality-rhs-log} is not true in general.
+
+    A special case of logarithmic pooling is that of product of experts, where $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{1}(\phi_{1 \cap 2})\pd_{2}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{\text{meld}}^{12}(\phi_{2 \cap 3})\pd_{3}(\phi_{2 \cap 3})$.
+    In this specific instance all prior terms cancel, and only terms containing data remain in the melded model, so Equation \eqref{eqn:pooling-equality-rhs-log} is trivially true (both sides are equal to 1).
+
+2. From $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via the linear pooling method of Equations \eqref{eqn:silly-linear-solution-1} -- \eqref{eqn:silly-linear-overall}.
+
+    If linear pooling is used then the RHS contains 4 terms.
+    Thus both $g^{12}$ and $g^{1(23)}$ are linear -- all other combinations of pooling functions produce fewer than four terms -- and results in
+    \input{tex-input/noncommutativity/0042-pooling-equality-rhs-lin.tex}
+    Equation \eqref{eqn:pooling-equality-rhs-lin} again requires $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, which we have shown to only be possible under dictatorial pooling.
+    Thus we arrive at the same contradiction as before.
+
+3. Use dictatorial pooling.
+    
+    There are two valid dictatorial pooling choices for the RHS:
+
+    i. Set $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+
+        If one chooses $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{2}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$, then Equation \eqref{eqn:coinciding-equalities-two} simplifies to $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, which is true iff the prior independence assumption is satisfied.
+        Additionally, we require $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, which as we have noted, is only true if $g^{12}$ is dictatorial.
+        In this case, unlike previous cases, $g^{12}$ is exactly the dictatorial pooling function we require.
+
+    i. Set $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3})$.
+
+        Satisfying Equation \eqref{eqn:coinciding-equalities-two} is possible in this case if $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{1}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{3}(\phi_{2 \cap 3})$.
+
+So in general, applying the original melding operator twice does not result in the same model as \eqref{eqn:melded-model-full}, except in cases where $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are a priori independent in $\pd_{2}$ and specific forms of dictatorial pooling are used.
+
+## Is the original operator commutative? 
+
+Commutativity of the original operator would imply that $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$.
+By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model}, we find that the original melding operator is only commutative if 
+\input{tex-input/noncommutativity/0016-commutativity-condition.tex}
+which implies the following equalities
+\input{tex-input/noncommutativity/0014-orig-melding-commutative-equalities.tex}
+Showing one of the equalities in Equation \eqref{eqn:orig-melding-commutative-equalities-1} and \eqref{eqn:orig-melding-commutative-equalities-2} implies its partner equality is also true. 
+Consider the first equality
+\input{tex-input/noncommutativity/0017-pooling-equality.tex}
+Assume that $g^{12}$ and $g^{1(23)}$ are both linear or logarithmic pooling functions.
+For Equation \eqref{eqn:pooling-equality} to be true, $\pd_{2}(\phi_{1 \cap 2}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2})$, which is the same result we require in Equation \eqref{eqn:orig-melding-commutative-equalities-2}.
+We have already shown that this is only true when using certain forms of dictatorial pooling.
+Hence, the original operator is commutative under in the same settings in which applying the original melding operator twice results in the chained melded model.
+ 
 
 # Diagnostics for the owls example
 
