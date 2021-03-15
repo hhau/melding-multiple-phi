@@ -38,7 +38,7 @@ The Bayesian philosophy is appealing in part because the posterior distribution 
 However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is challenging.
 Models that consider such data are necessary to describe complex phenomena at a useful precision.
 One possible approach begins by specifying individual submodels for each source of data.
-These submodels could informally guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
+These submodels could guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
 Instead, it may be preferable to construct a joint model by formally joining the individual submodels together.
 
 There is a general interest in integrating many sources of data into a single model, and some specific forms of combining data are well established.
@@ -53,24 +53,21 @@ The _Bayesian Fusion_ method of @dai_monte_2019-1 combines these subposteriors e
 Decomposing a joint model into distinct submodels is particularly useful when one submodel is misspecified [@liu_modularization_2009; @jacob_better_2017-1; @carmona_semi-modular_2020] and we want to limit the flow of information out of the misspecified module [@lunn_bugs_2009; @plummer_cuts_2015].
 
 Applied researchers often collect multiple disparate data sets, or data of different modalities, and wish to combine them. 
-For example, @donnat_bayesian_2020 build an intricate hierarchical model to estimate true COVID-19 diagnosis that integrates both testing data and self-reported questionnaire data, and @parsons_evaluating_2020 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine. 
+For example, to estimate SARS-CoV-2 positivity @donnat_bayesian_2020 build an intricate hierarchical model that integrates both testing data and self-reported questionnaire data, and @parsons_evaluating_2020 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine. 
 Both applications clearly delineate between the numerous sources of data they consider.
 In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesizing_2018] are used to estimate population dynamics, e.g. reproduction and immigration rates, using multiple data on the same population.
-Such data have standard models associated with them, for example the Cormack—Jolly—Seber model [@lebreton_modeling_1992] is standard for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
+Such data have standard models associated with them, such as the Cormack—Jolly—Seber model [@lebreton_modeling_1992] for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
 
 _Markov melding_ [@goudie_joining_2019] is a general statistical methodology for combining submodels.
 Specifically, it considers $\Nm$ submodels that share some common quantity $\phi$.
 Each of the $\modelindex = 1, \ldots, \Nm$ submodels also has distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$, which are combined into a joint model $\pd_{\text{meld}}(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm})$.
-<!-- something more here? -->
+However, it is unclear how to integrate models where there is no single quantity $\phi$ common to all submodels, such for submodels that are linked in a chain structure.
 
-It is unclear how to integrate models where there is no single quantity $\phi$ common to all submodels.
-We consider submodels that are linked in a chain structure.
-Specifically, in the $\Nm = 3$ case, submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a different quantity $\phi_{2 \cap 3}$. 
-We propose an extension to Markov melding, which we call _chained Markov melding_[^chained], which facilitates the combination of submodels that share quantities in this pairwise manner.
+We propose an extension to Markov melding, which we call _chained Markov melding_[^chained], which facilitates the combination of submodels that are in a chain structure.
+Specifically, in the $\Nm = 3$ case, we address the case in which submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a different quantity $\phi_{2 \cap 3}$.
 Two examples serve to illustrate our methodology, which we introduce in the following section.
-
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
-We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden. 
+We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden.
 By considering the submodel as the minimum computational unit, we can parallelise aspects of the computation, and use less computationally expensive techniques for some submodels.
 Reusing existing software implementations of submodels, and where available subposterior samples, is also possible. 
 Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020].
@@ -79,8 +76,8 @@ Multi-stage samplers can aid in understanding the contribution of each submodel 
 
 ## Example introduction
 
-We illustrate our methodology using two examples, for which we now provide a high-level overview.
-Our examples show that chain like inter-submodel relationships arise in many applied settings
+In this section we provide a high-level overview of two applications involving chain-like inter-submodel relationships.
+We will provide more details and illustrate our methodology with these examples in Section \ref{examples}.
 
 ### An Integrated population model for little owls
 
@@ -88,8 +85,7 @@ Integrated population models (IPMs) [@zipkin_synthesizing_2018] combine multiple
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
 These authors collect and model three types of data, illustrated in Figure \ref{fig:owls-simple-dag}: capture-recapture data $Y_{1}$ with associated capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$; population counts $Y_{2}$ with associated submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$; and nest-record data $Y_{3}$ with associated fecundity submodel $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
 The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
-No single source of data is sufficient to estimate all quantities of interest.
-Thus it is necessary to integrate the three submodels into a single joint model, in order to produce acceptably precise estimates of fecundity and immigration rates.
+No single source of data is sufficient to estimate all quantities of interest, so it is necessary to integrate the three submodels into a single joint model to produce acceptably precise estimates of fecundity and immigration rates.
 We will show that the chained Markov melding framework developed in Section \ref{model-specification} encapsulates the process of integrating these submodels, and IPMs in general.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
@@ -247,9 +243,9 @@ knitr::include_graphics("plots/pooling-tests/version-two.pdf")
 
 We now present two multi-stage MCMC methods for generating samples from the melded posterior.
 By employing a multi-stage strategy we can avoid evaluating all submodels simultaneously.
-This is desirable in situations where simultaneously evaluating the submodel terms is computationally infeasible or otherwise undesirable, whilst evaluating the prior marginal distributions is possible and relatively inexpensive.
+This is desirable in situations where simultaneously evaluating the submodel terms is computationally infeasible or cumbersome, whilst evaluating the prior marginal distributions is possible and relatively inexpensive.
 The first sampler operates sequentially, accruing and refining samples by considering one submodel at a time.
-The second parallelises parts of the sampling process, and has the potential to produce a sample, usable for inference, from the melded posterior in less time than the sequential method.
+The second parallelises parts of the sampling process, and has the potential to produce posterior samples from the melded posterior in less time than the sequential method.
 
 We also describe an approximate method, where stage one submodels are summarised by normal distributions for use in stage two.
 
@@ -330,7 +326,7 @@ In addition, assume that
 The latter two assumptions imply that the melded posterior of interest is proportional to
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
 
-In parallel, sample the prior and (sub)posterior of $\pd_{1}$ and $\pd_{3}$ and form normal approximations using these samples, e.g approximate $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ by a normal density with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$.
+Suppose we can $\pd_{1}$ and $\pd_{3}$ by normal approximations distributions, e.g approximate $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ by a normal density with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$.
 Denote the subposterior approximation $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$ and the prior approximation $\pd_{1}(\phi_{1 \cap 2}) \approx \widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0}) = \text{N}(\widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0})$, and corresponding approximations and parameters for $\pd_{3}$.
 The approximate melded posterior is thus
 \input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
@@ -346,34 +342,33 @@ If instead we opt for product-of-experts pooling, all $\mu_{\text{de}}$ and $\Si
 ## Little owls
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
+@finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010: here we consider only the 
+variant from @finke_efficient_2019 with the highest marginal likelihood.
 
 ### Submodels
 
-@finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010.
-We consider variant from @finke_efficient_2019 with the highest marginal likelihood.
-Before we detail the specifics of our chosen model, we need to introduce some notation. 
-Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, for $T = 25$.
+Before we detail the specifics of each submodel, we need to introduce some notation. 
+Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur at times $t \in \{1, \ldots, T\}$, where $T = 25$ here.
 
 #### Capture recapture: $\pd_{1}$
 
-Capture-recapture data pertain to owls that are captured, tagged, and released at time $t$.
-These individuals are then recaptured at time $u$, for $t + 1 < u < T + 1$, or not recaptured before the conclusion of the study, in which case $u = T + 1$. 
-Define $M_{a, s, t, u}$ as the number of owls last observed at time $t$, recaptured at time $u$, of sex $s$, and age-group $a$.
-These observations are then aggregated into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows and $T + 1$ columns.
-Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls observed at time $t$ and then released, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
-The multinomial likelihood is
+Capture-recapture data pertain to owls that are released at time $t$ (having been captured and tagged).
+These individuals are then recaptured at time $u \in \{t + 1, \dots, T\}$, or not recaptured before the conclusion of the study, in which case $u = T + 1$. 
+Define $M_{a, s, t, u}$ as the number of owls of sex $s$, and age-group $a$ last observed at time $t$, recaptured at time $u$.
+We aggregate these observations into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows, corresponding to released times, and $T + 1$ columns, corresponding to recapture times.
+Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls released at time $t$, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
+We assume the recapture times for owls released at time $t$ follow a sex- and age-specific multinomial likelihood
 \input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
 with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
 \input{tex-input/owls-example/0011-multinomial-probabilities.tex}
 
 #### Count data model: $\pd_{2}$ 
 
-To estimate population abundance, a two level model is used.
-One level models the observed (counted) number of females at each point in time, with a second, latent process modelling the total number of females in population.
+To estimate population abundance, a two level model is used: the first models the observed (counted) number of females at each point in time, with a second, latent process modelling the total number of females in population.
 Denote the total number of juvenile and adult females in the population at time $t$ as $\boldsymbol{x}_{t} = \left[x_{J, t}, x_{A, t}\right]$.
 The latent, population level model is 
 \input{tex-input/owls-example/0020-count-data-submodel.tex}
-Initial population sizes $(x_{J, 1}, x_{A, 1})$ are a priori uniformly distributed over $\{0, 1, \ldots, 50\}$.
+We assume the initial population sizes $x_{J, 1}$ and $x_{A, 1})$ are both a priori independently uniformly distributed over $\{0, 1, \ldots, 50\}$.
 The observation model is  
 \input{tex-input/owls-example/0021-observation-process.tex}
 
@@ -426,7 +421,7 @@ knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 We empirically validate our methodology and sampler by comparing the melded posterior samples to the original IPM posterior.
 Results are compared to a long run, 6 chains of $2 \times 10^5$ iterations each, of the original IPM code which we treat as the 'truth'.
 The results obtained from our sampler are indistinguishable from the original IPM.
-Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the melded quantities, and we are particular interested in the agreement between $\pd_{\text{meld}}$ $\pd_{\text{IPM}}$.
+Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the melded quantities, and we are particular interested in the agreement between $\pd_{\text{meld}}$ and $\pd_{\text{IPM}}$.
 We further compare the IPM and melded posteriors via the QQ plots in Figure \ref{fig:phi_qq_compare}, and again see near identical results.
 Trace plots, rank plots, and numerical convergence measures [@vehtari_rank-normalization_2020-1] for both stages of the parallel sampling process are presented in Appendix \ref{diagnostics-for-the-owls-example}.
 
