@@ -92,11 +92,6 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 ### Survival analysis with time varying covariates and uncertain event times
 
-#### If we go with the example motivation
-
-- _the numbers in the example need changing to match PF ratios, and we need to justify our use of simulated data / which covariate we are thinking of as longitudinal_.
-- _I also don't actually think threshold regression is very relevant. It is a competitor to PH cox models, not those with time varying covariates, and is other wise much the same as standard survival analysis, using a slightly wider variety of baseline hazards (derived from the stochastic process origins)_.
-
 Our second example considers the time to onset of acute respiratory distress syndrome (ARDS) amongst patients in intensive care units, and factors that influence the onset of ARDS.
 A patient can be said to be experiencing ARDS if the ratio of the partial pressure of arterial blood oxygen (\paoii) to the faction of inspired oxygen (\fioii) is less than 300mmHg [@the_ards_definition_task_force_acute_2012].
 Drawing arterial blood is a painful procedure, and calculating \paoii requires laboratory testing, so patients' \pfratio\ ratios are not always available.
