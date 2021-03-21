@@ -68,7 +68,7 @@ Specifically, in the $\Nm = 3$ case, we address the case in which submodel 1 and
 Two examples serve to illustrate our methodology, which we introduce in the following section.
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
 We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden.
-We can parallelise aspects of the computation across the submodels, possibly using less computationally expensive techniques for some submodels.
+We can parallelise aspects of the computation across the submodels, using less computationally expensive techniques for some submodels.
 Reusing existing software implementations of submodels, and where available subposterior samples, is also possible. 
 Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020].
 
