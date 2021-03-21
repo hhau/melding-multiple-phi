@@ -1,15 +1,16 @@
 \begin{equation}
 \begin{gathered}
-  \pd_{\text{pool}} (\phi_{1 \cap 2}, \phi_{2 \cap 3}) = 
-  g_{\text{lin}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) =
+  \pd_{\text{pool, lin}} (\boldsymbol{\phi}) = 
+  g_{\text{lin}}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}), \pd_{2}(\phi_{2 \cap 3}), \ldots, \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm}) ) =
   \frac{1}{K_{\text{lin}}(\lambda)}
-  \pd_{\text{pool}, 1}(\phi_{1 \cap 2}) 
-  \pd_{\text{pool}, 2}(\phi_{2 \cap 3}), \\
+  \prod_{\modelindex = 1}^{\Nm - 1}
+  \pd_{\text{pool}, \modelindex}(\phi_{\modelindex \cap \modelindex + 1}), \\
   K_{\text{lin}}(\lambda) = 
     \int 
-      \pd_{\text{pool}, 1}(\phi_{1 \cap 2}) 
-      \pd_{\text{pool}, 2}(\phi_{2 \cap 3})
-    \text{d}\phi_{1 \cap 2}, \phi_{2 \cap 3}.
+      \prod_{\modelindex = 1}^{\Nm - 1}
+      \pd_{\text{pool}, \modelindex}(\phi_{\modelindex \cap \modelindex + 1})
+    \text{d}\boldsymbol{\phi},
+  \quad \lambda = (\lambda_{1}, \ldots, \lambda_{\Nm}).
   \label{eqn:silly-linear-overall}
 \end{gathered}
 \end{equation}

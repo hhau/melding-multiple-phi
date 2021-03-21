@@ -1,17 +1,17 @@
 \begin{equation}
 \begin{gathered}
-  \pd_{\text{pool}} (\phi_{1 \cap 2}, \phi_{2 \cap 3}) =
-  g_{\text{log}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) =
+  \pd_{\text{pool, log}}(\boldsymbol{\phi}) =
+  g_{\text{log}}(\pd_{1}(\phi_{1}), \pd_{2}(\phi_{2}), \ldots, \pd_{\Nm}(\phi_{\Nm})) =
   \frac{1}{K_{\text{log}}(\lambda)}
-  \pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}} 
-  \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}}
-  \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}, \\
+  \prod_{\modelindex = 1}^{\Nm}
+    \pd_{\modelindex}(\phi_{\modelindex})^{\lambda_{\modelindex}}, \\
   K_{\text{log}}(\lambda) = 
   \int
-    \pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}} 
-    \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}}
-    \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}
-  \text{d}\phi_{1 \cap 2}, \phi_{2 \cap 3}
+    \prod_{\modelindex = 1}^{\Nm}
+    \pd_{\modelindex}(\phi_{\modelindex})^{\lambda_{\modelindex}}
+  \text{d}\boldsymbol{\phi},
+  \quad
+  \lambda = (\lambda_{1}, \ldots, \lambda_{\Nm}),
   \label{eqn:pooled-prior-overall}
 \end{gathered}
 \end{equation}
