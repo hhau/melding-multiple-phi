@@ -57,6 +57,10 @@ whw_pal_16 <- c(
   "#77a8d2"
 )
 
+sat_multiplier <- 1.25
+more_sat <- diag(c(1, sat_multiplier, 1)) %*% rgb2hsv(col2rgb(whw_pal_16))
+whw_new <- apply(more_sat, 2, function(x) hsv(x[1], x[2], x[3]))
+
 # ggplot saving settings - @mbertolacci
 display_settings <- list(
   full_page_plot_width = 15,
