@@ -1,0 +1,16 @@
+\begin{gather}
+  \pd_{\text{repl}, 1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1}) =
+  \argmin_{\q} \left\{
+    D_{\mathrm{KL}}\left(\q \, \| \, \pd_{1}\right) \mid \q(\phi_{1 \cap 2}) = \pd_{\text{pool}}(\phi_{1 \cap 2}) \text { for all } \phi_{1 \cap 2}
+  \right\} \\
+  \pd_{\text{repl}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2}) =
+  \argmin_{\q} \left\{
+    D_{\mathrm{KL}}\left(\q \, \| \, \pd_{2}\right) \mid \q(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \text{ for all } \phi_{1 \cap 2}, \phi_{2 \cap 3}
+  \right\}
+   \\
+  \pd_{\text{repl}, 3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3}) =
+  \argmin_{\q} \left\{
+    D_{\mathrm{KL}}\left(\q \, \| \, \pd_{3}\right) \mid \q(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{2 \cap 3}) \text { for all } \phi_{2 \cap 3}
+  \right\}
+  \label{eqn:chained-marginal-replacement-kl}
+\end{gather}
