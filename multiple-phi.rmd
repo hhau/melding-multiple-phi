@@ -364,7 +364,7 @@ The latter two assumptions imply that the melded posterior of interest is propor
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
 
 Suppose we can approximate $\pd_{1}$ and $\pd_{3}$ using normal distributions, e.g approximate the subposterior $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ by a normal density with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$ denoting the approximation $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$.
-In general, all $\widehat{\pd}(\cdot \mid \widehat{\mu}, \widehat{\Sigma})$ terms are normal approximations, each with distinct mean and covariance.
+In general, all $\widehat{\pd}(\cdot \mid \widehat{\mu}, \widehat{\Sigma})$ terms are normal approximations, each with distinct means and covariances.
 The approximate melded posterior is thus
 \input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
 where the terms in the denominator of Equation \eqref{eqn:normal-approximation-approximate-target} are approximations to the respective submodel prior marginal distributions.
