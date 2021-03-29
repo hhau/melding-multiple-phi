@@ -8,6 +8,8 @@ library(lubridate)
 library(mgcv)
 library(ggh4x)
 
+  source("scripts/common/plot-settings.R")
+
 mimic <- dbConnect(
   RPostgres::Postgres(),
   dbname = "mimic",
@@ -65,10 +67,16 @@ plot_tbl <- tbl1 %>%
       unit = 'day'
     )
   )
+
+saveRDS(
+  file = "rds/mimic-tests/pf-cohort-and-measurements.rds",
+  object = "plot_tbl"
+)
+
 # I don't understand why there are some patients without measurements for the 
 # first few _days_ in ICU -- something not quite right, but we're joining on
 # icustay_id, so not sure.
-ggplot(plot_tbl, aes(x = time_since_icu_adm, y = pf)) +
+p1 <- ggplot(plot_tbl, aes(x = time_since_icu_adm, y = pf)) +
   geom_point() +
   facet_wrap(vars(icustay_id)) +
   geom_smooth(
@@ -82,6 +90,11 @@ ggplot(plot_tbl, aes(x = time_since_icu_adm, y = pf)) +
     yintercept = 300
   ) +
   xlab('Days since start of this ICU admission')
+
+ggsave(
+  filename = "plots/mimic-tests/all-pf-data.pdf",
+  plot = p1
+)
 
 new_plot_tbl <- plot_tbl %>% 
   select(icustay_id, value = pf, time_since_icu_adm) %>%
@@ -109,25 +122,41 @@ reasonable_ids <- new_plot_tbl %>%
   filter(n > 5) %>% 
   pull(icustay_id)
 
-ggplot(
-  new_plot_tbl %>% 
-    filter(
-      icustay_id %in% reasonable_ids,
-      time_since_icu_adm < 14
-    ), 
-  aes(x = time_since_icu_adm, y = value)
-) +
+reasonable_both_data <- new_plot_tbl %>% 
+  filter(
+    icustay_id %in% reasonable_ids,
+    time_since_icu_adm < 14
+  )
+
+p2 <- ggplot(reasonable_both_data, aes(x = time_since_icu_adm, y = value)) +
   geom_point() +
   facet_nested_wrap(vars(icustay_id, type), scales = 'free_y') +
-  # geom_smooth(
-  #   method = "gam",
-  #   formula = y ~ s(x, bs = "cs"),
-  #   method.args = list(
-  #     family = scat(min.df = 5)
-  #   )
-  # ) +
-  # geom_hline(
-  #   yintercept = 300
-  # ) +
-  xlab('Days since start of this ICU admission')
+  geom_smooth(
+    method = "gam",
+    formula = y ~ s(x, bs = "cs"),
+    method.args = list(
+      family = scat(min.df = 5)
+    )
+  ) +
+  geom_hline(
+    data = tibble(
+      type = 'pf',
+      yintercept = 300
+    ),
+    mapping = aes(
+      yintercept = yintercept
+    )
+  ) +
+  xlab('Days since start of this ICU admission') +
+  theme(
+    strip.text = element_text(margin = margin(t = 2, b = 2, l = 50, r = 50))
+  )
+
+ggsave(
+  filename = "plots/mimic-tests/reasonable-pf-and-fluids-data.pdf",
+  plot = p2,
+  height = 9,
+  width = 15,
+  units = 'in'
+)
 

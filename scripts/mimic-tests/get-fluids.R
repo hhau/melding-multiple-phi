@@ -96,4 +96,7 @@ cumulative_fluids <- relevant_fluid_events %>%
   ) %>%
   select(-c(charttime, intime))
 
-
+saveRDS(
+  file = "rds/mimic-tests/cumulative-fluids-all-patients.rds",
+  object = cumulative_fluids
+)
