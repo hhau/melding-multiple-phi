@@ -1,7 +1,17 @@
 ---
-title: "Chained Markov melding: multiple models with pairwise commonalities"
+title: "Extending Markov melding for chains of submodels"
 author: "Andrew Manderson"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
+abstract: |
+  A challenge for practitioners of Bayesian inference is specifying a model that incorporates multiple relevant, heterogeneous data.
+  It may be easier to instead specify distinct submodels for each source of data, then join the submodels together.
+  We consider chains of submodels, where submodels directly relate to their neighbours via common quantities which may be parameters or deterministic functions thereof.
+  We propose _chained Markov melding_, an extension of Markov melding, to combine chains of submodels into a joint model.
+  Estimating the posterior of a complex joint model is challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
+  We demonstrate our methodology using two examples.
+  The first example considers an ecological integrated population model, where multiple data are required to accurately estimate population immigration and reproduction rates.
+  We also consider a joint longitudinal and time-to-event model with uncertain, submodel-derived event times.
+  Chained Markov melding is a conceptually appealing approach to integrating submodels in these settings.
 fontfamily: tgpagella
 fontsize: 10pt
 papersize: a4
@@ -22,15 +32,12 @@ output:
     keep_tex: true
 ---
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, comment = NA, out.width = "99%", fig.align = "center", auto_pdf = TRUE)
+knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.align = "center")
 ```
-\begin{abstract}
-    - Something about multiple sources of information / data / models
-    - markov melding and it's extensions 
-    - why this work is distinct and why it's interesting
-    - A bit about the examples
-    - it's contribution in a sentence
-\end{abstract}
+<!--  
+  - RSS conference, the abstract can be 300 words.
+-->
+
 
 # Introduction
 
@@ -163,30 +170,30 @@ Define $\pd_{\text{repl}, \modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y
 Each marginally replaced submodel, as defined in Equation \eqref{eqn:chained-marginal-replacement}, minimises the following KL divergence
 \input{tex-input/multiple-phi/0003-chained-marginal-replacement-kl.tex}
 where $\pd_{\text{pool}}(\phi_{\modelindex}) = \int \pd_{\text{pool}}(\boldsymbol{\phi})\text{d}\boldsymbol{\phi}_{-\modelindex}$.
-Note that the converse, that the minimiser of Equation \eqref{eqn:chained-marginal-replacement-kl} must be the marginal replacement proposed in Equation \eqref{eqn:chained-marginal-replacement}, is not necessarily true as there are many choices of $\pd_{\text{pool}}(\boldsymbol{\phi})$ that admit $\pd_{\text{pool}}(\phi_{\modelindex})$ as a marginal.
+We can thus interpret $\pd_{\text{repl}, \modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$ as a minimally modified $\pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$ which admits $\pd_{\text{pool}}(\phi_{\modelindex})$ as a marginal. 
+Note that it is the combination of $\pd_{\text{repl}, \modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$ and $\pd(\boldsymbol{\phi}_{-\modelindex} \mid \phi_{\modelindex})$ that uniquely determine \eqref{eqn:chained-marginal-replacement}.
 
-We form the chained melded model by taking the product of the marginally replaced submodels
+We form the chained melded model by taking the Markov combination of the marginally replaced submodels
 \input{tex-input/multiple-phi/0010-melded-model-cond.tex}
 
 ## Pooled prior
 
 Specifying \eqref{eqn:melded-model-full} requires forming an appropriate joint prior for $\boldsymbol{\phi}$.
-As in the Markov melding setting, we would like to choose the pooling function $g$ to appropriately represent prior knowledge about the common quantities.
-This is not a trivial task given the many possibilities for pooling functions and pooling weights, which we detail in the following sections.
-Hence, it is important to assess the ensuing pooled prior is indeed an appropriate summary of prior knowledge, and we recommend producing prior predictive visualisations of the pooled prior as part of a Bayesian workflow [@gelman_bayesian_2020].
+Like in Markov melding, we choose the pooling function $g$ to appropriately represent prior knowledge about the common quantities.
+This is not trivial given the many possibilities of pooling functions and pooling weights, which we detail in the following sections.
+Hence, it is important to assess the ensuing pooled prior is indeed an appropriate summary of prior knowledge, and we recommend producing prior predictive visualisations of the pooled prior as part of a Bayesian workflow [@gabry_visualization_2019; @gelman_bayesian_2020].
 
-- _I'm not sure I want to keep the following paragraphs / justification, but I feel that we need to justify extending the parameter space of each of the marginal replacements to include parameters that are irrelevant to each submodel._
-
-We have chosen to define $\pd_{\text{pool}}(\boldsymbol{\phi})$ as a general function of all prior marginals, i.e.&nbsp; $\pd_{\text{pool}}(\boldsymbol{\phi}) = g(\pd_{1}(\phi_{1}), \pd_{2}(\phi_{2}), \ldots, \pd_{\modelindex}(\phi_{\modelindex}))$.
-We now motivate this choice by discussing some less desirable alternatives.
-
-One alternative would be to define
+We have chosen to define $\pd_{\text{pool}}(\boldsymbol{\phi})$ as a general function of all prior marginals 
+\input{tex-input/pooled-prior-discussion/0030-pooled-prior-general-def.tex}
+This is because we do not assume any of the components of $\boldsymbol{\phi}$ are are a priori independent.
+If the elements of $\boldsymbol{\phi}$ are independent, then we can form $\pd_{\text{pool}}(\boldsymbol{\phi})$ as the product of $\Nm - 1$ standard pooling functions $h_{\modelindex}$ defined in Section \ref{pooled-prior}
 \input{tex-input/pooled-prior-discussion/0010-bad-alternative-one.tex}
-However, this assumes that all the elements in $\boldsymbol{\phi}$ are a priori independent, which may not be plausible.
-Another option is
-\input{tex-input/pooled-prior-discussion/0020-bad-alternative-two.tex}
-This option requires making $\Nm$ choices of pooling function, _and doesn't let us weight each of the $\pd_{\text{pool}}(\phi_{\modelindex})$ terms, which we might like to do? Not convinced_.
-Thus the only form of $\pd_{\text{pool}}(\boldsymbol{\phi})$ that does not enforce independence between components, and requires only one choice about the form the pooling are the general forms of $g$ which we will now detail. (_circular_).
+
+A useful notion in between \eqref{eqn:pooled-prior-general-def} and \eqref{eqn:bad-alternative-one} is that if $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) = \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1})$ then we can define
+\input{tex-input/pooled-prior-discussion/0031-pooled-prior-split-def.tex}
+without any additional assumptions.
+That is, if any two consecutive components of $\boldsymbol{\phi}$ are independent under the submodel containing both of them, we can divide the pooled prior specification problem into two pooling functions. 
+Because each pooling function considers fewer marginals it is easier to choose pooling weights and assess the suitability of the pooled prior via prior predictive checks.
 
 A complication encountered in the chained melding setting is that standard linear and logarithmic pooling, as defined in Equations \eqref{eqn:orig-pooling-linear} and \eqref{eqn:orig-pooling-logarithmic}, are not immediately applicable when the submodels marginal distributions consider different parameters.
 The interpretation Equation \eqref{eqn:orig-pooling-linear} is particularly unclear.
@@ -208,11 +215,11 @@ Clearly, this assumes a priori independence amongst all components of $\boldsymb
 Extending logarithmic pooling for chained Markov melding is straightforward.
 We define the logarithmically pooled prior to be 
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-for nonnegative weight vector $\lambda$.
+for nonnegative weight vector $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$.
+Note that \eqref{eqn:pooled-prior-overall} does not imply independence between the elements of $\boldsymbol{\phi}$:
+\input{tex-input/multiple-phi/0051-pooled-prior-log-alt-def.tex}
 One advantage of logarithmic pooling is that does not necessarily imply a priori independence between the components of $\boldsymbol{\phi}$.
 When $\lambda_{1} = \lambda_{2} = \ldots = \lambda_{\Nm} = 1$ we obtain the special case of product-of-experts (PoE) pooling [@hinton_training_2002]. 
-
-- _the $\phi_{\modelindex}$ notation obscures the **lack** of independence_.
 
 ### Dictatorial pooling
 
@@ -221,19 +228,25 @@ For example, consider the logarithmically pooled prior of Equation \eqref{eqn:po
 This choice of $\lambda$ results in $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd_{\text{pool}}(\phi_{\modelindex})$, and is implicitly flat for $\boldsymbol{\phi}_{-\modelindex}$.
 It seems reasonable to require any generalisation of dictatorial pooling to result in an explicit prior for all components in $\boldsymbol{\phi}$.
 Such a generalisation should also retain the original intention of dictatorial pooling, i.e.&nbsp;'_the authoritative prior for_ $\phi_{\modelindex}$ _is_ $\pd_{\modelindex}(\phi_{\modelindex})$'.
-However, no choice of $\lambda$ under either pooling method results in such a prior.
 
-The one special case is $\Nm = 3$.
-A definition for dictatorial pooling, which satisfies the aforementioned criteria, is a choice of either of the following $g$
+We propose two possible forms of dictatorial pooling that satisfy the aforementioned criteria.
+The first considers $\pd_{\modelindex}(\phi_{\modelindex})$ as the authoritative prior for $\phi_{\modelindex}= (\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$.
+This results in
+\input{tex-input/pooled-prior-discussion/0040-dictatorial-one-submodel.tex}
+where $g_{1}$ and $g_{2}$ are linear or logarithmic pooling functions as desired.
+In our second proposal we require the prior for each element in $\boldsymbol{\phi}$ to be associated with only one submodel.
+This is equivalent to logarithmic pooling with the following choice of pooling weights
+\input{tex-input/pooled-prior-discussion/0041-dictatorial-def-all.tex}
+<!-- % takes up too much space, but slightly annoying to describe in words.-->
+We set all of the non-zero elements of $\lambda_{\text{dict}}$ to $1$ when using dictatorial pooling.
+
+We will later require the specific forms of dictatorial pooling with $\Nm = 3$ and all non-zero elements of $\lambda = 1$, which are
 \input{tex-input/multiple-phi/0057-dictatorial-pooling.tex}
-as the marginal priors for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are associated with just one submodel each.
-Equation \eqref{eqn:dictatorial-pooling-one} is a result of choosing $\lambda = (1, 0, 0, 1)$ in linear pooling, or $\lambda = (1, 0, 1)$ in logarithmic pooling.
-Equation \eqref{eqn:dictatorial-pooling-two} can only arise by setting $\lambda = (0, 1, 0)$ under logarithmic pooling. 
 
 ### Pooling weights
 
-Choosing values for the pooling weights ($\lambda$) is an important step in specifying $\pd_{\text{pool}}(\boldsymbol{\phi})$.
-Figure \ref{fig:pooled_densities_plot} illustrates how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}$ when pooling normal distributions.
+Choosing values for the pooling weights ($\lambda$) is an important step in specifying the pooled prior.
+Figure \ref{fig:pooled_densities_plot} illustrates how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}(\boldsymbol{\phi})$ when pooling normal distributions.
 Specifically, we consider $\Nm = 3$ submodels and pool
 \input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
 where $\text{N}(\phi; \mu, \sigma^{2})$ is the normal density function with mean $\mu$ and standard deviation $\sigma$.
@@ -260,23 +273,20 @@ By employing a multi-stage strategy we can avoid evaluating all submodels simult
 This is desirable in situations where simultaneously evaluating the submodel terms is computationally infeasible or cumbersome, whilst evaluating the prior marginal distributions is possible and relatively inexpensive.
 The first sampler operates sequentially, accruing and refining samples by considering one submodel at a time.
 The second parallelises parts of the sampling process, and has the potential to produce posterior samples from the melded posterior in less time than the sequential method.
+Both sampler assume $\pd_{\text{pool}}(\boldsymbol{\phi})$ decomposes in sampler-specific ways, which we detail along when introducing each sampler.
 
 We also describe an approximate method, where stage one submodels are summarised by normal distributions for use in stage two.
 
-- The multi-stage samplers assume that the pooled prior decomposes such that $\pd_{\text{pool}}(\boldsymbol{\phi}) = \prod_{\modelindex = 1}^{\Nm}\pd_{\text{pool}, \modelindex}(\phi_{\modelindex})$.
-  - _not quite right, we don't have to assume it (we can ignore the pooled prior until the end), but it is necessary to write a sampler than is actually multi-stage. otherwise, we necessarily have to sample $(\boldsymbol{\phi}, \psi_{1})$ when targeting submodel one in stage one._
-  - _also not right in that what follows we need to assume that $\pd_{\text{pool}, \Nm}$ is a function of all elements of $\boldsymbol{\phi}$._
-  - _I think that in the sequential case we're assuming that a decomposition exists such that $\pd_{\text{pool}}(\boldsymbol{\phi}) = \prod_{\modelindex = 1}^{\Nm}\pd_{\text{pool}, \modelindex}(\boldsymbol{\phi}_{1 : \modelindex})$, where $\boldsymbol{\phi}_{1 : \modelindex} = (\phi_{1}, \ldots, \phi_{\modelindex})$_.
-  - _A different assumption is required for the parallel case._
-
-- Our examples both contain $\Nm = 3$ submodels, so we only present posterior estimation methods for this case. (I can't figure out how to discuss the parallel sampler in the general $\Nm$ model case).
-- The are a number of additional challenges for the general $\Nm$-submodel case. (probably for discussion)
-  - You have to choose an order in which to consider the submodels, for both the sequential and parallel sampler.
-    - greatly complicates the exposition and can impact the final result
-    - complex in the sequential setting (can start with any submodel and incorporate any adjacent submodel until all are considered)
-    - Very complex in the parallel setting (can start with any number of submodels and run arbitrarily ordered sequential samplers therein until some point I can't quite figure out -- I think its the step before any parallel process incorporates on of the models on the extremaof the subchain it is considering, provided that extrema is next to another subchain.) At some point this becomes D&C SMC.
+We only consider the $\Nm = 3$ case, as this setting includes both of our examples.
+Generic methodology for efficiently sampling arbitrary numbers of submodels in parallel is beyond the scope of this work [see @lindsten_divide-and-conquer_2017 for one such methodology].
 
 ## Sequential sampler
+
+The sequential sampler assumes that the pooled prior decomposes such that 
+\input{tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
+This is necessary to avoid sampling all the elements of $\boldsymbol{\phi}$ in the first stage.
+All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as all but $\pd_{3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ can be assumed to be flat.
+Infeasible regions of the posterior can be avoided by including a portion of the pooled prior in the earlier stages, thus reducing the computational cost.
 
 #### Stage one
 
@@ -317,9 +327,12 @@ The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
 
 \input{tex-input/dc-sampler/0001-parallel-dag.tex}
 
-#### Stage one
+The parallel sampler assumes that the pooled prior decomposes such that
+\input{tex-input/dc-sampler/0002-parallel-decomposition.tex}
+All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming  $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are flat priors.
+The benefits for considering fractions of the pooled prior in earlier stages are the same as the sequential sampler.
 
-- _we need a different pooled prior decomposition here_.
+#### Stage one
 
 Two independent, parallel sampling processes occur in stage one.
 Submodels one and three are targeted
