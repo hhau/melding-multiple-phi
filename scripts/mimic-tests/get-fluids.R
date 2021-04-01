@@ -89,6 +89,7 @@ relevant_fluid_events <- bind_rows(
   as_tibble()
   
 cumulative_fluids <- relevant_fluid_events %>%
+  filter(complete.cases(.)) %>% # so many absolutely bizzare missing data
   group_by(icustay_id) %>%
   arrange(icustay_id, time_since_icu_adm) %>%
   mutate(
