@@ -22,7 +22,7 @@ WRITEUP = $(BASENAME).pdf
 
 all : $(WRITEUP)
 
-clean : 
+clean :
 	trash \
 		$(BASENAME).aux \
 		$(BASENAME).out \
@@ -44,7 +44,7 @@ $(POOLING_SCRIPTS)/sub-plot-maker.R : $(POOLING_SCRIPTS)/density-functions.R
 $(POOLED_PLOT_2D) : $(POOLING_SCRIPTS)/plot-pooled-priors.R  $(PLOT_SETTINGS) $(POOLING_SCRIPTS)/sub-plot-maker.R
 	$(RSCRIPT) $<
 
-ALL_PLOTS += $(POOLED_PLOT_2D) 
+ALL_PLOTS += $(POOLED_PLOT_2D)
 
 ################################################################################
 ## Owls example
@@ -62,9 +62,9 @@ ORIG_IPM_SAMPLES = $(OWLS_RDS)/original-ipm-samples.rds
 $(ORIG_IPM_SAMPLES) : $(OWLS_SCRIPTS)/fit-original-ipm.R $(OWLS_SCRIPTS)/models/original-ipm.bug $(OWLS_DATA)
 	$(RSCRIPT) $<
 
-FECUNDITY_SUBPOSTERIOR = $(OWLS_RDS)/fecundity-subposterior-samples.rds 
+FECUNDITY_SUBPOSTERIOR = $(OWLS_RDS)/fecundity-subposterior-samples.rds
 $(FECUNDITY_SUBPOSTERIOR) : $(OWLS_SCRIPTS)/fit-fecundity.R $(OWLS_SCRIPTS)/models/fecundity-model.stan $(FECUNDITY_DATA)
-	$(RSCRIPT) $< 
+	$(RSCRIPT) $<
 
 CAPTURE_RECAPTURE_SUBPOSTERIOR = $(OWLS_RDS)/capture-recapture-subposterior-samples.rds
 $(CAPTURE_RECAPTURE_SUBPOSTERIOR) : $(OWLS_SCRIPTS)/fit-capture-recapture.R $(OWLS_SCRIPTS)/models/capture-recapture.bug $(OWLS_DATA)
@@ -144,7 +144,7 @@ $(SURV_SIMULATION_SETTINGS) : $(SURV_SCRIPTS)/simulation-settings-and-joint-data
 	$(RSCRIPT) $<
 
 SURV_SUBMODEL_ONE_SIMULATED_DATA = $(SURV_RDS)/submodel-one-simulated-data.rds
-$(SURV_SUBMODEL_ONE_SIMULATED_DATA) : $(SURV_SCRIPTS)/simulate-data-submodel-one.R $(SURV_SIMULATION_SETTINGS) 
+$(SURV_SUBMODEL_ONE_SIMULATED_DATA) : $(SURV_SCRIPTS)/simulate-data-submodel-one.R $(SURV_SIMULATION_SETTINGS)
 	$(RSCRIPT) $<
 
 SURV_SUMODEL_ONE = $(SURV_MODELS)/submodel-one.stan
@@ -261,7 +261,7 @@ $(SURV_STAGE_TWO_PSI_1_INDICES)	: $(SURV_STAGE_TWO_PHI_12_SAMPLES)
 $(SURV_STAGE_TWO_PSI_3_INDICES)	: $(SURV_STAGE_TWO_PHI_12_SAMPLES)
 
 ### Stage 2 - diagnostics
-#### This form of target definition + rule will make --dry-run report 
+#### This form of target definition + rule will make --dry-run report
 #### incorrectly, but make will only run the relevant file once.
 SURV_STAGE_TWO_DIAG_PLOTS = $(wildcard plots/surv-example/stage-two*-diags.png)
 $(SURV_STAGE_TWO_DIAG_PLOTS) : $(SURV_SCRIPTS)/diagnose-stage-two-plots.R $(PLOT_SETTINGS) $(SURV_STAGE_TWO_PHI_12_SAMPLES) $(SURV_STAGE_TWO_PHI_23_SAMPLES) $(SURV_STAGE_TWO_PSI_2_SAMPLES)
@@ -269,9 +269,9 @@ $(SURV_STAGE_TWO_DIAG_PLOTS) : $(SURV_SCRIPTS)/diagnose-stage-two-plots.R $(PLOT
 
 ALL_PLOTS += $(SURV_STAGE_TWO_DIAG_PLOTS)
 
-#### The tables will be automatically picked up by TEX_FILES, under the 
+#### The tables will be automatically picked up by TEX_FILES, under the
 #### assumption that they exist first.
-SURV_STAGE_TWO_DIAG_TABLES = $(wildcard tex-input/surv-example/009*-stage-two-**.tex) 
+SURV_STAGE_TWO_DIAG_TABLES = $(wildcard tex-input/surv-example/009*-stage-two-**.tex)
 $(SURV_STAGE_TWO_DIAG_TABLES) : $(SURV_SCRIPTS)/diagnose-stage-two-tables.R $(SURV_STAGE_TWO_PHI_12_SAMPLES) $(SURV_STAGE_TWO_PHI_23_SAMPLES) $(SURV_STAGE_TWO_PSI_2_SAMPLES) $(MCMC_UTIL)
 	$(RSCRIPT) $<
 
@@ -308,7 +308,7 @@ SURV_EXAMPLE_POINT_EST_1_MELD_23_PSI_2_SAMPLES = $(SURV_RDS)/point-est-1-meld-23
 $(SURV_EXAMPLE_POINT_EST_1_MELD_23_PSI_2_SAMPLES) : $(SURV_SCRIPTS)/fit-point-est-1-meld-23.R $(SURV_SUBMODEL_ONE_OUTPUT) $(SURV_EXAMPLE_STAGE_ONE_PHI_12_POST_MEDIAN) $(SURV_SUBMODEL_THREE_OUTPUT) $(SURV_SUBMODEL_TWO_SIMULATED_DATA) $(SURV_STAGE_TWO_STAN_MODELS)
 	$(RSCRIPT) $<
 
-SURV_EXAMPLE_POINT_EST_1_MELD_23_PHI_23_SAMPLES = $(SURV_RDS)/point-est-1-meld-23-phi-23-samples.rds 
+SURV_EXAMPLE_POINT_EST_1_MELD_23_PHI_23_SAMPLES = $(SURV_RDS)/point-est-1-meld-23-phi-23-samples.rds
 $(SURV_EXAMPLE_POINT_EST_1_MELD_23_PHI_23_SAMPLES) : $(SURV_EXAMPLE_POINT_EST_1_MELD_23_PSI_2_SAMPLES)
 
 SURV_EXAMPLE_POINT_EST_1_MELD_23_PSI_3_INDICES = $(SURV_RDS)/point-est-1-meld-23-psi-3-indices.rds
@@ -319,7 +319,7 @@ SURV_EXAMPLE_POINT_EST_3_MELD_12_PSI_2_SAMPLES = $(SURV_RDS)/point-est-3-meld-12
 $(SURV_EXAMPLE_POINT_EST_3_MELD_12_PSI_2_SAMPLES) : $(SURV_SCRIPTS)/fit-point-est-3-meld-12.R $(SURV_SUBMODEL_ONE_OUTPUT) $(SURV_EXAMPLE_STAGE_ONE_PHI_23_POST_MEDIAN) $(SURV_SUBMODEL_TWO_SIMULATED_DATA) $(SURV_STAGE_TWO_STAN_MODELS)
 	$(RSCRIPT) $<
 
-SURV_EXAMPLE_POINT_EST_3_MELD_12_PHI_23_SAMPLES = $(SURV_RDS)/point-est-3-meld-12-phi-23-samples.rds 
+SURV_EXAMPLE_POINT_EST_3_MELD_12_PHI_23_SAMPLES = $(SURV_RDS)/point-est-3-meld-12-phi-23-samples.rds
 $(SURV_EXAMPLE_POINT_EST_3_MELD_12_PHI_23_SAMPLES) : $(SURV_EXAMPLE_POINT_EST_3_MELD_12_PSI_2_SAMPLES)
 
 SURV_EXAMPLE_POINT_EST_3_MELD_12_PSI_3_INDICES = $(SURV_RDS)/point-est-3-meld-12-psi-3-indices.rds
@@ -366,6 +366,139 @@ $(SURV_EXAMPLE_POINT_EST_1_MELD_23_DIAG_TABLE) : $(SURV_EXAMPLE_POINT_EST_DIAG_T
 $(SURV_EXAMPLE_POINT_EST_3_MELD_12_DIAG_TABLE) : $(SURV_EXAMPLE_POINT_EST_DIAG_TABLE)
 $(SURV_EXAMPLE_POINT_EST_1_MELD_23_PHI_23_DIAG_TABLE) : $(SURV_EXAMPLE_POINT_EST_DIAG_TABLE)
 $(SURV_EXAMPLE_POINT_EST_3_MELD_12_PHI_12_DIAG_TABLE) : $(SURV_EXAMPLE_POINT_EST_DIAG_TABLE)
+
+################################################################################
+# MIMIC example
+# bases
+MIMIC_BASENAME = mimic-example
+MIMIC_SCRIPTS = $(SCRIPTS)/$(MIMIC_BASENAME)
+MIMIC_RDS = $(RDS)/$(MIMIC_BASENAME)
+MIMIC_PLOTS = $(PLOTS)/$(MIMIC_BASENAME)
+MIMIC_MODELS = $(MIMIC_SCRIPTS)/models
+MIMIC_TEX = tex-input/$(MIMIC_BASENAME)
+MIMIC_QUERIES = $(MIMIC_SCRIPTS)/queries
+MIMIC_GLOBAL_SETTINGS = $(MIMIC_SCRIPTS)/GLOBALS.R
+
+## fluid queries
+MIMIC_INPUTS_CV = $(MIMIC_QUERIES)/inputs-cv.sql
+MIMIC_INPUTS_MV = $(MIMIC_QUERIES)/inputs-mv.sql
+MIMIC_OUTPUTS = $(MIMIC_QUERIES)/outputs.sql
+
+MIMIC_RAW_FLUIDS = $(MIMIC_RDS)/raw-fluids-all-patients.rds
+$(MIMIC_RAW_FLUIDS) : \
+	$(MIMIC_SCRIPTS)/get-raw-fluids.R \
+	$(MIMIC_INPUTS_CV) \
+	$(MIMIC_INPUTS_MV) \
+	$(MIMIC_OUTPUTS)
+	$(RSCRIPT) $< \
+		--inputs-cv-query $(MIMIC_INPUTS_CV) \
+		--inputs-mv-query $(MIMIC_INPUTS_MV) \
+		--outputs-query $(MIMIC_OUTPUTS) \
+		--output $@
+
+## blood gasses
+MIMIC_PF_COHORT = $(MIMIC_RDS)/pf-cohort-and-data.rds
+MIMIC_PF_QUERY = $(MIMIC_QUERIES)/blood-gasses.sql
+$(MIMIC_PF_COHORT) : \
+	$(MIMIC_SCRIPTS)/get-blood-gasses-and-define-pf-cohort.R \
+	$(MIMIC_PF_QUERY)
+	$(RSCRIPT) $< \
+		--blood-gasses-query $(MIMIC_PF_QUERY) \
+		--output $@
+
+MIMIC_COMBINED_PF_RAW_FLUIDS = $(MIMIC_RDS)/combined-pf-and-raw-fluids.rds
+$(MIMIC_COMBINED_PF_RAW_FLUIDS) : \
+	$(MIMIC_SCRIPTS)/refine-cohort-to-minimum-overlap.R \
+	$(MIMIC_RAW_FLUIDS) \
+	$(MIMIC_PF_COHORT)
+	$(RSCRIPT) $< \
+		--pf-cohort-and-data $(MIMIC_PF_COHORT) \
+		--raw-fluid-data $(MIMIC_RAW_FLUIDS) \
+		--output $@
+
+MIMIC_COMBINED_PF_SUMMARISED_FLUIDS = $(MIMIC_RDS)/combined-pf-and-summarised-fluids.rds
+$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) : \
+	$(MIMIC_SCRIPTS)/refine-cohort-fluid-data.R \
+	$(MIMIC_COMBINED_PF_RAW_FLUIDS) \
+	$(MIMIC_GLOBAL_SETTINGS)
+	$(RSCRIPT) $< \
+		--combined-pf-and-raw-fluid-data $(MIMIC_COMBINED_PF_RAW_FLUIDS) \
+		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
+		--output $@
+
+MIMIC_DATA_PLOT = $(MIMIC_PLOTS)/pf-and-summarised-fluids-data.pdf
+$(MIMIC_DATA_PLOT) : \
+	$(MIMIC_SCRIPTS)/plot-pf-and-summarised-fluid-data.R \
+	$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+	$(PLOT_SETTINGS)
+	$(RSCRIPT) $< \
+		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+		--output $@
+
+MIMIC_PF_SPLINE_MODEL_STAN = $(MIMIC_MODELS)/pf-bspline.stan
+MIMIC_PF_DATA_STAN = $(MIMIC_RDS)/submodel-1-pf-data-stan-format.rds
+MIMIC_PF_DATA_LIST = $(MIMIC_RDS)/submodel-1-pf-data-list-format.rds
+$(MIMIC_PF_DATA_STAN) : \
+	$(MIMIC_SCRIPTS)/prepare-pf-stan-data.R \
+	$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+	$(MIMIC_GLOBAL_SETTINGS)
+	$(RSCRIPT) $< \
+		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
+		--output $@
+
+$(MIMIC_PF_DATA_LIST) : $(MIMIC_PF_DATA_STAN)
+
+MIMIC_PF_MODEL_SAMPLES_LONG = $(MIMIC_RDS)/submodel-1-pf-samples-long.rds
+MIMIC_PF_MODEL_SAMPLES_ARRAY = $(MIMIC_RDS)/submodel-1-pf-samples-array.rds
+MIMIC_PF_MODEL_SAMPLES_PLOT_MU = $(MIMIC_RDS)/submodel-1-pf-samples-plot-mu.rds
+
+$(MIMIC_PF_MODEL_SAMPLES_LONG) : \
+	$(MIMIC_SCRIPTS)/fit-pf-spline-model.R \
+	$(MIMIC_PF_DATA_STAN) \
+	$(MIMIC_PF_SPLINE_MODEL_STAN) \
+	$(MIMIC_GLOBAL_SETTINGS)
+	$(RSCRIPT) $< \
+		--pf-submodel-stan-data $(MIMIC_PF_DATA_STAN) \
+		--pf-submodel-stan-model $(MIMIC_PF_SPLINE_MODEL_STAN) \
+		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
+		--output-array $(MIMIC_PF_MODEL_SAMPLES_ARRAY) \
+		--output-plot-mu $(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) \
+		--output $@
+
+$(MIMIC_PF_MODEL_SAMPLES_ARRAY) : $(MIMIC_PF_MODEL_SAMPLES_LONG)
+$(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) : $(MIMIC_PF_MODEL_SAMPLES_LONG)
+
+MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY = $(MIMIC_RDS)/submodel-1-event-times-samples-array.rds
+MIMIC_PF_EVENT_TIME_SAMPLES_LONG = $(MIMIC_RDS)/submodel-1-event-times-samples-long.rds
+$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) : \
+	$(MIMIC_SCRIPTS)/process-pf-model-for-event-times.R \
+	$(MIMIC_PF_DATA_LIST) \
+	$(MIMIC_PF_MODEL_SAMPLES_LONG)
+	$(RSCRIPT) $< \
+	--pf-data-list-format $(MIMIC_PF_DATA_LIST) \
+	--pf-submodel-samples-long $(MIMIC_PF_MODEL_SAMPLES_LONG) \
+	--output-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
+	--output $@
+
+$(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) : $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY)
+
+MIMIC_PF_FITTED_PLOT = $(MIMIC_PLOTS)/pf-data-and-bspline-fit.png
+$(MIMIC_PF_FITTED_PLOT) : \
+	$(MIMIC_SCRIPTS)/plot-pf-spline-fit.R \
+	$(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) \
+	$(MIMIC_PF_DATA_LIST) \
+	$(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
+	$(MIMIC_GLOBAL_SETTINGS) \
+	$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+	$(PLOT_SETTINGS)
+	$(RSCRIPT) $< \
+		--mimic-pf-plot-mu $(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) \
+		--mimic-pf-data-list $(MIMIC_PF_DATA_LIST) \
+		--mimic-pf-event-time-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
+		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
+		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+		--output $@
 
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input
