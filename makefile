@@ -500,6 +500,22 @@ $(MIMIC_PF_FITTED_PLOT) : \
 		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
 		--output $@
 
+MIMIC_DEMOGRAPHICS_QUERY = $(MIMIC_QUERIES)/demographics.sql
+MIMIC_MEDIAN_FIRST_DAY_LABS_QUERY = $(MIMIC_QUERIES)/median-labs-first-day.sql
+
+MIMIC_BASELINE_DATA = $(MIMIC_RDS)/baseline-covariate-data.rds
+$(MIMIC_BASELINE_DATA) : \
+	$(MIMIC_SCRIPTS)/get-baseline-data.R \
+	$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+	$(MIMIC_DEMOGRAPHICS_QUERY) \
+	$(MIMIC_MEDIAN_FIRST_DAY_LABS_QUERY)
+	$(RSCRIPT) $< \
+		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+		--demographics-query $(MIMIC_DEMOGRAPHICS_QUERY) \
+		--median-labs-query $(MIMIC_MEDIAN_FIRST_DAY_LABS_QUERY) \
+		--output $@
+
+
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input
 $(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS) $(OWLS_DATA) $(BIBLIOGRAPHY)
