@@ -91,7 +91,7 @@ tbl4 <- tbl3 %>%
   filter(
     pf < 600, ## infeasible pf ratios
     time_between_measurements_less_than(time_since_icu_adm, gap_days = 2),
-    first_n_greater_than_k(pf, n = 3, k = 350)
+    first_n_greater_than_k(pf, n = 6, k = 350)
   ) %>%
   count(icustay_id, sort = TRUE) %>%
   ungroup() %>%

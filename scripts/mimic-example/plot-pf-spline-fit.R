@@ -65,13 +65,14 @@ p1 <- ggplot(data = plot_tbl) +
       filter(.variable == "event_time"),
     inherit.aes = FALSE,
     mapping = aes(x = .value),
-    alpha = 0.5
+    alpha = 0.5,
+    colour = highlight_col
   ) +
-  facet_wrap(vars(i), scales = 'free')
+  facet_wrap(vars(i), scales = 'free', ncol = 4)
 
 ggsave(
   filename = args$output,
   plot = p1,
-  width = 30,
-  height = 20
+  width = 12,
+  height = 40
 )

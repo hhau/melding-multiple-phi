@@ -1,0 +1,81 @@
+---
+title: "mimic example summary / questions"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output:
+  html_document:
+    code_folding: hide
+---
+
+<!-- Rscript -e 'rmarkdown::render("rmd-reports/2021-04-14_mimic-example.rmd")'
+ -->
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+# pf cohort definition
+
+- all pf measurements for all icustays in MIMIC (so exclude those icustays with no blood gas measurements).
+- select icustays with
+  - the first 3 pf measurements between 350 and 600,
+  - the times between pf measurements are less than 2 days for the length of the icustay
+  - there are at least 12 valid measurements
+- For the resulting icustays, we get all the fluid data
+- We the filter to icustays where:
+  - The interval between the first and last fluid measurements has at least a 90% overlap with the corresponding pf interval.
+- the fluid data is then summarised into daily net fluid balance, which start at $t = 0$.
+
+# pf data and spline fit
+
+- have now actually fit the spline model (earlier plots were of using using the built ins for mgcv and ggplot), and derived the event times via optimisation.
+- Each icustay has a B-spline with 7 internal knots, equally spaced between the first and last pf observation. The time of the first and last pf observation are boundary knots.
+- There is a random-walk shrinkage penalty to avoid excessive 'wiggliness'.
+- All the pf data are individually standardised for performance. (have to be careful to scale the threshold in the same way for each icustay to get correct event times).
+- I assume the errors come from a $t_{5}$ distribution to handle some of the weirdness / outliers (for example icustay 18).
+
+```{r}
+knitr::include_graphics("../plots/mimic-example/pf-data-and-bspline-fit.png")
+```
+
+- Event times are the points in the rug plot.
+- Many draws from the posterior have multiple roots (and must be located using `rootSolve::uniroot.all`), and I take the minimum of the roots. (e.g icustay 41 has no event times near t = 20).
+- Splines are local polynomials, and so the behaviour at the boundaries is a bit bizarre at times, which leads to unexpected event times near admission times (e.g. individuals 3 and 47).
+  - There might be issues in the future because we have events that occur at time zero.
+- If there is no root, then I assume the fitted curve does not cross the threshold and is thus right censored, and set the censoring time to the last observation time (hard to see, but these are all the rightmost points in the rug plot).
+  - icustay 6 is all right censored.
+- we should really manually filter out icustay 5? Starting with a fitted value below the threshold means we get a lot of right censoring.
+
+# fluids data
+
+- fluids have been summarised by 'net change in fluids over 1 day', which the windows being $..., [-1, 0), [0, 1), [1, 2), ...$ .
+
+```{r}
+knitr::include_graphics("../plots/mimic-example/summarised-fluids-only.png")
+```
+
+- For some individuals, a straight-line fit is plausible, but for many it really isn't. (51 okay, 36 not)
+- These values seem very strange for daily net fluid gain/loss, some of these patients are gaining 30L of fluid, which seems high.
+- I've chosen to put the summarised values at the mean of their times, which means that, usually, the values in the $[0, 1)$ interval are summed, and the result is put at $t \approx 0.5$.
+
+# baseline data
+
+- The baseline covariates are age at admission sex, and median first day lab measurements (a seemingly standard set of measurements, filtered to those measurement which are all present).
+- could filter to more standard measurements to avoid seeming so ad-hoc.
+
+```{r}
+knitr::include_graphics('../plots/mimic-example/baseline-covariates.png')
+```
+
+# to do
+
+- Other possible summary times for the fluids data? If we take wider windows over which we aggregate then we end up with very few measurements per person.
+- Now we have all the relevant data, I can start to meld this all together, and remake all our previous comparisons.
+- start writing the details about what exactly the models are and the cohort definition strategy.

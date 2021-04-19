@@ -37,6 +37,10 @@ make_window_groups <- function(
     sort_unique() %>%
     subset(., between(., min_t, max_t))
 
+  if (return_boundaries) {
+    return(sorted_group_boundaries)
+  }
+
   n_boundaries <- length(sorted_group_boundaries)
   grouping_list <- list()
 
@@ -51,11 +55,7 @@ make_window_groups <- function(
     simplify2array() %>%
     apply(1, min)
 
-  if (return_boundaries) {
-    return(sorted_group_boundaries)
-  } else {
-    return(res)
-  }
+  return(res)
 
 }
 
@@ -77,17 +77,10 @@ summarised_fluid_data <- raw_fluid_data %>%
   select(-grp) %>%
   mutate(value_type = 'fluids')
 
-final_data <- bind_rows(pf_data, summarised_fluid_data)
+final_data <- bind_rows(pf_data, summarised_fluid_data) %>%
+  select(-c(amountuom, label))
 
 saveRDS(
   file = args$output,
   object = final_data
 )
-
-# library(ggplot2)
-# ggplot(summarised_fluid_data, aes(x = time_since_icu_adm, y = value)) +
-#   geom_point() +
-#   # any model requires more than two data points, something to keep in mind when
-#   # choosing the window width.
-#   stat_smooth(method = MASS::rlm) +
-#   facet_wrap(vars(icustay_id), scales = 'free')

@@ -75,7 +75,10 @@ res <- mclapply(1 : n_chain, mc.cores = n_chain, function(chain_id) {
       # need to do some error handling for no root splines
       res_rootsolve <- rootSolve::uniroot.all(
         f = root_f,
-        interval = boundary_knots
+        interval = c(
+          max(boundary_knots[1], 0),
+          boundary_knots[2]
+        )
       )
 
       if (length(res_rootsolve) == 0) {

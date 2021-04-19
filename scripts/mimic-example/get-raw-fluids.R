@@ -78,10 +78,10 @@ outputs <- dbGetQuery(
   statement = read_file(args$outputs_query)
 ) %>%
   mutate(
-    origin = 'outputs',
     value = -1 * value # make the outputs negative, so that we can average them all.
   ) %>%
   filter(value != 0) %>%
+  rename(origin = orig_table) %>%
   as_tibble()
 
 # Set time origin as admission time, then we can do a window from there.
