@@ -1,19 +1,16 @@
 data {
   int <lower = 1> n_icu_stays;
   int <lower = 1> n_total_obs;
+  int <lower = 1> n_plot_points;
   int <lower = 1, upper = n_total_obs + 1> subset_vector [n_icu_stays + 1];
   vector [n_total_obs] y_vec;
   vector [n_total_obs] x_vec;
   vector [n_icu_stays] breakpoint_lower;
   vector [n_icu_stays] breakpoint_upper;
-  /*vector [n_icu_stays] intercept_means;
-  vector [n_icu_stays] intercept_sds;*/
-
-  real <lower = 0> midpoint_prior_sd;
+  matrix [n_icu_stays, n_plot_points] x_mat_plot;
 }
 
 transformed data {
-  vector [n_icu_stays] midpoint = (breakpoint_upper + breakpoint_lower) / 2.0;
   vector [n_icu_stays] widths = breakpoint_upper - breakpoint_lower;
 }
 
@@ -52,8 +49,27 @@ model {
     target += normal_lpdf(beta_slope[ii] | 5000, 1000);
   }
 
+
   target += normal_lpdf(y_vec | mu, y_sigma);
-  target += normal_lpdf(beta_zero | 7000, 1000);
-  target += beta_lpdf(breakpoint_raw | 8.0, 8.0);
-  target += normal_lpdf(y_sigma | 0.0, 250.0);
+  // target += normal_lpdf(beta_zero | 7000, 1000);
+  target += beta_lpdf(breakpoint_raw | 5.0, 5.0);
+  target += normal_lpdf(y_sigma | 0.0, 500.0);
+}
+
+generated quantities {
+  matrix [n_icu_stays, n_plot_points] plot_mu;
+
+  for (ii in 1 : n_icu_stays) {
+    for (jj in 1 : n_plot_points) {
+      real temp_mu;
+
+      if (x_mat_plot[ii, jj] < breakpoint[ii]) {
+        temp_mu = beta_zero[ii] + beta_slope[ii][1] * (x_mat_plot[ii, jj] - breakpoint[ii]);
+      } else {
+        temp_mu = beta_zero[ii] + beta_slope[ii][2] * (x_mat_plot[ii, jj] - breakpoint[ii]);
+      }
+
+      plot_mu[ii, jj] = temp_mu;
+    }
+  }
 }

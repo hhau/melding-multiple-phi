@@ -1,0 +1,162 @@
+---
+title: "more on the fluids model and on the maths of the hazard"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output:
+  html_document:
+    code_folding: hide
+---
+
+<!-- Rscript -e 'rmarkdown::render("rmd-reports/2021-04-21_fluids-and-hazard-maths.rmd")'
+ -->
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+\DeclareMathOperator{\sgn}{sgn}
+
+# Fluid model
+
+- fixed outliers (my error, wrong filter to wrong database, and the 'unit' unit)
+- piecewise model with single breakpoint fit
+    - requires careful initialisation (thought this is more to do with choosing to work in days and mL, weeks and L would have fewer initialisation problems)
+    - requires an opinionated parameterisation and prior for the breakpoint. A flat prior on the breakpoint results in poor MCMC behaviour when the data do no suggest the existence of a breakpoint. Instead, when suggest that the prior should default to placing the breakpoint in the 'middle', and letting $\eta^{b}_{i} = \eta^{a}_{i}$ (eta-before-breakpoint = eta-after-breakpoint) in the posterior. Otherwise, the breakpoint gets stuck at the boundary, and one of $\eta^{b}_{i},$ or $\eta^{a}_{i}$ is unidentifiable.
+    - [two breakpoints is possible](https://janhove.github.io/analysis/2018/07/27/bayesian-two-breakpoint-model), but I think unnecessary?
+
+- At the moment the noise $\sigma^{2}$ is common to all patients, but the varying scales of fluid intake between patients make this a little implausible. Not very important.
+
+# Combined fluid and PF plot
+
+- first plot only shows some cases
+
+```{r fluid_plot_small}
+knitr::include_graphics('../plots/mimic-example/combined-pf-fluid-fit-plot-small.png')
+```
+<details><summary><b>Show all plots</b></summary>
+```{r fluid_plot}
+knitr::include_graphics('../plots/mimic-example/combined-pf-fluid-fit-plot.png')
+```
+</details>
+
+# Hazard Maths
+
+- Wed 21 Apr 18:47:06 2021 -- I've just remembered that we want to use the slope, not the fitted value at time $t$. The following assumes that we want the value as before. Using the slope in the hazard leads to an integral that can be done analytically.
+- Survival probability derivation needs updating to work with the breakpoints
+- Trick to stably evaluate the integral needs to be made explicit.
+
+## With the breakpoint
+
+The hazard at time $t$ for individual $i$ with breakpoint $k_{i}$
+
+\begin{gather}
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp\{\boldsymbol{x}_{i}\theta + \alpha m_{i}(t)\} \\
+  m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t < k_{i}\}} + \eta^{a}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t \geq k_{i}\}},
+\end{gather}
+
+and the survival probability is
+
+\begin{equation}
+  S_{i}(t) = \exp\left\{- \int_{0}^{t} h_{i}(u) \text{d}u\right\}.
+\end{equation}
+
+Note that $\eta_{0, i}$ is the value of $m_{i}(t)$ at the breakpoint, not when $t = 0$.
+Thus, it has a different interpretation, and hence prior, compared to a standard intercept or random effect term.
+
+Now,
+
+\begin{align}
+  \int_{0}^{t} h_{i}(u) \text{d}u
+    &= \int_{0}^{t} \gamma u^{\gamma - 1} \exp\{\boldsymbol{x}_{i} \theta + \alpha m_{i}(u)\} \text{d}u \\
+    &= \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i}\} \int_{0}^{t} u^{\gamma - 1} \exp\left\{\alpha \eta^{b}_{1, i} (u - k_{i})\boldsymbol{1}_{\{u < k_{i}\}} + \alpha \eta^{a}_{1, i} (u - k_{i}) \boldsymbol{1}_{\{u \geq k_{i}\}}\right\} \text{d}u.
+\end{align}
+
+If $t \geq k_{i}$,
+
+\begin{align}
+  \int_{0}^{t} h_{i}(u) \text{d}u &= \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i}\} \left[
+    \int_{0}^{k_{i}} u^{\gamma - 1} \exp\left\{\alpha \eta^{b}_{1, i} (u - k_{i}) \right\} \text{d}u +
+    \int_{k_{i}}^{t} u^{\gamma - 1} \exp\left\{\alpha \eta^{a}_{1, i} (u - k_{i}) \right\} \text{d}u
+  \right] \\
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i}\} \left[
+    \exp\left\{-\alpha \eta^{b}_{1, i} k_{i} \right\} \int_{0}^{k_{i}} u^{\gamma - 1} \exp\left\{\alpha \eta^{b}_{1, i} u \right\} \text{d}u +
+    \exp\left\{-\alpha \eta^{a}_{1, i} k_{i} \right\} \int_{k_{i}}^{t} u^{\gamma - 1} \exp\left\{\alpha \eta^{a}_{1, i} u \right\} \text{d}u
+  \right],
+\end{align}
+
+otherwise (if $t < k_{i}$)
+
+\begin{align}
+  \int_{0}^{t} h_{i}(u) \text{d}u &= \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i}\} \left[
+    \int_{0}^{t} u^{\gamma - 1} \exp\left\{\alpha \eta^{b}_{1, i} (u - k_{i}) \right\} \text{d}u
+  \right] \\
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i}\} \left[
+    \exp\left\{-\alpha \eta^{b}_{1, i} k_{i} \right\} \int_{0}^{t} u^{\gamma - 1} \exp\left\{\alpha \eta^{b}_{1, i} u \right\} \text{d}u
+  \right] \\
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i} -\alpha \eta^{b}_{1, i} k_{i}\} \left[
+    \int_{0}^{t} u^{\gamma - 1} \exp\left\{\alpha \eta^{b}_{1, i} u \right\} \text{d}u
+  \right].
+\end{align}
+
+The integrals are the same as the linear function case, but with slightly different bounds when $t \geq k_{i}$.
+
+## Stable evaluation of the integral
+
+Consider
+
+\begin{equation}
+  I(\gamma, \alpha, \eta; l, t) = \int_{l}^{t} u^{\gamma - 1} \exp\{\alpha \eta u\} \text{d}u
+\end{equation}
+
+with $\gamma > 0$, $0 \leq l < t$, and $\alpha, \eta \in \mathbb{R}$.
+For $l = 0$ and values of $\gamma < 1$, the integrand has an asymptote at $u = 0$.
+For a given $t$, there are values of $\alpha \eta$ sufficiently large that either the integrand or result overflows.
+Both cases are challenging for numerical integrators.
+We can remove the asymptote at $l = u = 0$ by observing the following
+
+\begin{align}
+  I(\gamma, \alpha, \eta; l, t) &= \int_{l}^{t} u^{\gamma - 1} \exp\{\alpha \eta u\} \text{d}u
+    = \left[\frac{u^{\gamma}}{\gamma} \exp\{\alpha \eta u\} \right]_{l}^{t} -
+      \int_{l}^{t} \frac{u^{\gamma}}{\gamma} \alpha \eta \exp\{\alpha \eta u\} \text{d}u \\
+    &= \frac{t^{\gamma}}{\gamma} \exp\{\alpha \eta t\} - \frac{l^{\gamma}}{\gamma} \exp\{\alpha \eta l\} - \int_{l}^{t} \frac{\alpha\eta}{\gamma} u^{\gamma} \exp\{\alpha \eta u\} \text{d}u,
+\end{align}
+
+noting that $I_{2}(\gamma, \alpha, \eta; l, t) = \int_{l}^{t} \frac{\alpha\eta}{\gamma} u^{\gamma} \exp\{\alpha \eta u\} \text{d}u$ is $0$ when $l = u = 0$.
+Define $W(t) = \exp\{\gamma\log(t) + \alpha\eta t - \log(\gamma)\}$.
+Note that the first two terms in the above equation are equal to $W(\gamma, \alpha, \eta; t) - W(\gamma, \alpha, \eta; l)$, and that $W(\gamma, \alpha, \eta; 0) = 0$.
+We opt to evaluate $I_{2}$ using
+
+\begin{equation}
+  I_{2}(\gamma, \alpha, \eta; l, t) = \sgn(\alpha)\eta\int_{l}^{t}\exp\left\{\log(|\alpha|) - \log(\gamma) + \gamma\log(u) + \alpha\eta u \right\} \text{d}u
+\end{equation}
+
+as our choice of units (mL) means we expect $\eta$ to be quite large, and $\alpha$ to be small.
+This minimises the possibility of the result of the integral overflowing.
+Hence, $I(\gamma, \alpha, \eta; l, t) = W(\gamma, \alpha, \eta; t) - W(\gamma, \alpha, \eta; l) - I_{2}(\gamma, \alpha, \eta; l, t)$.
+
+## Putting it all together
+
+We now combine the numerically stable form of the integral with the result from before.
+When $t \geq k_{i}$
+
+\begin{equation}
+  \int_{0}^{t} h_{i}(u) \text{d}u = \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i}\} \left[
+    \exp\left\{-\alpha \eta^{b}_{1, i} k_{i} \right\} I(\gamma, \alpha, \eta^{b}_{1, i}; 0, k_{i}) +
+    \exp\left\{-\alpha \eta^{a}_{1, i} k_{i} \right\} I(\gamma, \alpha, \eta^{a}_{1, i}; k_{i}, t)
+  \right],
+\end{equation}
+
+and when $t < k_{i}$
+
+\begin{equation}
+  \int_{0}^{t} h_{i}(u) \text{d}u = \gamma \exp\{\boldsymbol{x}_{i}\theta + \alpha\eta_{0, i} -\alpha \eta^{b}_{1, i} k_{i}\} \left[
+    I(\gamma, \alpha, \eta^{b}_{1, i}; 0, t)
+  \right]
+\end{equation}

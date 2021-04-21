@@ -484,6 +484,7 @@ $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) : \
 $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) : $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY)
 
 MIMIC_PF_FITTED_PLOT = $(MIMIC_PLOTS)/pf-data-and-bspline-fit.png
+MIMIC_PF_FITTED_PLOT_TBL = $(MIMIC_RDS)/pf-data-and-bspline-plot-tbl.rds
 $(MIMIC_PF_FITTED_PLOT) : \
 	$(MIMIC_SCRIPTS)/plot-pf-spline-fit.R \
 	$(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) \
@@ -498,7 +499,10 @@ $(MIMIC_PF_FITTED_PLOT) : \
 		--mimic-pf-event-time-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
 		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
 		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+		--output-plot-tbl $(MIMIC_PF_FITTED_PLOT_TBL) \
 		--output $@
+
+$(MIMIC_PF_FITTED_PLOT_TBL) : $(MIMIC_PF_FITTED_PLOT)
 
 MIMIC_DEMOGRAPHICS_QUERY = $(MIMIC_QUERIES)/demographics.sql
 MIMIC_MEDIAN_FIRST_DAY_LABS_QUERY = $(MIMIC_QUERIES)/median-labs-first-day.sql
@@ -515,6 +519,58 @@ $(MIMIC_BASELINE_DATA) : \
 		--median-labs-query $(MIMIC_MEDIAN_FIRST_DAY_LABS_QUERY) \
 		--output $@
 
+MIMIC_CUMULATIVE_FLUID_DATA = $(MIMIC_RDS)/cumulative-summarised-fluid-data.rds
+MIMIC_FLUID_DATA_STAN = $(MIMIC_RDS)/submodel-3-fluid-data-stan-format.rds
+$(MIMIC_FLUID_DATA_STAN) : \
+	$(MIMIC_SCRIPTS)/prepare-fluid-stan-data.R \
+	$(MIMIC_GLOBAL_SETTINGS) \
+	$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS)
+	$(RSCRIPT) $< \
+		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
+		--output-cumulative-fluid $(MIMIC_CUMULATIVE_FLUID_DATA) \
+		--output $@
+
+$(MIMIC_CUMULATIVE_FLUID_DATA) : $(MIMIC_FLUID_DATA_STAN)
+
+MIMIC_FLUID_MODEL_SAMPLES_LONG = $(MIMIC_RDS)/submodel-3-fluid-samples-long.rds
+MIMIC_FLUID_MODEL_SAMPLES_ARRAY = $(MIMIC_RDS)/submodel-3-fluid-samples-array.rds
+MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU = $(MIMIC_RDS)/submodel-3-fluid-samples-plot-mu.rds
+MIMIC_FLUID_PIECEWISE_MODEL_STAN = $(MIMIC_MODELS)/fluid-piecewise-linear.stan
+
+$(MIMIC_FLUID_MODEL_SAMPLES_LONG) : \
+	$(MIMIC_SCRIPTS)/fit-fluid-piecewise-model.R \
+	$(MIMIC_FLUID_DATA_STAN) \
+	$(MIMIC_FLUID_PIECEWISE_MODEL_STAN) \
+	$(MIMIC_GLOBAL_SETTINGS)
+	$(RSCRIPT) $< \
+		--fluid-submodel-stan-data $(MIMIC_FLUID_DATA_STAN) \
+		--fluid-piecewise-stan-model $(MIMIC_FLUID_PIECEWISE_MODEL_STAN) \
+		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
+		--output-array $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
+		--output-plot-mu $(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) \
+		--output $@
+
+$(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) : $(MIMIC_FLUID_MODEL_SAMPLES_LONG)
+$(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) : $(MIMIC_FLUID_MODEL_SAMPLES_LONG)
+
+MIMIC_FLUID_FITTED_PLOT = $(MIMIC_PLOTS)/fluid-data-and-piecewise-fit.png
+MIMIC_FLUID_FITTED_PLOT_MU_TBL = $(MIMIC_RDS)/fluid-data-piecewise-plot-mu-tbl.rds
+$(MIMIC_FLUID_FITTED_PLOT) : \
+	$(MIMIC_SCRIPTS)/plot-fluid-piecewise-fit.R \
+	$(MIMIC_GLOBAL_SETTINGS) \
+	$(MIMIC_CUMULATIVE_FLUID_DATA) \
+	$(MIMIC_FLUID_DATA_STAN) \
+	$(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU)
+	$(RSCRIPT) $< \
+		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
+		--cumulative-fluid-data $(MIMIC_CUMULATIVE_FLUID_DATA) \
+		--fluid-stan-data $(MIMIC_FLUID_DATA_STAN) \
+		--fluid-plot-mu $(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) \
+		--output-plot-tbl $(MIMIC_FLUID_FITTED_PLOT_MU_TBL) \
+		--output $@
+
+$(MIMIC_FLUID_FITTED_PLOT_MU_TBL) : $(MIMIC_FLUID_FITTED_PLOT)
 
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input

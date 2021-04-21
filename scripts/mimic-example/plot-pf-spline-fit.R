@@ -17,6 +17,7 @@ parser$add_argument("--mimic-pf-data-list")
 parser$add_argument("--mimic-pf-event-time-long")
 parser$add_argument("--mimic-globals")
 parser$add_argument("--combined-pf-and-summarised-fluid-data")
+parser$add_argument("--output-plot-tbl")
 args <- parser$parse_args()
 
 source(args$mimic_globals)
@@ -75,4 +76,9 @@ ggsave(
   plot = p1,
   width = 12,
   height = 40
+)
+
+saveRDS(
+  file = args$output_plot_tbl,
+  object = plot_tbl
 )

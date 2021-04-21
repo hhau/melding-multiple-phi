@@ -7,7 +7,7 @@ model {
  #*****************************************
   ## ------- \phi_{1 \cap 2}
   # Juvenile survival rate
-  logit(phij) <- v[1]          
+  logit(phij) <- v[1]
 
   ## ------- \phi_{1 \cap 2}
   # Adult survival
@@ -21,27 +21,27 @@ model {
   # 5.2 Define the priors for the parameters
   #*******************************************
   for (i in 3 : 6) {
-    v[i] ~ dnorm(0, 0.0001) T(-10, 10)
-  } 
-  # Wed 11 Mar 14:54:05 2020 
+    v[i] ~ dnorm(0, 0.5) T(-10, 10)
+  }
+  # Wed 11 Mar 14:54:05 2020
   # change to constant rho/fec
   ## ------- \phi_{2 \cap 3}
   # fec ~ dunif(0, 10)
 
-  v[1] <- all_phi[1] 
-  v[2] <- all_phi[2] 
+  v[1] <- all_phi[1]
+  v[2] <- all_phi[2]
   fec <- abs(all_phi[3])
   all_phi[1 : 3] ~ dmnorm(n_approx_mean[1 : 3], n_approx_prec[1 : 3, 1 : 3])
-  
+
   # Wed  4 Mar 16:57:25 2020
   # Doing it properly, and aligning with Finke:
   ## ------- \psi_{2}^{lat}
   for (ii in 1 : 50) {
     flat_p[ii] <- 1 / 50
-  } 
+  }
   N1[1] ~ dcat(flat_p[1 : 50])
-  NadSurv[1] ~ dcat(flat_p[1 : 50]) 
-  Nadimm[1] ~ dcat(flat_p[1 : 50])  
+  NadSurv[1] ~ dcat(flat_p[1 : 50])
+  Nadimm[1] ~ dcat(flat_p[1 : 50])
 
   #***********************************************
   # 5.4.2 Likelihood for population survey data
@@ -66,5 +66,5 @@ model {
     Ntot[tt] <- NadSurv[tt] + Nadimm[tt] + N1[tt]
     popcount[tt] ~ dpois(Ntot[tt])
   }
-              
+
 }

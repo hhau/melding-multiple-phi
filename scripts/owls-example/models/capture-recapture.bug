@@ -25,109 +25,109 @@ model {
   # 5.2 Define the priors for the parameters
   #*******************************************
   for (i in 1 : 6) {
-    v[i] ~ dnorm(0, 0.0001) T(-10, 10)
-  } 
+    v[i] ~ dnorm(0, 0.5) T(-10, 10)
+  }
 
   for (i in 1 : (ti - 1)) {
     bp[i] ~ dnorm(0, 0.0001) T(-10, 10)
   }
-      
+
   #*****************************************
   # 5.4 The Integrated population model
-  #******************************************       
+  #******************************************
   #***********************************************************
-  # 5.4.3 Likelihood for capture-recapture data:CJS models (2 age classes)          
+  # 5.4.3 Likelihood for capture-recapture data:CJS models (2 age classes)
   #***********************************************************
   #***********************************
   # Female capture recapture data
   #***********************************
   for (i in 1 : (2 * (ti - 1))) {
     m[i, 1 : ti] ~ dmulti(pr[i, 1 : ti], r[i])
-  } 
+  }
 
   # m-array cell probabilities for juveniles
   for (i in 1 : (ti - 1)) {
     q[i] <- 1 - p[i]
-    
+
     # Main diagonal
     pr[i, i]<- phij * p[i]
-    
+
     # above main diagonal
     for (j in (i + 1) : (ti - 1)) {
       pr[i, j] <- phij * phia * prod(q[i : (j - 1)]) * p[j]
-    } 
+    }
 
     # Below main diagonal
     for (j in 1 : (i - 1)) {
       pr[i, j] <- 0
-    } 
-    
+    }
+
     # Last column
     pr[i, ti] <- 1 - sum(pr[i, 1 : (ti - 1)])
-  } 
-  
+  }
+
   # m-array cell probabilities for adults
   for (i in 1 : (ti - 1)) {
     # main diagonal
     pr[i + ti - 1, i] <- phia * p[i]
-    
+
     # above main diagonal
     for (j in (i + 1) : (ti - 1)) {
       pr[i + ti - 1, j] <- phia * prod(q[i : (j - 1)]) * p[j]
-    } 
-    
+    }
+
     # below main diagonal
     for (j in 1 : (i - 1)) {
       pr[i + ti - 1, j] <- 0
-    } 
+    }
 
     # last column
     pr[i + ti - 1, ti] <- 1 - sum(pr[i + ti - 1, 1 : (ti - 1)])
-  } 
+  }
   #*********************************
   # Male capture recapture data
   #*********************************
   for (i in 1 : (2 * (ti - 1))) {
     mM[i, 1 : ti] ~ dmulti(prM[i, 1 : ti], rM[i])
-  } 
-  
+  }
+
   # m-array cell probabilities for juveniles
   for (i in 1 : (ti - 1)) {
     qM[i] <- 1 - pM[i]
-    
+
     # main diagonal
     prM[i, i] <- phijM * pM[i]
-    
+
     # above main diagonal
     for (j in (i + 1) : (ti - 1)) {
       prM[i, j] <- phijM * phiaM * prod(qM[i : (j - 1)]) * pM[j]
-    } 
-    
+    }
+
     # below main diagonal
     for (j in 1 : (i - 1)) {
       prM[i, j] <- 0
-    } 
-    
+    }
+
     # last column
     prM[i, ti] <- 1 - sum(prM[i, 1 : (ti - 1)])
-  } 
-  
+  }
+
   # m-array cell probabilities for adults
   for (i in 1 : (ti - 1)) {
     # main diagonal
     prM[i + ti - 1, i] <- phiaM * pM[i]
-    
+
     # above main diagonal
     for (j in (i + 1) : (ti - 1)) {
       prM[i + ti - 1, j] <- phiaM * prod(qM[i : (j - 1)]) * pM[j]
-    } 
+    }
 
     # below main diagonal
     for (j in 1 : (i - 1)) {
       prM[i + ti - 1, j] <- 0
-    } 
-    
+    }
+
     # last column
     prM[i + ti - 1, ti] <- 1 - sum(prM[i + ti - 1, 1 : (ti - 1)])
-  } 
+  }
 }
