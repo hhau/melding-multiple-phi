@@ -160,3 +160,86 @@ and when $t < k_{i}$
     I(\gamma, \alpha, \eta^{b}_{1, i}; 0, t)
   \right]
 \end{equation}
+
+## When we're only interested in the slope
+
+If the hazard instead depends on the slope of the fitted value at time $t$
+
+\begin{gather}
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp\left\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial t} m_{i}(t)\right\} \\
+  m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t < k_{i}\}} + \eta^{a}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t \geq k_{i}\}} \\
+  \frac{\partial}{\partial t} m_{i}(t) = \eta^{b}_{1, i}\boldsymbol{1}_{\{t < k_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{t \geq k_{i}\}}
+\end{gather}
+
+Then, for $t > k_{i}$
+
+\begin{align}
+  \int_{0}^{t} h_{i}(u) \text{d}u
+  &= \int_{0}^{t}
+    \gamma u^{\gamma - 1}
+    \exp\left\{
+      \boldsymbol{x}_{i}\theta +
+      \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < k_{i}\}} +
+      \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq k_{i}\}}
+    \right\}
+    \text{d}u \\
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+    \int_{0}^{t}
+      u^{\gamma - 1}
+      \exp\left\{
+        \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < k_{i}\}} +
+        \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq k_{i}\}}
+      \right\}
+    \text{d}u \\
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \int_{0}^{k_{i}}
+        u^{\gamma - 1}
+        \exp\left\{
+          \alpha \eta^{b}_{1, i}
+        \right\}
+      \text{d}u
+      +
+      \int_{k_{i}}^{t}
+        u^{\gamma - 1}
+        \exp\left\{
+          \alpha \eta^{a}_{1, i}
+        \right\}
+      \text{d}u
+    \right] \\
+  &= \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \exp\left\{
+        \alpha \eta^{b}_{1, i}
+      \right\}
+      k_{i}^{\gamma}
+      +
+      \exp\left\{
+        \alpha \eta^{a}_{1, i}
+      \right\}
+      (t^{\gamma} - k_{i}^{\gamma})
+    \right]
+\end{align}
+
+and for $t < k_{i}$:
+
+\begin{align}
+  \int_{0}^{t} h_{i}(u) \text{d}u
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \int_{0}^{t}
+        u^{\gamma - 1}
+        \exp\left\{
+          \alpha \eta^{b}_{1, i}
+        \right\}
+      \text{d}u
+    \right] \\
+  &= \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \exp\left\{
+        \alpha \eta^{b}_{1, i}
+      \right\}
+      t_{i}^{\gamma}
+    \right] \\
+  &= t_{i}^{\gamma} \exp\{\boldsymbol{x}_{i}\theta + \alpha \eta^{b}_{1, i}\}
+\end{align}

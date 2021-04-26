@@ -1,0 +1,68 @@
+---
+title: "Priors for the link parameters in the survival example"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output:
+  html_document:
+    code_folding: hide
+---
+
+<!--
+Rscript -e 'rmarkdown::render("rmd-reports/2021-04-23_survival-example-priors.rmd")'
+-->
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+# General question about priors for breakpoints
+
+- In Mike's paper they do this for time series, but they think about segment lengths and put a uniform prior over the number of point in a segment, with a minimum segment length. This is similar to dirichlet prior with a minimum on each of the values? I don't know how you'd enforce this or what this distribution / constraint implies.
+- Better to take $K = K_{\text{raw}}L$, where $K$ is the breakpoint, $L$ is the (stochastic) length of stay, and $K_{\text{raw}}$ is the proportion of the stay that we expect the breakpoint to occur at. This depends on the number of breakpoints we impose on the model.
+
+# Issues with the priors
+
+- what are we taking as fixed
+- Are the priors for 'a' subject (generalised, unknown individual from the population), or for 'this' subject (specific individual in our data set who we have observed and know certain things about (covariates / observation schedule)).
+- According to @ibrahim_bayesian_2001 the standard assumption is "_... assume that censoring is noninformative in the sense that inferences do not depend on the censoring process_" and that each individual has "_a fixed censoring time $c_{i}$._" This is sufficiently vague as to be unhelpful.
+- More specific guidance is given in @leung_censoring_1997,
+- The standard censoring design is that each individual is under observation for some specified, _fixed_ time period $C_{i}$. This results in the standard likelihood for right censored data.
+- When both end-of-study (administrative censoring) and loss-to-follow up (competing risk) are involved, the standard censored likelihood is not applicable.
+- We must instead consider the joint distribution of both event time and censoring time $f(T_{i}, C_{i})$. However, because we only observe $y_{i} = \min\{T_{i}, C_{i}\}$, the joint distribution is unidentifiable from such data.
+- This is resolve by assuming that:
+  1. we are interested only in the distribution of the event times, or the effect of some covariates on the distribution of event times.
+  2. that the censoring times are independent of the event times (this is sometimes called random censoring according to @leung_censoring_1997)
+- Independent censoring is often too strong an assumption, but @lagakos_general_1979 describes two settings where the censoring is still ignorable, which @leung_censoring_1997 summarise as
+  - _**Nonprognostic censoring**: A censored observation at time $C_{i}$ indicates that the survival time exceeds $C_{i}$ and carries no prognostic information about subsequent survival times for either the same individual or other individuals_.
+    - I think our censoring times are non-prognostic, given out constraints on the first 5 data points (that they must be above the threshold), the censoring times are the discharge times, which do not tell us anything about the prognositic status of the patients? Unless short stays are associated with poor outcomes?
+  - _**Noninformative censoring**: (also known as constant sum condition) The instantaneous probability of failure in a small interval about $y = \min\{T_{i} , C_{i}\}$ given survival to $y$ is unchanged by the additional information that the subject was uncensored up to time $y$_.
+- Testing the Noninformative censoring assumption is not possible without making further assumptions about the joint distribution of the event and censoring times.
+- Such assumptions include (semi)-parametric forms for the censoring times and parameters that quantify the information obtainable from the censoring times
+
+- There also seems to be a distinction between prediction models and retrospective studies. In the latter, it seems natural to take the censoring times (and hence observation period) as fixed an known. Whether it is independent from the event time is a distinct matter.
+
+# simulations
+
+## for the pf model
+
+- really gets to the heart of whether the observation schedule is
+  - known and pre-specified (i.e. the censoring times are known, fixed quantities)
+  - even if it is known, is the generation of censoring times independent from the event time (almost certainly not?)
+- because I rescale each individual separately, the priors are somewhat distinct to each individual,
+  - also means the thresholds are individual specific (which I knew), but need to be accounted for in the prior.
+  - this feels slightly odd? that the prior depends on the range of realised y-values? I guess this is what is implicitly happening each time the covariates or response are standardised.
+- How does this work in other settings?
+
+## For the survival model
+
+- need explicit priors on then breakpoint and slopes in the model.
+- Feels a bit recursive that the prior depends on the event time
+
+# Bibliography

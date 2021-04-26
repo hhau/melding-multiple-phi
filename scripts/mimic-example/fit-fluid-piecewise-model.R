@@ -55,8 +55,8 @@ model_fit <- sampling(
 long_samples <- model_fit %>%
   gather_draws(
     y_sigma,
-    beta_zero[i],
-    beta_slope[i, b],
+    eta_zero[i],
+    eta_slope[i, b],
     breakpoint[i],
     breakpoint_raw[i]
   )
@@ -65,8 +65,8 @@ array_samples <- model_fit %>%
   as.array(
     pars = c(
       'y_sigma',
-      'beta_zero',
-      'beta_slope',
+      'eta_zero',
+      'eta_slope',
       'breakpoint',
       'breakpoint_raw'
     )

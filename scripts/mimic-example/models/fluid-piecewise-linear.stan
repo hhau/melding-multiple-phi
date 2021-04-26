@@ -16,8 +16,8 @@ transformed data {
 
 parameters {
   vector <lower = 0, upper = 1> [n_icu_stays] breakpoint_raw;
-  vector <lower = 0> [2] beta_slope [n_icu_stays];
-  vector <lower = 0> [n_icu_stays] beta_zero;
+  vector <lower = 0> [2] eta_slope [n_icu_stays];
+  vector <lower = 0> [n_icu_stays] eta_zero;
   real <lower = 0> y_sigma;
 }
 
@@ -35,9 +35,9 @@ transformed parameters {
 
     for (jj in 1 : n_obs_per_icu_stay) {
       if (indiv_obs_x[jj] < breakpoint[ii]) {
-        indiv_obs_mu[jj] = beta_zero[ii] + beta_slope[ii][1] * (indiv_obs_x[jj] - breakpoint[ii]);
+        indiv_obs_mu[jj] = eta_zero[ii] + eta_slope[ii][1] * (indiv_obs_x[jj] - breakpoint[ii]);
       } else {
-        indiv_obs_mu[jj] = beta_zero[ii] + beta_slope[ii][2] * (indiv_obs_x[jj] - breakpoint[ii]);
+        indiv_obs_mu[jj] = eta_zero[ii] + eta_slope[ii][2] * (indiv_obs_x[jj] - breakpoint[ii]);
       }
     }
     mu[obs_lower : (obs_upper - 1)] = indiv_obs_mu;
@@ -46,7 +46,7 @@ transformed parameters {
 
 model {
   for (ii in 1 : n_icu_stays) {
-    target += normal_lpdf(beta_slope[ii] | 5000, 1000);
+    target += normal_lpdf(eta_slope[ii] | 5000, 1000);
   }
 
 
@@ -64,9 +64,9 @@ generated quantities {
       real temp_mu;
 
       if (x_mat_plot[ii, jj] < breakpoint[ii]) {
-        temp_mu = beta_zero[ii] + beta_slope[ii][1] * (x_mat_plot[ii, jj] - breakpoint[ii]);
+        temp_mu = eta_zero[ii] + eta_slope[ii][1] * (x_mat_plot[ii, jj] - breakpoint[ii]);
       } else {
-        temp_mu = beta_zero[ii] + beta_slope[ii][2] * (x_mat_plot[ii, jj] - breakpoint[ii]);
+        temp_mu = eta_zero[ii] + eta_slope[ii][2] * (x_mat_plot[ii, jj] - breakpoint[ii]);
       }
 
       plot_mu[ii, jj] = temp_mu;

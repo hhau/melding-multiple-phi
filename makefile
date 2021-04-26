@@ -572,6 +572,26 @@ $(MIMIC_FLUID_FITTED_PLOT) : \
 
 $(MIMIC_FLUID_FITTED_PLOT_MU_TBL) : $(MIMIC_FLUID_FITTED_PLOT)
 
+MIMIC_BOTH_FITTED_PLOT = $(MIMIC_PLOTS)/combined-pf-fluid-fit-plot.png
+MIMIC_BOTH_FITTED_PLOT_SMALL = $(MIMIC_PLOTS)/combined-pf-fluid-fit-plot-small.png
+$(MIMIC_BOTH_FITTED_PLOT) : \
+	$(MIMIC_SCRIPTS)/plot-both-pf-and-fluid-fit.R \
+	$(MIMIC_CUMULATIVE_FLUID_DATA) \
+	$(MIMIC_FLUID_FITTED_PLOT_MU_TBL) \
+	$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+	$(MIMIC_PF_FITTED_PLOT_TBL) \
+	$(MIMIC_PF_EVENT_TIME_SAMPLES_LONG)
+	$(RSCRIPT) $< \
+		--cumulative-fluid-data $(MIMIC_CUMULATIVE_FLUID_DATA) \
+		--fluid-plot-mu-tbl $(MIMIC_FLUID_FITTED_PLOT_MU_TBL) \
+		--pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
+		--pf-plot-tbl $(MIMIC_PF_FITTED_PLOT_TBL) \
+		--pf-event-time-samples-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
+		--output-small $(MIMIC_BOTH_FITTED_PLOT_SMALL) \
+		--output $@
+
+$(MIMIC_BOTH_FITTED_PLOT_SMALL) : $(MIMIC_BOTH_FITTED_PLOT)
+
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input
 $(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS) $(OWLS_DATA) $(BIBLIOGRAPHY)

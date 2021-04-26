@@ -3,27 +3,36 @@ library(ggh4x)
 library(tibble)
 
 source('scripts/common/plot-settings.R')
+source('scripts/common/setup-argparse.R')
 
-cumulative_fluid_data <- readRDS('rds/mimic-example/cumulative-summarised-fluid-data.rds')
-fluid_plot_tbl <- readRDS('rds/mimic-example/fluid-data-piecewise-plot-mu-tbl.rds') %>% 
-  select(-.variable) %>% 
+parser$add_argument("--cumulative-fluid-data")
+parser$add_argument("--fluid-plot-mu-tbl")
+parser$add_argument("--pf-and-summarised-fluid-data")
+parser$add_argument("--pf-plot-tbl")
+parser$add_argument("--pf-event-time-samples-long")
+parser$add_argument("--output-small")
+args <- parser$parse_args()
+
+cumulative_fluid_data <- readRDS(args$cumulative_fluid_data)
+fluid_plot_tbl <- readRDS(args$fluid_plot_mu_tbl) %>%
+  select(-.variable) %>%
   mutate(value_type = 'fluids')
 
 link_tbl <- fluid_plot_tbl %>%
-  ungroup() %>% 
-  select(i, icustay_id) %>% 
+  ungroup() %>%
+  select(i, icustay_id) %>%
   distinct()
 
-pf_data <- readRDS('rds/mimic-example/combined-pf-and-summarised-fluids.rds') %>% 
+pf_data <- readRDS(args$pf_and_summarised_fluid_data) %>%
   filter(value_type == 'pf')
 
-pf_plot_tbl <- readRDS('rds/mimic-example/pf-data-and-bspline-plot-tbl.rds') %>% 
-  left_join(link_tbl, by = 'i') %>% 
-  rename(.value = plot_mu) %>% 
+pf_plot_tbl <- readRDS(args$pf_plot_tbl) %>%
+  left_join(link_tbl, by = 'i') %>%
+  rename(.value = plot_mu) %>%
   mutate(value_type = 'pf')
 
-event_time_tbl <- readRDS('rds/mimic-example/submodel-1-event-times-samples-long.rds') %>% 
-  left_join(link_tbl, by = 'i') %>% 
+event_time_tbl <- readRDS(args$pf_event_time_samples_long) %>%
+  left_join(link_tbl, by = 'i') %>%
   mutate(value_type = 'pf')
 
 threshold_tbl <- tibble(
@@ -65,7 +74,7 @@ p1 <- ggplot(interval_tbl) +
   )
 
 ggsave(
-  filename = 'plots/mimic-example/combined-pf-fluid-fit-plot.png',
+  filename = args$output,
   plot = p1,
   width = 12,
   height = 48
@@ -79,21 +88,21 @@ interesting_icustay_ids <- c(
 )
 
 p2 <- ggplot(
-    interval_tbl %>% 
+    interval_tbl %>%
       filter(icustay_id %in% interesting_icustay_ids)
   ) +
   geom_point(
-    data = cumulative_fluid_data %>% 
+    data = cumulative_fluid_data %>%
       filter(icustay_id %in% interesting_icustay_ids),
     mapping = aes(x = time_since_icu_adm, y = cumulative_value)
   ) +
   geom_point(
-    data = pf_data %>% 
+    data = pf_data %>%
       filter(icustay_id %in% interesting_icustay_ids),
     mapping = aes(x = time_since_icu_adm, y = value)
   ) +
   geom_rug(
-    data = event_time_tbl %>% 
+    data = event_time_tbl %>%
       filter(icustay_id %in% interesting_icustay_ids),
     aes(x = .value),
     colour = highlight_col
@@ -116,7 +125,7 @@ p2 <- ggplot(
   )
 
 ggsave(
-  filename = 'plots/mimic-example/combined-pf-fluid-fit-plot-small.png',
+  filename = args$output_small,
   plot = p2,
   width = 8,
   height = 6
