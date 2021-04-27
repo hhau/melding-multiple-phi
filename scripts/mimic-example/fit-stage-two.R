@@ -67,28 +67,28 @@ n_segments <- grep(
 ) %>%
   length()
 
+center_keep_intercept <- function(x) {
+  p <- ncol(x)
+  res <- scale(x[, 2 : p], center = TRUE, scale = TRUE)
+  cbind(1, res)
+}
+
 baseline_data_x_mat <- model.matrix(
   ~ 1 + aniongap_median + bicarbonate_median + creatinine_median + chloride_median +
   glucose_median + hematocrit_median + hemoglobin_median + platelet_median +
   potassium_median + ptt_median + inr_median + pt_median + sodium_median +
   bun_median + wbc_median + gender + age_at_icu_adm,
   data = submodel_two_data %>% as.data.frame()
-)
+) %>%
+  center_keep_intercept()
 
 n_theta <- ncol(baseline_data_x_mat)
-
-center_keep_intercept <- function(x) {
-  p <- ncol(x)
-  res <- scale(x[, 2 : p], center = TRUE, scale = FALSE)
-  cbind(1, res)
-}
 
 stan_data_psi_base <- list(
   n_icu_stays = n_icu_stays,
   n_theta = n_theta,
   n_segments = n_segments,
-  baseline_data_x = baseline_data_x_mat %>%
-    center_keep_intercept(),
+  baseline_data_x = baseline_data_x_mat,
   log_crude_event_rate = log(mean(submodel_one_samples[, , event_time_names]))
 )
 
@@ -101,21 +101,9 @@ prefit_psi_two_step <- stan_model(
 # NB: we can use the same stan file/fit for both phi_{1 \cap 2} and
 # phi_{2 \cap 3}, because we can control which parameters change / which
 # are the same.
-prefit_phi_step_whole <- stan_model(
-  "scripts/mimic-example/models/surv-phi-step-whole.stan"
-)
-
+# and because we do both phi_{1 \cap 2} and phi_{2 \cap 3} element-at-a-time
 prefit_phi_step_indiv <- stan_model(
   "scripts/mimic-example/models/surv-phi-step-indiv.stan"
-)
-
-stanfit_phi_step_whole <- sampling(
-  prefit_phi_step_whole,
-  data = stan_data_psi_base,
-  chains = 1,
-  cores = 1,
-  iter = 1,
-  refresh = 0
 )
 
 stanfit_phi_step_indiv <- sampling(
@@ -130,12 +118,11 @@ stanfit_phi_step_indiv <- sampling(
   refresh = 0
 )
 
-psi_two_names <- stanfit_phi_step_whole %>%
+psi_two_names <- stanfit_phi_step_indiv %>%
   as.array() %>%
   magrittr::extract(1, 1, ) %>%
   names() %>%
-  grep(".*(theta|gamma|alpha).*", x = ., value = TRUE) %>%
-  magrittr::extract(!stringr::str_detect(., "long"))
+  grep(".*(theta|gamma|alpha).*", x = ., value = TRUE)
 
 psi_two_names_simple <- psi_two_names %>%
   str_split('\\[') %>%
@@ -155,7 +142,7 @@ psi_initialiser <- function(x) {
 
 # general MCMC options -- should be in GLOBALS really
 n_stage_two_chain <- 5
-n_stage_two_iter <- 5e3 # 4e4 for min tail_ess in phi of ~500
+n_stage_two_iter <- 5e2 # 4e4 for min tail_ess in phi of ~500
 
 list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   # set up containers, remember we are abind'ing over the chains
@@ -261,8 +248,8 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       include = TRUE,
       pars = psi_two_names_simple,
       chains = 1,
-      iter = 25,
-      warmup = 24,
+      iter = 10,
+      warmup = 9,
       refresh = 0
     )
 
@@ -277,11 +264,14 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       phi_12_chain_index_prop <- sample.int(n = n_chain_submodel_one, size = 1)
       phi_12_indiv_names <- phi_12_names[c(indiv_index, indiv_index + n_icu_stays)]
 
-      phi_23_indiv_curr_sublist <- phi_23_curr_list %>%
-        list(
-          breakpoint = phi_23_curr_list$breakpoint[indiv_index],
-          eta_slope = phi_23_curr_list$eta_slope[indiv_index, ]
-        )
+      y2_indiv <- list(
+        baseline_data_x = baseline_data_x_mat[indiv_index, ]
+      )
+
+      phi_23_indiv_curr_sublist <- list(
+        breakpoint = phi_23_curr_list$breakpoint[indiv_index],
+        eta_slope = phi_23_curr_list$eta_slope[indiv_index, ]
+      )
 
       phi_12_indiv_prop_list <- list(
         event_time = as.numeric(
@@ -309,7 +299,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         stanfit_phi_step_indiv,
         upars = unconstrain_pars(
           stanfit_phi_step_indiv,
-          pars = c(psi_2_curr_list, phi_12_indiv_prop_list, phi_23_indiv_curr_sublist)
+          pars = c(psi_2_curr_list, y2_indiv, phi_12_indiv_prop_list, phi_23_indiv_curr_sublist)
         )
       )
 
@@ -317,7 +307,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         stanfit_phi_step_indiv,
         upars = unconstrain_pars(
           stanfit_phi_step_indiv,
-          pars = c(psi_2_curr_list, phi_12_indiv_curr_list, phi_23_indiv_curr_sublist)
+          pars = c(psi_2_curr_list, y2_indiv, phi_12_indiv_curr_list, phi_23_indiv_curr_sublist)
         )
       )
 
@@ -350,57 +340,88 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       )
     )
 
-    # phi_{2 \cap 3} step
-    phi_23_iter_index_prop <- sample.int(n = n_iter_submodel_three, size = 1)
-    phi_23_chain_index_prop <- sample.int(n = n_chain_submodel_three, size = 1)
-    phi_23_prop_list <- list(
-      eta_slope = array(
-        data = submodel_three_samples[
+    # phi_{2 \cap 3} step -- now also do 1 at a time.
+    scan_order_2 <- sample.int(n_icu_stays, n_icu_stays, replace = FALSE)
+    for (kk in 1 : n_icu_stays) {
+      indiv_index <- scan_order_2[kk]
+      phi_23_iter_index_prop <- sample.int(n = n_iter_submodel_three, size = 1)
+      phi_23_chain_index_prop <- sample.int(n = n_chain_submodel_three, size = 1)
+      phi_23_indiv_names <- phi_23_names[
+        c(indiv_index, indiv_index + n_icu_stays, indiv_index + (2 * n_icu_stays))
+      ]
+      
+      y2_indiv <- list(
+        baseline_data_x = baseline_data_x_mat[indiv_index, ]
+      )
+      
+      phi_12_indiv_curr_sublist <- list(
+        event_time = phi_12_curr_list$event_time[indiv_index],
+        event_indicator = phi_12_curr_list$event_indicator[indiv_index]
+      )
+
+      phi_23_indiv_prop_list <- list(
+        eta_slope = array(
+          data = submodel_three_samples[
+            phi_23_iter_index_prop,
+            phi_23_chain_index_prop,
+            phi_23_indiv_names[1 : 2]
+          ],
+          dim = c(n_segments)
+        ),
+        breakpoint = submodel_three_samples[
           phi_23_iter_index_prop,
           phi_23_chain_index_prop,
-          eta_slope_names
-        ],
-        dim = c(n_icu_stays, n_segments)
-      ),
-      breakpoint = submodel_three_samples[
-        phi_23_iter_index_prop,
-        phi_23_chain_index_prop,
-        breakpoint_names
-      ]
-    )
+          phi_23_indiv_names[3]
+        ]
+      )
+      
+      phi_23_indiv_curr_list <- list(
+        eta_slope = phi_23_curr_list$eta_slope[indiv_index, ],
+        breakpoint = phi_23_curr_list$breakpoint[indiv_index]
+      )
 
-    log_prob_phi_23_step_prop <- log_prob(
-      object = stanfit_phi_step_whole,
-      upars = unconstrain_pars(
-        stanfit_phi_step_whole,
-        pars = c(
-          psi_2_curr_list,
-          phi_12_curr_list,
-          phi_23_prop_list
+      log_prob_phi_23_step_indiv_prop <- log_prob(
+        object = stanfit_phi_step_indiv,
+        upars = unconstrain_pars(
+          stanfit_phi_step_indiv,
+          pars = c(
+            psi_2_curr_list,
+            y2_indiv,
+            phi_12_indiv_curr_sublist,
+            phi_23_indiv_prop_list
+          )
         )
       )
-    )
 
-    log_prob_phi_23_step_curr <- log_prob(
-      object = stanfit_phi_step_whole,
-      upars = unconstrain_pars(
-        stanfit_phi_step_whole,
-        pars = c(
-          psi_2_curr_list,
-          phi_12_curr_list,
-          phi_23_curr_list
+      log_prob_phi_23_step_indiv_curr <- log_prob(
+        object = stanfit_phi_step_indiv,
+        upars = unconstrain_pars(
+          stanfit_phi_step_indiv,
+          pars = c(
+            psi_2_curr_list,
+            y2_indiv,
+            phi_12_indiv_curr_sublist,
+            phi_23_indiv_curr_list
+          )
         )
       )
-    )
 
-    log_alpha_23_step <- log_prob_phi_23_step_prop - log_prob_phi_23_step_curr
+      log_alpha_23_step_indiv <- log_prob_phi_23_step_indiv_prop - log_prob_phi_23_step_indiv_curr
 
-    if (runif(1) < exp(log_alpha_23_step)) {
-      psi_3_indices[ii, 1, ] <- c(phi_23_iter_index_prop, phi_23_chain_index_prop)
-      phi_23_samples[ii, 1, ] <- unlist(phi_23_prop_list)
-    } else {
-      psi_3_indices[ii, 1, ] <- psi_3_indices[ii - 1, 1, ]
-      phi_23_samples[ii, 1, ] <-  phi_23_samples[ii - 1, 1, ]
+      if (runif(1) < exp(log_alpha_23_step_indiv)) {
+        if (kk == 1) {
+          psi_3_indices[ii, 1, ] <- c(phi_23_iter_index_prop, phi_23_chain_index_prop)
+        }
+        
+        phi_23_samples[ii, 1, phi_23_indiv_names] <- unlist(phi_23_indiv_prop_list)
+      } else {
+        if (kk == 1) {
+          psi_3_indices[ii, 1, ] <- psi_3_indices[ii - 1, 1, ]
+        }
+        
+        phi_23_samples[ii, 1, phi_23_indiv_names] <-  phi_23_samples[ii - 1, 1, phi_23_indiv_names]
+      }
+
     }
 
     if (ii %% 500 == 0) {

@@ -26,7 +26,7 @@ parameters {
   real <lower = 0> hazard_gamma;
 
   // longitudinal associative strength (alpha)
-  real alpha;
+  real <multiplier = 2000> alpha;
 }
 
 model {
@@ -45,10 +45,12 @@ model {
 
     // always add the survival probability
     // this term is common despite to both cases
-    temp_surv_prob_common = -baseline_data_x[ii, ] * theta;
+    temp_surv_prob_common = -exp(baseline_data_x[ii, ] * theta);
 
     if (event_time[ii] < breakpoint[ii]) {
-      real temp_lower = exp(alpha * eta_slope[ii][1]) * pow(event_time[ii], hazard_gamma);
+      real t1 = exp(alpha * eta_slope[ii][1]);
+      real t2 = pow(event_time[ii], hazard_gamma);
+      real temp_lower =  t1 * t2;
       target += temp_surv_prob_common * temp_lower;
     } else {
       real t1 = exp(alpha * eta_slope[ii][1]);
@@ -66,4 +68,7 @@ model {
   target += normal_lpdf(theta[2 : n_theta] | 0, 1);
   target += normal_lpdf(hazard_gamma | 0, 1);
   target += normal_lpdf(alpha | 0, 1);
+
+  // need submodel 2 priors (really a joint prior) for the longitudinal
+  // coefficients and for the event time (though this is trickier)
 }

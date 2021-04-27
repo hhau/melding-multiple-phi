@@ -4,11 +4,17 @@ data {
 }
 
 parameters {
+  // need to include the baseline measurements and thetas because the are
+  // multiplicative modifiers of the survival probability and thus do not cancel
+  // in the log-likelihood.
+  vector [n_theta] theta;
+  row_vector [n_theta] baseline_data_x;
+
   // baseline hazard parameter(s) (Weibull gamma)
   real <lower = 0> hazard_gamma;
 
   // longitudinal associative strength (alpha)
-  real alpha;
+  real <multiplier = 2000> alpha;
 
   // phi_{1 \cap 2} -- from the event time submodel
   real event_indicator;
@@ -21,8 +27,11 @@ parameters {
 }
 
 model {
+  real temp_surv_prob_common;
+
   if (event_indicator == 1) { // add the hazard
     target += log(hazard_gamma) + (hazard_gamma - 1) * log(event_time);
+    target += baseline_data_x * theta; // constant, but easier to leave in
 
     if (event_time < breakpoint) {
       target += alpha * eta_slope[1];
@@ -31,12 +40,25 @@ model {
     }
   }
 
+  // always add the survival probability
+  // this term is common despite to both cases
+  temp_surv_prob_common = -exp(baseline_data_x * theta);
+
   if (event_time < breakpoint) {
-    real temp_lower = exp(alpha * eta_slope[1]) * pow(event_time, hazard_gamma);
-    target += temp_lower;
+    real t1 = exp(alpha * eta_slope[1]);
+    real t2 = pow(event_time, hazard_gamma);
+    real temp_lower =  t1 * t2;
+    target += temp_surv_prob_common * temp_lower;
   } else {
-    real temp_upper = exp(alpha * eta_slope[1]) * pow(breakpoint, hazard_gamma) +
-      exp(alpha * eta_slope[2]) * (pow(event_time, hazard_gamma) - pow(breakpoint, hazard_gamma));
-    target += temp_upper;
+    real t1 = exp(alpha * eta_slope[1]);
+    real t2 = pow(breakpoint, hazard_gamma);
+    real t3 = exp(alpha * eta_slope[2]);
+    real t4 = pow(event_time, hazard_gamma);
+    real t5 = pow(breakpoint, hazard_gamma);
+    real temp_upper = (t1 * t1) + (t3) * (t4 - t5);
+    target += temp_surv_prob_common * temp_upper;
   }
+
+  // need submodel 2 priors (really a joint prior) for the longitudinal
+  // coefficients and for the event time (though this is trickier)
 }
