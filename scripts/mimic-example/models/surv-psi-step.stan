@@ -26,7 +26,7 @@ parameters {
   real <lower = 0> hazard_gamma;
 
   // longitudinal associative strength (alpha)
-  real <multiplier = 2000> alpha;
+  real <multiplier = 5e-4> alpha;
 }
 
 model {

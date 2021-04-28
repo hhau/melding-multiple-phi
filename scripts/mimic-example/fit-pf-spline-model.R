@@ -20,9 +20,11 @@ prefit <- stan_model(args$pf_submodel_stan_model)
 model_fit <- sampling(
   prefit,
   data = stan_data,
-  cores = 5,
+  cores = N_CHAIN,
+  chains = N_CHAIN,
+  warmup = 1000,
+  iter = N_POST_WARMUP_MCMC + 1000,
   refresh = 500,
-  chains = 5
 )
 
 long_samples <- model_fit %>%

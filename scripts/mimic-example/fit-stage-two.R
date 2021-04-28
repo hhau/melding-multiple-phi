@@ -141,10 +141,10 @@ psi_initialiser <- function(x) {
 }
 
 # general MCMC options -- should be in GLOBALS really
-n_stage_two_chain <- 5
-n_stage_two_iter <- 5e2 # 4e4 for min tail_ess in phi of ~500
+n_stage_two_chain <- N_CHAIN
+n_stage_two_iter <- N_POST_WARMUP_MCMC # 4e4 for min tail_ess in phi of ~500
 
-list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
+list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_id) {
   # set up containers, remember we are abind'ing over the chains
   # phi - event times (no censoring yet)
   flog.info(
@@ -349,11 +349,11 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       phi_23_indiv_names <- phi_23_names[
         c(indiv_index, indiv_index + n_icu_stays, indiv_index + (2 * n_icu_stays))
       ]
-      
+
       y2_indiv <- list(
         baseline_data_x = baseline_data_x_mat[indiv_index, ]
       )
-      
+
       phi_12_indiv_curr_sublist <- list(
         event_time = phi_12_curr_list$event_time[indiv_index],
         event_indicator = phi_12_curr_list$event_indicator[indiv_index]
@@ -374,7 +374,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
           phi_23_indiv_names[3]
         ]
       )
-      
+
       phi_23_indiv_curr_list <- list(
         eta_slope = phi_23_curr_list$eta_slope[indiv_index, ],
         breakpoint = phi_23_curr_list$breakpoint[indiv_index]
@@ -412,13 +412,13 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
         if (kk == 1) {
           psi_3_indices[ii, 1, ] <- c(phi_23_iter_index_prop, phi_23_chain_index_prop)
         }
-        
+
         phi_23_samples[ii, 1, phi_23_indiv_names] <- unlist(phi_23_indiv_prop_list)
       } else {
         if (kk == 1) {
           psi_3_indices[ii, 1, ] <- psi_3_indices[ii - 1, 1, ]
         }
-        
+
         phi_23_samples[ii, 1, phi_23_indiv_names] <-  phi_23_samples[ii - 1, 1, phi_23_indiv_names]
       }
 

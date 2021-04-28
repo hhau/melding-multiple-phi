@@ -43,8 +43,10 @@ prefit <- stan_model(args$fluid_piecewise_stan_model)
 model_fit <- sampling(
   prefit,
   data = stan_data,
-  cores = 5,
-  chains = 5,
+  cores = N_CHAIN,
+  chains = N_CHAIN,
+  warmup = 1000,
+  iter = N_POST_WARMUP_MCMC + 1000,
   init = init_gen,
   control = list(
     adapt_delta = 0.9,
