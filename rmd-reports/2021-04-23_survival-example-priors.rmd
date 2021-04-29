@@ -20,6 +20,74 @@ Rscript -e 'rmarkdown::render("rmd-reports/2021-04-23_survival-example-priors.rm
 options(width = 9999)
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(bayesplot))
+library(coda)
+library(stringr)
+library(patchwork)
+
+plot_worst_pars <- function(
+  samples_array,
+  facet_name_value_pairs, # named vector pair, e.g. c('event_time' = 'italic(t)')
+  n_warmup = 1
+) {
+  numerical_diags <- rstan::monitor(samples_array, n_warmup, print = FALSE) %>%
+    as.data.frame()
+
+  worst_index <- c(
+    which.max(numerical_diags$Rhat),
+    which.min(numerical_diags$n_eff)
+  ) %>%
+    unique()
+
+  if (length(worst_index) == 1) {
+    # if the worst rhat and neff are the same variable,
+    # get the second worst rhat
+    worst_index <- c(
+      worst_index,
+      order(numerical_diags$Rhat, decreasing = TRUE)[2]
+    )
+  }
+
+  current_names <- names(samples_array[1, 1, worst_index])
+  n_samples <- dim(samples_array)[1]
+
+  # read str_replace_all doc VERY CAREFULLY! Caught out by this behaviour
+  # for the second time now.
+  # the named vector behaviour of str_replace_all all is inconsistent
+  # I suggest passing a closure through the function argument (more consistent)
+  # and matching on ".+" -- any char vec, which is more consistent
+  if (is.function(facet_name_value_pairs)) {
+    ideal_names <- str_replace_all(
+      current_names,
+      ".+",
+      replacement = facet_name_value_pairs
+    )
+  } else {
+    ideal_names <- str_replace_all(current_names, facet_name_value_pairs)
+  }
+
+  names(ideal_names) <- current_names
+  my_lab <- as_labeller(ideal_names, label_parsed)
+
+  trace <- mcmc_trace(samples_array[(n_warmup + 1) : n_samples, , worst_index]) +
+    facet_wrap("parameter", ncol = 1, scales = "free_y", labeller = my_lab) +
+    xlab("Iteration") +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(size = rel(0.8)),
+      axis.text.y = element_text(size = rel(0.8))
+    ) +
+    bayesplot:::force_x_axis_in_facets()
+
+  rank <- mcmc_rank_overlay(samples_array[, , worst_index], ref_line = TRUE) +
+    facet_wrap("parameter", ncol = 1, labeller = my_lab) +
+    theme(
+      axis.text.x = element_text(size = rel(0.8)),
+      axis.text.y = element_text(size = rel(0.8))
+    )
+
+  trace + rank + plot_layout(guides = "collect")
+}
 ```
 
 # General question about priors for breakpoints
@@ -41,14 +109,21 @@ suppressPackageStartupMessages(library(tidyverse))
   2. that the censoring times are independent of the event times (this is sometimes called random censoring according to @leung_censoring_1997)
 - Independent censoring is often too strong an assumption, but @lagakos_general_1979 describes two settings where the censoring is still ignorable, which @leung_censoring_1997 summarise as
   - _**Nonprognostic censoring**: A censored observation at time $C_{i}$ indicates that the survival time exceeds $C_{i}$ and carries no prognostic information about subsequent survival times for either the same individual or other individuals_.
-    - I think our censoring times are non-prognostic, given out constraints on the first 5 data points (that they must be above the threshold), the censoring times are the discharge times, which do not tell us anything about the prognositic status of the patients? Unless short stays are associated with poor outcomes?
+    - I think our censoring times are non-prognostic.
+    - The censoring times are patient specific discharge times.
+      - They clearly do not tell us anything about the subsequent survival times of other patients.
+      - For the same patient, if the censoring is due to death, then the censoring time alone does not tell us anything about subsequent survival times if the patient continued to live?
+      - Similarly, if the censoring time is due to discharge, then we are non the wiser about when future ARDS events will occur.
+      the discharge times, which do not tell us anything about the prognositic status of the patients? Unless short stays are associated with poor outcomes?
   - _**Noninformative censoring**: (also known as constant sum condition) The instantaneous probability of failure in a small interval about $y = \min\{T_{i} , C_{i}\}$ given survival to $y$ is unchanged by the additional information that the subject was uncensored up to time $y$_.
+    - Not quite sure how to interpret this one.
 - Testing the Noninformative censoring assumption is not possible without making further assumptions about the joint distribution of the event and censoring times.
 - Such assumptions include (semi)-parametric forms for the censoring times and parameters that quantify the information obtainable from the censoring times
 
-- There also seems to be a distinction between prediction models and retrospective studies. In the latter, it seems natural to take the censoring times (and hence observation period) as fixed an known. Whether it is independent from the event time is a distinct matter.
+- There also seems to be a distinction between prediction models and retrospective studies. In the latter, it seems natural to take the censoring times (and hence observation period) as fixed and known, even when specifying the prior (the censoring times determine the support for the prior of the _observed_ event times). Whether it is independent from the event time is a distinct matter.
+- This is similar to specifying an appropriate prior for regression coefficients when two covariates differ in orders of magnitude. You could centre and scale them both, but that is implicitly use the range of the covariate values to specify the prior.
 
-# simulations
+# prior simulations -- still to do
 
 ## for the pf model
 
@@ -64,5 +139,46 @@ suppressPackageStartupMessages(library(tidyverse))
 
 - need explicit priors on then breakpoint and slopes in the model.
 - Feels a bit recursive that the prior depends on the event time
+
+# Stage two results using product of experts
+
+## Survival model parameters ($\psi_{2}$)
+
+```{r}
+knitr::include_graphics('../plots/mimic-example/psi-2-method-comparison-small.png')
+```
+
+## Traces:
+
+```{r}
+phi_12_samples <- readRDS("../rds/mimic-example/stage-two-phi-12-samples.rds")
+phi_23_samples <- readRDS("../rds/mimic-example/stage-two-phi-23-samples.rds")
+psi_2_samples <- readRDS("../rds/mimic-example/stage-two-psi-2-samples.rds")
+
+event_time_names <- phi_12_samples[1, 1, ] %>%
+  names() %>%
+  grep(pattern = 'event_time', x = ., value = T)
+
+renamer <- function(a_name) {
+  c(
+    "eta_slope[6,2]" = 'eta["6,2"]',
+    "breakpoint[21]" = 'italic(k)[21]'
+  )[a_name]
+}
+
+plot_worst_pars(phi_12_samples[, , event_time_names], c('event_time' = 'italic(t)', 'event_indicator' = 'delta'))
+plot_worst_pars(phi_23_samples, renamer)
+plot_worst_pars(psi_2_samples, c('hazard_gamma' = 'gamma'))
+
+```
+
+Event time $34$ is looking slightly off, looking at the fitted trajectory:
+
+```{r}
+knitr::include_graphics('../plots/mimic-example/temp-patient-34.png')
+```
+
+Yes, It makes sense that most of those samples are 'censored' -- This is the only one we might have to remove manually.
+
 
 # Bibliography

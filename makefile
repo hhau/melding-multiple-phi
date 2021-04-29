@@ -573,7 +573,7 @@ $(MIMIC_FLUID_FITTED_PLOT) : \
 $(MIMIC_FLUID_FITTED_PLOT_MU_TBL) : $(MIMIC_FLUID_FITTED_PLOT)
 
 MIMIC_BOTH_FITTED_PLOT = $(MIMIC_PLOTS)/combined-pf-fluid-fit-plot.png
-MIMIC_BOTH_FITTED_PLOT_SMALL = $(MIMIC_PLOTS)/combined-pf-fluid-fit-plot-small.png
+MIMIC_BOTH_FITTED_PLOT_SMALL = $(MIMIC_PLOTS)/combined-pf-fluid-fit-plot-small.pdf
 $(MIMIC_BOTH_FITTED_PLOT) : \
 	$(MIMIC_SCRIPTS)/plot-both-pf-and-fluid-fit.R \
 	$(MIMIC_CUMULATIVE_FLUID_DATA) \

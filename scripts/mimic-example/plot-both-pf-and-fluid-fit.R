@@ -54,7 +54,8 @@ p1 <- ggplot(interval_tbl) +
   geom_rug(
     data = event_time_tbl,
     aes(x = .value),
-    colour = highlight_col
+    colour = highlight_col,
+    alpha = 0.25
   ) +
   geom_hline(
     data = threshold_tbl,
@@ -71,7 +72,9 @@ p1 <- ggplot(interval_tbl) +
     ~ icustay_id + value_type,
     scales = 'free',
     ncol = 4
-  )
+  ) +
+  xlab('Days since ICU admission') +
+  theme(axis.title.y = element_blank())
 
 ggsave(
   filename = args$output,
@@ -82,9 +85,7 @@ ggsave(
 
 interesting_icustay_ids <- c(
   273811,
-  268712,
-  247952,
-  213974
+  268712
 )
 
 p2 <- ggplot(
@@ -105,7 +106,8 @@ p2 <- ggplot(
     data = event_time_tbl %>%
       filter(icustay_id %in% interesting_icustay_ids),
     aes(x = .value),
-    colour = highlight_col
+    colour = highlight_col,
+    alpha = 0.01
   ) +
   geom_hline(
     data = threshold_tbl,
@@ -122,11 +124,14 @@ p2 <- ggplot(
     ~ icustay_id + value_type,
     scales = 'free',
     ncol = 4
-  )
+  ) +
+  xlab('Days since ICU admission') +
+  theme(axis.title.y = element_blank())
 
 ggsave(
   filename = args$output_small,
   plot = p2,
-  width = 8,
-  height = 6
+  width = 5.5,
+  height = 3
 )
+
