@@ -7,11 +7,15 @@ library(nimble)
 fecunditiy_submodel_samples <- readRDS("rds/owls-example/fecundity-subposterior-samples.rds")
 capture_recapture_submodel_samples <- readRDS("rds/owls-example/capture-recapture-subposterior-samples.rds")
 
+n_iter_per_chain <- dim(capture_recapture_submodel_samples)[1]
+n_chain <- dim(capture_recapture_submodel_samples)[2]
+n_param <- dim(capture_recapture_submodel_samples)[3]
+
 # reflow into iterations x parameters matrix
 fecunditiy_proposal <- as.vector(fecunditiy_submodel_samples)
 capture_recapture_proposal <- array(
   as.vector(capture_recapture_submodel_samples),
-  dim = c(2e4 * 6, 85), 
+  dim = c(n_iter_per_chain * n_chain, n_param), 
   dimnames = list(
     NULL,
     dimnames(capture_recapture_submodel_samples)[[3]]

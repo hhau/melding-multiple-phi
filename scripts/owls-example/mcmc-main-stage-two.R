@@ -11,7 +11,7 @@ library(dplyr)
 # flog.info("Loading data and samples", name = base_filename)
 n_chains <- 6
 
-# Read in model two data   
+# Read in model two data
 count_model_data <- readRDS("rds/owls-example/count-data.rds")
 
 # Set up top level parameters
@@ -31,20 +31,20 @@ count_model_data <- list(
 # have had to use the nimble form of notation for the truncation of the
 # prior on v[ii]
 count_model_code <- nimbleCode({
-  logit(phij) <- v[1]          
+  logit(phij) <- v[1]
   logit(phia) <- v[1] + v[2]
   log(im) <- v[6]
 
   for (ii in 1:6) {
-    v[ii] ~ T(dnorm(0, sd = 100), -10, 10)
-  } 
+    v[ii] ~ T(dnorm(0, sd = 2), -10, 10)
+  }
 
   fec ~ dunif(0, 10)
-  
+
   for (ii in 1:50) {
     flat_p[ii] <- 1 / 50
-  } 
-  
+  }
+
   N1[1] ~ dcat(flat_p[1:50])
   NadSurv[1] ~ dcat(flat_p[1:50])
   Nadimm[1] ~ dcat(flat_p[1:50])
@@ -65,8 +65,8 @@ count_model_code <- nimbleCode({
 
 source("scripts/owls-example/mcmc-nimble-functions.R")
 
-count_model <- nimbleModel( 
-  code = count_model_code, 
+count_model <- nimbleModel(
+  code = count_model_code,
   name = "count_model",
   constants = count_model_consts,
   data = count_model_data,
@@ -77,7 +77,7 @@ count_model_initial_compile <- compileNimble(
   count_model
 )
 
-# make original mcmc_config 
+# make original mcmc_config
 count_model_config <- configureMCMC(
   count_model,
   print = TRUE
@@ -112,7 +112,7 @@ for (node in all_discrete_slice_nodes) {
       adaptInterval = 400,
       maxContractions = 1000
     )
-  )  
+  )
 }
 
 count_model_config$addSampler(

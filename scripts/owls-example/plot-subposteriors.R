@@ -5,6 +5,7 @@ library(dplyr)
 library(tidybayes)
 library(scales)
 library(RColorBrewer)
+library(magrittr)
 
 original_model_samples <- readRDS("rds/owls-example/original-ipm-samples.rds")
 capture_recapture_submodel_samples <- readRDS("rds/owls-example/capture-recapture-subposterior-samples.rds")
@@ -12,6 +13,8 @@ count_data_submodel_samples <- readRDS("rds/owls-example/count-data-subposterior
 fecunditiy_submodel_samples <- readRDS("rds/owls-example/fecundity-subposterior-samples.rds")
 melded_model_samples <- readRDS("rds/owls-example/melded-posterior-samples.rds")
 normal_approx_samples <- readRDS("rds/owls-example/melded-posterior-normal-approx-samples.rds")
+melded_model_log_pooling_phi_samples <- readRDS("rds/owls-example/melded-phi-samples-log-pooling.rds")
+melded_model_lin_pooling_phi_samples <- readRDS("rds/owls-example/melded-phi-samples-lin-pooling.rds")
 
 # a tidybayes multiple-interval approach
 original_model_tidybayes_tbl <- original_model_samples %>%
@@ -64,9 +67,29 @@ normal_approx_tidybayes_tbl <- normal_approx_samples %>%
   gather_draws(v[i], fec) %>%
   filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
-  mutate(model_type = "melded-model-normal-approx")  
+  mutate(model_type = "melded-model-a-normal-approx")  
 
 normal_approx_tidybayes_tbl$orig_par <- normal_approx_tidybayes_tbl$i %>%
+  recode(!!!recode_vec)
+
+melded_log_pooling_tidybayes_tbl <- melded_model_log_pooling_phi_samples %>% 
+  array_to_mcmc_list() %>%
+  gather_draws(v[i], fec) %>%
+  filter(i %in% c(1, 2) || .variable == "fec") %>%
+  median_qi(.width = c(.5, .8, .95, .99)) %>%
+  mutate(model_type = "melded-model-log-pooling")  
+
+melded_log_pooling_tidybayes_tbl$orig_par <- melded_log_pooling_tidybayes_tbl$i %>%
+  recode(!!!recode_vec)
+
+melded_lin_pooling_tidybayes_tbl <- melded_model_lin_pooling_phi_samples %>% 
+  array_to_mcmc_list() %>%
+  gather_draws(v[i], fec) %>%
+  filter(i %in% c(1, 2) || .variable == "fec") %>%
+  median_qi(.width = c(.5, .8, .95, .99)) %>%
+  mutate(model_type = "melded-model-lin-pooling")  
+
+melded_lin_pooling_tidybayes_tbl$orig_par <- melded_lin_pooling_tidybayes_tbl$i %>%
   recode(!!!recode_vec)
 
 # Try to wrangle the fecundity samples into the same form
@@ -96,7 +119,9 @@ plot_tbl <- bind_rows(
   count_data_tidybayes_tbl,
   fecundity_tidybayes_tbl,
   melded_model_tidybayes_tbl,
-  normal_approx_tidybayes_tbl
+  normal_approx_tidybayes_tbl,
+  melded_log_pooling_tidybayes_tbl,
+  melded_lin_pooling_tidybayes_tbl
 )
 
 plot_tbl$orig_par <- plot_tbl$orig_par %>%  
@@ -126,20 +151,24 @@ p_2 <- ggplot(
     aesthetics = "colour",
     name = "Model",
     values = c(
-      "original-ipm-model" = blues[2],
+      "original-ipm-model" = "#000000",
       "capture-recapture-submodel" = highlight_col,
       "count-data-submodel" = greens[2],
       "fecundity-submodel" = "#EE3377",
-      "melded-model-z" = "#666666",
-      "melded-model-normal-approx" = "#000000"
+      "melded-model-z" = blues[1],
+      "melded-model-log-pooling" = blues[2],
+      "melded-model-lin-pooling" = blues[3],
+      "melded-model-a-normal-approx" = "#666666"
     ),
     labels = c(
       "original-ipm-model" = expression("p"["ipm"]),
       "capture-recapture-submodel" = expression("p"[1]),
       "count-data-submodel" = expression("p"[2]),
       "fecundity-submodel" = expression("p"[3]),
-      "melded-model-z" = expression("p"["meld"]),
-      "melded-model-normal-approx" = expression(widehat("p")["meld"])
+      "melded-model-z" = expression("p"["meld," ~ "PoE"]),
+      "melded-model-log-pooling" = expression("p"["meld," ~ "log"]),
+      "melded-model-lin-pooling" = expression("p"["meld," ~ "lin"]),
+      "melded-model-a-normal-approx" = expression(widehat("p")["meld"])
     ),
     guide = guide_legend(
       reverse = TRUE,
@@ -158,5 +187,72 @@ p_2 <- ggplot(
 ggsave_fullpage(
   filename = "plots/owls-example/subposteriors.pdf",
   plot = p_2,
+  adjust_height = -13
+)
+
+# this plot filters out the count data submodel and its' wide credible intervals
+# all the other models look spot on the same.
+p_melding_only <- ggplot(
+  data = plot_tbl %>% 
+    filter(grepl(pattern = '(original|melded)', x = model_type)),
+  aes(y = model_type, x = .value, colour = model_type)
+) +
+  facet_wrap(
+    vars(orig_par),
+    scales = "free",
+    ncol = 3,
+    nrow = 1,
+    labeller = label_parsed
+  ) +
+  ggdist::geom_interval(
+    mapping = aes(xmin = .lower, xmax = .upper),
+    alpha = plot_tbl %>%
+      filter(grepl(pattern = '(original|melded)', x = model_type)) %>%
+      mutate(alpha = rescale(1 - .width, to = c(0.2, 1))) %>%
+      pull(alpha),
+    size = 9,
+    orientation = "horizontal"
+  ) +
+  scale_size_continuous(range = c(12, 20)) +
+  scale_color_manual(
+    aesthetics = "colour",
+    name = "Model",
+    values = c(
+      "original-ipm-model" = "#000000",
+      "capture-recapture-submodel" = highlight_col,
+      "count-data-submodel" = greens[2],
+      "fecundity-submodel" = "#EE3377",
+      "melded-model-z" = blues[1],
+      "melded-model-log-pooling" = blues[2],
+      "melded-model-lin-pooling" = blues[3],
+      "melded-model-a-normal-approx" = "#666666"
+    ),
+    labels = c(
+      "original-ipm-model" = expression("p"["ipm"]),
+      "capture-recapture-submodel" = expression("p"[1]),
+      "count-data-submodel" = expression("p"[2]),
+      "fecundity-submodel" = expression("p"[3]),
+      "melded-model-z" = expression("p"["meld," ~ "PoE"]),
+      "melded-model-log-pooling" = expression("p"["meld," ~ "log"]),
+      "melded-model-lin-pooling" = expression("p"["meld," ~ "lin"]),
+      "melded-model-a-normal-approx" = expression(widehat("p")["meld"])
+    ),
+    guide = guide_legend(
+      reverse = TRUE,
+      override.aes = list(size = 4)
+    )
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    strip.text = element_text(size = 10),
+    axis.text.x = element_text(size = rel(0.9))
+  ) +
+  xlab("") +
+  ylab("")
+
+ggsave_fullpage(
+  filename = "plots/owls-example/subposteriors-melding-only.pdf",
+  plot = p_melding_only,
   adjust_height = -15
 )

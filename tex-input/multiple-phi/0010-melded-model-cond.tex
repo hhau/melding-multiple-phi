@@ -1,24 +1,15 @@
-\begin{align}
-  \pd_{\text{meld}} &(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, \psi_{3}, Y_{1}, Y_{2}, Y_{3}) \\
-    &= \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) \,\,
-    \pd_{\text{repl}, 1} (\psi_{1}, Y_{1} \mid \phi_{1 \cap 2}) \,\,
-    \pd_{\text{repl}, 2} (\psi_{2}, Y_{2} \mid \phi_{1 \cap 2}, \phi_{2 \cap 3}) \,\,
-    \pd_{\text{repl}, 3} (\psi_{3}, Y_{3} \mid \phi_{2 \cap 3}) \label{eqn:melded-model-cond} \\
-    &= \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})
+\begin{equation}
+  \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y}) =
+    \pd_{\text{pool}}(\boldsymbol{\phi})
+    \prod_{\modelindex = 1}^{\Nm}
+      \pd_{\text{repl}, \modelindex}(\psi_{\modelindex}, Y_{\modelindex} \mid \boldsymbol{\phi})
+    =
+    \pd_{\text{pool}}(\boldsymbol{\phi})
+    \prod_{\modelindex =1}^{\Nm}
     \frac {
-      \pd_{1} (\phi_{1 \cap 2}, \psi_{1}, Y_{1})
+      \pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})
     } {
-      \pd_{1}(\phi_{1 \cap 2})
+      \pd_{\modelindex}(\phi_{\modelindex})
     }
-    \frac {
-      \pd_{2} (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})
-    } {
-      \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})
-    }
-    \frac {
-      \pd_{3} (\phi_{2 \cap 3}, \psi_{3}, Y_{3})
-    } {
-      \pd_{3}(\phi_{2 \cap 3})
-    },
   \label{eqn:melded-model-full}
-\end{align}
+\end{equation}

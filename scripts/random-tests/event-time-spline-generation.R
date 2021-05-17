@@ -8,42 +8,39 @@ source("scripts/common/plot-settings.R")
 
 n_point <- 100
 x_seq <- seq(from = 0, to = 1, length.out = n_point)
-n_internal_knot <- 1
+n_internal_knot <- 5
+internal_knots <- seq(
+  from = 0, 
+  to = 1, 
+  length.out = n_internal_knot + 2
+)[-c(1, n_internal_knot + 2)]
 
-X_mat <- iSpline(
+X_mat <- bSpline(
   x = x_seq,
-  knots = seq(
-    from = 0, 
-    to = 1, 
-    length.out = n_internal_knot + 2
-  )[-c(1, n_internal_knot + 2)],
-  Boundary.knots = c(0, 1)
-)
-
-X_prime_mat <- iSpline(
-  x = x_seq,
-  knots = seq(
-    from = 0, 
-    to = 1, 
-    length.out = n_internal_knot + 2
-  )[-c(1, n_internal_knot + 2)],
+  knots = internal_knots,
   Boundary.knots = c(0, 1),
-  derivs = 1
+  intercept = FALSE
 )
 
-matplot(X_mat, type = "l")
-matplot(X_prime_mat, type = "l")
+n_spline_coef <- ncol(X_mat)
 
-flat_const <- 1
-down_const <- 1 / 3
+matplot(x = x_seq, y = X_mat, type = "l", lty = "solid")
+abline(v = internal_knots, lty = "dashed", )
 
+scaling_factor <- 10
 n_mc <- 1000
+
+down_means <- seq(from = -1, to = -20, length.out = n_spline_coef)
+
 res <- mclapply(1 : n_mc, mc.cores = 5, function(iter_id) {
-  flat_vec <- -abs(rt(n = ncol(X_mat), df = 30) + 1) / flat_const
-  down_vec <- -abs(rt(n = ncol(X_mat), df = 10) + 1) / down_const
+  flat_vec <- array(dim = n_spline_coef)
+  down_vec <- array(dim = n_spline_coef)
   
-  flat_rand_intercept <- rnorm(n = 1, mean = 0, sd = 1)
-  down_rand_intercept <- rnorm(n = 1, mean = 0, sd = 1)
+  flat_vec <- rnorm(n = n_spline_coef, mean = 0, sd = 1) * scaling_factor
+  down_vec <- rnorm(n = n_spline_coef, mean = down_means, sd = 1) * scaling_factor
+  
+  flat_rand_intercept <- rnorm(n = 1, mean = 450, sd = 15)
+  down_rand_intercept <- rnorm(n = 1, mean = 430, sd = 15)
   
   plot_df <- data.frame(
     x = rep(x_seq, 2),
@@ -84,7 +81,7 @@ ggplot(plot_df, aes(x = x, col = col)) +
     alpha = 0.2
   ) + 
   geom_line(
-    data = tibble(x = c(0, 1), y = c(-10, -10)),
+    data = tibble(x = c(0, 1), y = c(300, 300)),
     aes(x = x , y = y),
     inherit.aes = FALSE
   )

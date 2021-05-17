@@ -129,13 +129,18 @@ make_patchwork_output_plot <- function(pooling_type, lambda_one_value) {
     phi_23_marginal_plot <- phi_23_marginal_plot + theme(axis.title.y = element_blank())
   }
 
-  p1 <- (phi_23_marginal_plot + base_plot + plot_spacer() + phi_12_marginal_plot +
+  p1 <- (
+    phi_23_marginal_plot + 
+    base_plot + 
+    plot_spacer() + 
+    phi_12_marginal_plot +
     plot_layout(
       ncol = 2,
       nrow = 2,
       widths = c(1, 9),
       heights = c(9, 1)
-    )) & 
+    )
+  ) & 
     theme(plot.margin = unit(c(0,0,0,0), units = "cm"))
 
   return(p1)

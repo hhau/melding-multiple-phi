@@ -1,0 +1,11 @@
+\begin{gather}
+  \pd_{\text{pool}}(\boldsymbol{\phi}) = 
+    \prod_{\modelindex = 1}^{\Nm}
+    \pd_{\text{pool}}(\phi_{\modelindex}),
+  \quad  \text{where for } \modelindex' = 1 \text{ or } \Nm, \text{ and } \modelindex = 2, \ldots, \Nm - 1 \\
+  \pd_{\text{pool}}(\phi_{\modelindex'}) =
+    g^{\modelindex'}(\pd_{\modelindex'}(\phi_{\modelindex' \cap \modelindex' + 1}), \pd_{\modelindex' + 1}(\phi_{\modelindex' \cap \modelindex' + 1})),\\
+  \pd_{\text{pool}}(\phi_{\modelindex}) =
+    g^{\modelindex}(\pd_{\modelindex - 1}(\phi_{\modelindex - 1 \cap \modelindex}), \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}), \pd_{\modelindex + 1}(\phi_{\modelindex \cap \modelindex + 1}))
+  \label{eqn:bad-alterative-one}
+\end{gather}

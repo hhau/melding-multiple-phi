@@ -34,7 +34,6 @@
 \let\Oldcap\cap
 \renewcommand{\cap}{\mathrel{\mathsmaller{\Oldcap}}}
 
-
 % pd stands for: probability distribution and is useful to distringuish
 % marignals for probabilities specifically p(p_{1}) and the like.
 \newcommand{\pd}{\text{p}}
@@ -91,3 +90,10 @@
 \newtheorem{corollary}{Corollary}[theorem]
 
 \DeclareMathOperator*{\argmin}{arg\,min}
+
+% ARDS example in text commands
+\newcommand{\paoii}{PaO\textsubscript{2}}
+\newcommand{\fioii}{FiO\textsubscript{2}}
+\newcommand{\spoii}{SpO\textsubscript{2}}
+\newcommand{\pfratio}{\paoii/\fioii}
+\newcommand{\sfratio}{\spoii/\fioii}

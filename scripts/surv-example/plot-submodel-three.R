@@ -1,74 +1,23 @@
-library(ggplot2)
-library(tidybayes)
 library(dplyr)
 
 source("scripts/common/plot-settings.R")
-source("scripts/common/mcmc-util.R")
 
-# read in data
-simulated_data <- readRDS(
-  file = "rds/surv-example/submodel-three-simulated-data.rds"
-)
+submodel_three_plot_tbl <- readRDS("rds/surv-example/plot-submodel-3-data.rds")
 
-sim_settings <- readRDS(
-  "rds/surv-example/simulation-settings-and-joint-data.rds"
-)
-
-# read in model output
-model_output <- readRDS(
-  file = "rds/surv-example/submodel-three-output.rds"
-)
-
-# build the first data plot
-base_plot <- ggplot(simulated_data, aes(x = time, y = measurement)) +
-  geom_point() +
-  facet_wrap(~ patient_id) +
-  bayesplot:::force_x_axis_in_facets() +
-  theme(panel.spacing.x = unit(0.8, "lines"))
-
-# add the posterior mean + 95% quantile interval
-# this is a little slow, could consider caching?
-# really should store all intermediary data
-res <- model_output$samples %>%
-  array_to_mcmc_list() %>%  
-  spread_draws(plot_mu[patient_id, plot_x])
-
-res$plot_x <- sim_settings$x_plot[res$plot_x]
-
-posterior_plot_data <- res %>% 
-  point_interval(
-    .width = 0.8,
-    .point = mean,
-    .interval = qi,
-    .exclude = c(".chain", ".iteration", ".draw", ".row", "event_indicator")
-  )
-
-event_df <- tibble(
-  patient_id = 1 : sim_settings$n_patients,
-  event_indicator = sim_settings$event_indicator
-)  
-
-posterior_plot_data <- posterior_plot_data %>%
-  left_join(event_df, by = c("patient_id" = "patient_id")) %>% 
-  mutate(event_indicator = as.factor(event_indicator))
-
-with_post_mean <- base_plot + 
+p1 <- ggplot(submodel_three_plot_tbl) +
+  geom_point(aes(x = time, y = y_point)) +
   geom_line(
-    data = posterior_plot_data, 
-    aes(x = plot_x, y = plot_mu, col = event_indicator),
-    inherit.aes = FALSE
+    data = submodel_three_plot_tbl %>% filter(!is.na(y_mean)),
+    mapping = aes(x = time, y = y_mean, linetype = event_indicator)
   ) +
   geom_ribbon(
-    data = posterior_plot_data, 
-    aes(x = plot_x, ymin = .lower, ymax = .upper),
-    inherit.aes = FALSE,
+    data = submodel_three_plot_tbl %>% filter(!is.na(y_lower)),
+    aes(x = time, ymin = y_lower, ymax = y_upper), 
     alpha = 0.2
   ) +
-  theme(
-    legend.position = "none"
-  )
+  facet_wrap(vars(patient_id))
 
 ggsave_fullpage(
   filename = "plots/surv-example/submodel-three-posterior.pdf",
-  plot = with_post_mean
+  plot = p1
 )

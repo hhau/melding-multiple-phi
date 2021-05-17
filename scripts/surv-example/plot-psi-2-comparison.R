@@ -38,7 +38,7 @@ plot_tbl <- bind_rows(
   )
 
 p1 <- ggplot(
-  plot_tbl, 
+  plot_tbl,
   aes(x = .value, colour = method, linetype = method)
 ) +
   geom_density() +
@@ -57,7 +57,7 @@ p1 <- ggplot(
       "point-1-meld-23" = TeX("Fix $\\phi_{1 \\bigcap 2}$, meld $\\phi_{2 \\bigcap 3}$"),
       "point-3-meld-12" = TeX("Meld $\\phi_{1 \\bigcap 2}$, fix $\\phi_{2 \\bigcap 3}$")
     )
-  ) + 
+  ) +
   scale_linetype_manual(
     values = c(
       "melding" = "solid",

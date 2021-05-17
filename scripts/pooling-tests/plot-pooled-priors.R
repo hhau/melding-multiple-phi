@@ -21,7 +21,7 @@ sigma_mat <- matrix(c(1, 0.8, 0.8, 1), ncol = 2, nrow = 2)
 
 n_lambda <- 5
 pooling_methods <- c("logarithmic", "linear")
-lambda_one_values <- seq(from = 0, to = 0.5, length.out = n_lambda )
+lambda_one_values <- seq(from = 0, to = 0.5, length.out = n_lambda)
 control_df <- expand.grid(
   pooling_method = pooling_methods, 
   lambda_one_value = lambda_one_values

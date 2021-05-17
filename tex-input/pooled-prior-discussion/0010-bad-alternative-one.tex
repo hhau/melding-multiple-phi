@@ -1,0 +1,9 @@
+\begin{equation}
+  \pd_{\text{pool}}(\boldsymbol{\phi}) = 
+    \prod_{\modelindex = 1}^{\Nm - 1}
+    \pd_{\text{pool}, \modelindex}(\phi_{\modelindex \cap \modelindex + 1}),
+  \quad
+  \pd_{\text{pool}, \modelindex}(\phi_{\modelindex \cap \modelindex + 1}) =
+  h_{\modelindex}(\pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1}), \pd_{\modelindex + 1}(\phi_{\modelindex \cap \modelindex + 1})).
+  \label{eqn:bad-alternative-one}
+\end{equation}

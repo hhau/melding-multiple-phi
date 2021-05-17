@@ -8,7 +8,7 @@ papersize: a4
 geometry: margin=2.25cm
 bibliography: ../bibliography/multi-phi-bib.bib
 csl: ../bibliography/journal-of-the-royal-statistical-society.csl
-output: 
+output:
   html_document:
     code_folding: hide
 ---
@@ -24,16 +24,16 @@ The next step is to meld it with a standard Weibull survival model.
 
 # preliminary tests
 
-As a preliminary test, I take one sample of the event times from $\text{p}_{1}$'s posterior, and treating it as data in a standard survival model. 
+As a preliminary test, I take one sample of the event times from $\text{p}_{1}$'s posterior, and treating it as data in a standard survival model.
 I also simulate one baseline covariate, with non-zero effect.
-This lets me compare the results from my implementation to standard survival model implementations. 
+This lets me compare the results from my implementation to standard survival model implementations.
 To make the outputs roughly comparable, I have to centre the covariate and scale the event time to $[0, 1]$.
 Even then, I can't get the various survival packages to agree on the sign
 of the coefficients nor the estimate of the hazard shape $\lambda$.
 I think this suggests there's something wrong with my implementation?
 
 ```{r pkgs, include = FALSE, message = FALSE, warning = FALSE, comment = NA}
-library(rstan) 
+library(rstan)
 library(rstanarm) # for stan_surv
 library(flexsurv) # for flexsurvreg
 library(bayesplot)
@@ -48,24 +48,24 @@ event_time_names <- sprintf("event_time[%d]", 1 : n_patients)
 
 stan_data <- list(
   n_patients = length(submodel_two_data$patient_id),
-  baseline_measurement = submodel_two_data$baseline_val, 
+  baseline_measurement = submodel_two_data$baseline_val,
   event_time = submodel_one_output$samples[
-    sample(1 : dim(submodel_one_output$samples)[1], 1), 
-    sample(1 : dim(submodel_one_output$samples)[2], 1), 
+    sample(1 : dim(submodel_one_output$samples)[1], 1),
+    sample(1 : dim(submodel_one_output$samples)[2], 1),
     event_time_names
   ]
 )
 
-stan_data$log_crude_event_rate <- 
+stan_data$log_crude_event_rate <-
   log(sum(stan_data$event_time) / stan_data$n_patients)
-    
+
 rescaled_stan_data <- stan_data
 rescaled_stan_data$event_time <- with(stan_data, event_time / max(event_time))
 rescaled_stan_data$baseline_measurement <- scale(
     stan_data$baseline_measurement,
     center = TRUE,
     scale = FALSE
-  ) %>% 
+  ) %>%
   as.numeric()
 
 surv_reg_df <- data.frame(
@@ -89,7 +89,7 @@ print(test_fit, digits = 4, probs = c(0.025, 0.975))
 ```
 Which uses the following Stan model/code, which I think is right (it is based of Appendix A.2 of @brilleman_bayesian_2020):
 
-<details><summary>Show Stan code</summary>
+<details><summary><b>Show Stan code</b></summary>
 ```{r stan_model_code, echo = FALSE, comment = NA}
 cat(readLines("../scripts/surv-example/models/submodel-two-psi-step.stan"), sep = "\n")
 ```
@@ -101,8 +101,8 @@ This uses Stan to sample a Weibull survival model as defined in @brilleman_bayes
 
 ```{r stan_surv, message = FALSE, warning = FALSE, comment = NA}
 res_surv_stan <- stan_surv(
-  Surv(event_time, event_indicator) ~ baseline, 
-  data = surv_reg_df, 
+  Surv(event_time, event_indicator) ~ baseline,
+  data = surv_reg_df,
   basehaz = "weibull",
   cores = 4,
   refresh = 0
@@ -115,12 +115,12 @@ print(res_surv_stan, digits = 4)
 # flexsurv
 
 `flexsurv` doesn't seem to report its estimate of the intercept, and has two parameters for the Weibull distribution, shape and scale.
-The versions of the Weibull survival model I've read all only have one (shape), maybe other packages do some kind of transformation of the response? 
+The versions of the Weibull survival model I've read all only have one (shape), maybe other packages do some kind of transformation of the response?
 
 ```{r flexsurv, message = FALSE, warning = FALSE, comment = NA}
 res_flex <- flexsurvreg(
-  Surv(event_time, event_indicator) ~ 1 + baseline, 
-  data = surv_reg_df, 
+  Surv(event_time, event_indicator) ~ 1 + baseline,
+  data = surv_reg_df,
   dist = "weibull",
 )
 
@@ -131,8 +131,8 @@ print(res_flex, digits = 4)
 
 ```{r survival, message = FALSE, warning = FALSE, comment = NA}
 res_surv <- survreg(
-  Surv(event_time, event_indicator) ~ 1 + baseline, 
-  data = surv_reg_df, 
+  Surv(event_time, event_indicator) ~ 1 + baseline,
+  data = surv_reg_df,
   dist = "weibull"
 )
 

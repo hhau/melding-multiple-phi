@@ -1,9 +1,11 @@
-\begin{equation}
-  \pd_{\text{pool}}(\boldsymbol{\phi}) \, \propto \,
-  \prod_{\modelindex = 1}^{\Nm - 1}
-    \pd_{\text{pool}, \modelindex} (\phi_{\modelindex \cap \modelindex + 1}),
-  \quad
-  \pd_{\text{pool}, \modelindex} (\phi_{\modelindex \cap \modelindex + 1}) =
-  \lambda_{1, \modelindex} \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1}) + \lambda_{2, \modelindex} \pd_{\modelindex + 1}(\phi_{\modelindex \cap \modelindex + 1}),
-  \label{eqn:M-model-linear-pooling}
-\end{equation}
+\begin{gather}
+  \pd_{\text{pool}, \modelindex}(\phi_{\modelindex \cap \modelindex + 1}) \, \propto \,
+  \lambda_{\modelindex, 1}\pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1}) +
+  \lambda_{\modelindex, 2}\pd_{\modelindex + 1}(\phi_{\modelindex \cap \modelindex + 1}),
+  \label{eqn:M-model-linear-pooling-one} \\[1em]
+  \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1}) = 
+    \int 
+    \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})
+    \text{d}\phi_{\modelindex - 1 \cap \modelindex},
+  \label{eqn:M-model-linear-pooling-two}
+\end{gather}
