@@ -57,8 +57,7 @@ model {
       real t2 = pow(breakpoint[ii], hazard_gamma);
       real t3 = exp(alpha * eta_slope[ii][2]);
       real t4 = pow(event_time[ii], hazard_gamma);
-      real t5 = pow(breakpoint[ii], hazard_gamma);
-      real temp_upper = (t1 * t1) + (t3) * (t4 - t5);
+      real temp_upper = (t1 * t2) + (t3) * (t4 - t2);
       target += temp_surv_prob_common * temp_upper;
     }
   }

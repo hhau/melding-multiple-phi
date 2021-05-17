@@ -284,9 +284,9 @@ Generic methodology for efficiently sampling arbitrary numbers of submodels in p
 
 The sequential sampler assumes that the pooled prior decomposes such that
 \input{tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
-This is necessary to avoid sampling all the elements of $\boldsymbol{\phi}$ in the first stage.
-All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as all but $\pd_{3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ can be assumed to be flat.
-Infeasible regions of the posterior can be avoided by including a portion of the pooled prior in the earlier stages, thus reducing the computational cost.
+This is necessary to avoid sampling all elements of $\boldsymbol{\phi}$ in the first stage.
+All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as we can assume all but $\pd_{3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are improper, flat distributions.
+However, including some portion of the pooled prior in each stage of the sampler can improve performance, and eliminate computational instabilities when submodel likelihoods contain little information.
 
 #### Stage one
 
@@ -329,8 +329,7 @@ The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
 
 The parallel sampler assumes that the pooled prior decomposes such that
 \input{tex-input/dc-sampler/0002-parallel-decomposition.tex}
-All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming  $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are flat priors.
-The benefits for considering fractions of the pooled prior in earlier stages are the same as the sequential sampler.
+All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are improper, flat distributions.
 
 #### Stage one
 
@@ -414,7 +413,7 @@ To estimate population abundance, a two level model is used: the first models th
 Denote the total number of juvenile and adult females in the population at time $t$ as $\boldsymbol{x}_{t} = \left[x_{J, t}, x_{A, t}\right]$.
 If $\text{sur}_{t}$ adult females survive from time $t - 1$ to time $t$, and $\text{imm}_{t}$ adult females immigrate over the same time period, then the latent, population level model is
 \input{tex-input/owls-example/0020-count-data-submodel.tex}
-where $\eta$ is the immigration rate.
+where $\eta_{t}$ is the immigration rate.
 We assume the initial population sizes $x_{J, 1}$ and $x_{A, 1}$ are both a priori independently uniformly distributed over $\{0, 1, \ldots, 50\}$.
 The observation model is
 \input{tex-input/owls-example/0021-observation-process.tex}
@@ -463,6 +462,11 @@ knitr::include_graphics("plots/owls-example/subposteriors.pdf")
 <!-- ```{r phi_qq_compare, fig.cap = "Quantile-Quantile plot of ($\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3}$) for the IPM posterior (y-axis) and melded posterior (x-axis). The empirical quantiles are displayed as a solid red line, and the optimal quantile is shown as a dashed black line. The melded posterior quantiles obtained using the normal approximation are plotted as a dot-dash blue line."}
 knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 ``` -->
+
+```{r phi_subpost_melding_only, fig.cap = 'Figure \\ref{fig:phi_subpost} without the individual subposteriors.'}
+knitr::include_graphics('plots/owls-example/subposteriors-melding-only.pdf')
+```
+
 
 We empirically validate our methodology and sampler by comparing the melded posterior samples to a large sample -- 6 chains of $2 \times 10^5$ iterations each -- from the original IPM posterior.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the common quantities from the individual submodels, the melded models, and the original IPM.

@@ -22,7 +22,7 @@ parameters {
 }
 
 transformed parameters {
-  vector [n_icu_stays] breakpoint = breakpoint_raw .* widths;
+  vector [n_icu_stays] breakpoint = breakpoint_raw .* widths + breakpoint_lower;
   vector [n_total_obs] mu;
 
   for (ii in 1 : n_icu_stays) {
@@ -48,7 +48,6 @@ model {
   for (ii in 1 : n_icu_stays) {
     target += normal_lpdf(eta_slope[ii] | 5000, 1000);
   }
-
 
   target += normal_lpdf(y_vec | mu, y_sigma);
   // target += normal_lpdf(beta_zero | 7000, 1000);

@@ -6,10 +6,22 @@ library(stringr)
 
 source("scripts/common/logger-setup.R")
 source("scripts/mimic-example/GLOBALS.R")
+source("scripts/common/setup-argparse.R")
 
-submodel_one_output <- readRDS("rds/mimic-example/submodel-1-event-times-samples-array.rds")
-submodel_three_output <- readRDS("rds/mimic-example/submodel-3-fluid-samples-array.rds")
-submodel_two_data <- readRDS("rds/mimic-example/baseline-covariate-data.rds")
+parser$add_argument("--pf-event-time-samples-array")
+parser$add_argument("--fluid-model-samples-array")
+parser$add_argument("--baseline-data")
+parser$add_argument("--psi-step-stan-model")
+parser$add_argument("--phi-step-indiv-stan-model")
+parser$add_argument("--output-phi-12-samples")
+parser$add_argument("--output-phi-23-samples")
+parser$add_argument("--output-psi-1-indices")
+parser$add_argument("--output-psi-3-indices")
+args <- parser$parse_args()
+
+submodel_one_output <- readRDS(args$pf_event_time_samples_array)
+submodel_three_output <- readRDS(args$fluid_model_samples_array)
+submodel_two_data <- readRDS(args$baseline_data)
 
 n_icu_stays <- nrow(submodel_two_data)
 
@@ -94,17 +106,13 @@ stan_data_psi_base <- list(
 
 flog.info("MIMIC-stage-two: compiling models", name = base_filename)
 
-prefit_psi_two_step <- stan_model(
-  "scripts/mimic-example/models/surv-psi-step.stan"
-)
+prefit_psi_two_step <- stan_model(args$psi_step_stan_model)
 
 # NB: we can use the same stan file/fit for both phi_{1 \cap 2} and
 # phi_{2 \cap 3}, because we can control which parameters change / which
 # are the same.
 # and because we do both phi_{1 \cap 2} and phi_{2 \cap 3} element-at-a-time
-prefit_phi_step_indiv <- stan_model(
-  "scripts/mimic-example/models/surv-phi-step-indiv.stan"
-)
+prefit_phi_step_indiv <- stan_model(args$phi_step_indiv_stan_model)
 
 stanfit_phi_step_indiv <- sampling(
   prefit_phi_step_indiv,
@@ -458,25 +466,25 @@ flog.info("MIMIC-stage-two: writing to disk", name = base_filename)
 
 saveRDS(
   object = phi_12_samples,
-  file = "rds/mimic-example/stage-two-phi-12-samples.rds"
+  file = args$output_phi_12_samples
 )
 
 saveRDS(
   object = phi_23_samples,
-  file = "rds/mimic-example/stage-two-phi-23-samples.rds"
+  file = args$output_phi_23_samples
 )
 
 saveRDS(
   object = psi_2_samples,
-  file = "rds/mimic-example/stage-two-psi-2-samples.rds"
+  file = args$output
 )
 
 saveRDS(
   object = psi_1_indices,
-  file = "rds/mimic-example/stage-two-psi-1-indices.rds"
+  file = args$output_psi_1_indices
 )
 
 saveRDS(
   object = psi_3_indices,
-  file = "rds/mimic-example/stage-two-psi-3-indices.rds"
+  file = args$output_psi_3_indices
 )

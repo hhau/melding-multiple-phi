@@ -3,10 +3,22 @@ library(dplyr)
 
 source("scripts/common/logger-setup.R")
 source("scripts/mimic-example/GLOBALS.R")
+source("scripts/common/setup-argparse.R")
 
-submodel_one_median_both <- readRDS("rds/mimic-example/median-event-time-data.rds")
-submodel_two_data <- readRDS("rds/mimic-example/baseline-covariate-data.rds")
-submodel_three_median <- readRDS("rds/mimic-example/median-fluid-fit-data.rds")
+flog.info(
+  'mimic-example: fitting survival model with fixed (median) values',
+  name = base_filename
+)
+
+parser$add_argument("--pf-event-time-median")
+parser$add_argument("--fluid-model-median")
+parser$add_argument("--baseline-data")
+parser$add_argument("--psi-step-stan-model")
+args <- parser$parse_args()
+
+submodel_one_median_both <- readRDS(args$pf_event_time_median)
+submodel_three_median <- readRDS(args$fluid_model_median)
+submodel_two_data <- readRDS(args$baseline_data)
 
 submodel_one_median <- submodel_one_median_both[[1]]
 log_crude_event_rate <- submodel_one_median_both[[2]]
@@ -35,23 +47,23 @@ stan_data <- list(
   n_theta = ncol(baseline_data_x_mat),
   baseline_data_x = baseline_data_x_mat,
   log_crude_event_rate = as.numeric(log_crude_event_rate),
-  event_indicator = submodel_one_median %>% 
-    filter(.variable == 'event_indicator') %>% 
+  event_indicator = submodel_one_median %>%
+    filter(.variable == 'event_indicator') %>%
     pull(median),
-  event_time = submodel_one_median %>% 
-    filter(.variable == 'event_time') %>% 
+  event_time = submodel_one_median %>%
+    filter(.variable == 'event_time') %>%
     pull(median),
-  breakpoint = submodel_three_median %>% 
-    filter(.variable == 'breakpoint') %>% 
+  breakpoint = submodel_three_median %>%
+    filter(.variable == 'breakpoint') %>%
     pull(median),
-  eta_slope = submodel_three_median %>% 
-    filter(.variable == 'eta_slope') %>% 
-    arrange(b, i) %>% 
-    pull(median) %>% 
+  eta_slope = submodel_three_median %>%
+    filter(.variable == 'eta_slope') %>%
+    arrange(b, i) %>%
+    pull(median) %>%
     array(dim = c(n_icu_stays, n_segments))
 )
 
-prefit <- stan_model("scripts/mimic-example/models/surv-psi-step.stan")
+prefit <- stan_model(args$psi_step_stan_model)
 model_fit <- sampling(
   prefit,
   data = stan_data,
@@ -64,6 +76,6 @@ model_fit <- sampling(
 median_samples <- as.array(model_fit)
 
 saveRDS(
-  file = 'rds/mimic-example/stage-two-median-inputs-psi-2-samples.rds',
+  file = args$output,
   object = median_samples
 )

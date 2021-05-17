@@ -21,7 +21,7 @@ model {
   # 5.2 Define the priors for the parameters
   #*******************************************
   for (i in 3 : 6) {
-    v[i] ~ dnorm(0, 0.5) T(-10, 10)
+    v[i] ~ dnorm(0, 0.25) T(-10, 10)
   }
   # Wed 11 Mar 14:54:05 2020
   # change to constant rho/fec

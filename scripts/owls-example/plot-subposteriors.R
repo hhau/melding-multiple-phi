@@ -192,60 +192,67 @@ ggsave_fullpage(
 
 # this plot filters out the count data submodel and its' wide credible intervals
 # all the other models look spot on the same.
-# ggplot(
-#   data = plot_tbl %>% filter(model_type != "count-data-submodel"),
-#   aes(y = model_type, x = .value, colour = model_type)
-# ) +
-#   facet_wrap(
-#     vars(orig_par),
-#     scales = "free",
-#     ncol = 3,
-#     nrow = 1,
-#     labeller = label_parsed
-#   ) +
-#   ggdist::geom_interval(
-#     mapping = aes(xmin = .lower, xmax = .upper),
-#     alpha = plot_tbl %>%
-#       filter(model_type != "count-data-submodel") %>% 
-#       mutate(alpha = rescale(1 - .width, to = c(0.1, 1))) %>%
-#       pull(alpha),
-#     size = 9,
-#     orientation = "horizontal"
-#   ) +
-#   scale_size_continuous(range = c(12, 20)) +
-#   scale_color_manual(
-#     aesthetics = "colour",
-#     name = "Model",
-#     values = c(
-#       "original-ipm-model" = "#000000",
-#       "capture-recapture-submodel" = highlight_col,
-#       "count-data-submodel" = greens[2],
-#       "fecundity-submodel" = "#EE3377",
-#       "melded-model-z" = blues[1],
-#       "melded-model-log-pooling" = blues[2],
-#       "melded-model-lin-pooling" = blues[3],
-#       "melded-model-a-normal-approx" = "#666666"
-#     ),
-#     labels = c(
-#       "original-ipm-model" = expression("p"["ipm"]),
-#       "capture-recapture-submodel" = expression("p"[1]),
-#       "count-data-submodel" = expression("p"[2]),
-#       "fecundity-submodel" = expression("p"[3]),
-#       "melded-model-z" = expression("p"["meld"]),
-#       "melded-model-log-pooling" = expression("p"["meld," ~ "log"]),
-#       "melded-model-lin-pooling" = expression("p"["meld," ~ "lin"]),
-#       "melded-model-a-normal-approx" = expression(widehat("p")["meld"])
-#     ),
-#     guide = guide_legend(
-#       reverse = TRUE,
-#       override.aes = list(size = 4)
-#     )
-#   ) +
-#   theme(
-#     axis.text.y = element_blank(),
-#     axis.ticks.y = element_blank(),
-#     strip.text = element_text(size = 10),
-#     axis.text.x = element_text(size = rel(0.9))
-#   ) +
-#   xlab("") +
-#   ylab("") 
+p_melding_only <- ggplot(
+  data = plot_tbl %>% 
+    filter(grepl(pattern = '(original|melded)', x = model_type)),
+  aes(y = model_type, x = .value, colour = model_type)
+) +
+  facet_wrap(
+    vars(orig_par),
+    scales = "free",
+    ncol = 3,
+    nrow = 1,
+    labeller = label_parsed
+  ) +
+  ggdist::geom_interval(
+    mapping = aes(xmin = .lower, xmax = .upper),
+    alpha = plot_tbl %>%
+      filter(grepl(pattern = '(original|melded)', x = model_type)) %>%
+      mutate(alpha = rescale(1 - .width, to = c(0.2, 1))) %>%
+      pull(alpha),
+    size = 9,
+    orientation = "horizontal"
+  ) +
+  scale_size_continuous(range = c(12, 20)) +
+  scale_color_manual(
+    aesthetics = "colour",
+    name = "Model",
+    values = c(
+      "original-ipm-model" = "#000000",
+      "capture-recapture-submodel" = highlight_col,
+      "count-data-submodel" = greens[2],
+      "fecundity-submodel" = "#EE3377",
+      "melded-model-z" = blues[1],
+      "melded-model-log-pooling" = blues[2],
+      "melded-model-lin-pooling" = blues[3],
+      "melded-model-a-normal-approx" = "#666666"
+    ),
+    labels = c(
+      "original-ipm-model" = expression("p"["ipm"]),
+      "capture-recapture-submodel" = expression("p"[1]),
+      "count-data-submodel" = expression("p"[2]),
+      "fecundity-submodel" = expression("p"[3]),
+      "melded-model-z" = expression("p"["meld," ~ "PoE"]),
+      "melded-model-log-pooling" = expression("p"["meld," ~ "log"]),
+      "melded-model-lin-pooling" = expression("p"["meld," ~ "lin"]),
+      "melded-model-a-normal-approx" = expression(widehat("p")["meld"])
+    ),
+    guide = guide_legend(
+      reverse = TRUE,
+      override.aes = list(size = 4)
+    )
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    strip.text = element_text(size = 10),
+    axis.text.x = element_text(size = rel(0.9))
+  ) +
+  xlab("") +
+  ylab("")
+
+ggsave_fullpage(
+  filename = "plots/owls-example/subposteriors-melding-only.pdf",
+  plot = p_melding_only,
+  adjust_height = -15
+)

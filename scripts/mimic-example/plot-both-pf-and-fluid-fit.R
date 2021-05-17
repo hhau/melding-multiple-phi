@@ -131,7 +131,7 @@ p2 <- ggplot(
 ggsave(
   filename = args$output_small,
   plot = p2,
-  width = 5.5,
-  height = 3
+  width = 5.625,
+  height = 2.66
 )
 

@@ -1,12 +1,12 @@
 \begin{gather}
-    x_{J, t} \mid \boldsymbol{x}_{t - 1}, \rho, \delta_{J, F, t - 1} 
+    x_{J, t} \mid \boldsymbol{x}_{t - 1}, \rho, \delta_{J, F, t - 1}
     \,\, \sim \,\,
     \text{Poisson}\left(
       \left[x_{J, t - 1} + x_{A, t - 1}\right]
       \, \frac{\rho}{2} \,
-      \delta_{J, F, t - 1} 
+      \delta_{J, F, t - 1}
     \right),
-    \quad 
+    \quad
     x_{A, t} = \text{sur}_{t} + \text{imm}_{t}, \\
     \text{sur}_{t} \mid \boldsymbol{x}_{t - 1}, \delta_{A, F, t - 1}
     \,\, \sim \,\,
@@ -14,10 +14,10 @@
       x_{J, t - 1} + x_{A, t - 1},
       \delta_{A, F, t - 1}
     \right), \\
-    \text{imm}_{t} \mid \boldsymbol{x}_{t - 1}, \eta 
+    \text{imm}_{t} \mid \boldsymbol{x}_{t - 1}, \eta_{t}
     \,\, \sim\,\,
     \text{Poisson}\left(
-      \left[x_{J, t - 1} + x_{A, t - 1}\right] \eta\right
+      \left[x_{J, t - 1} + x_{A, t - 1}\right] \eta_{t}\right
     ),
   \label{eqn:count-data-submodel}
 \end{gather}
