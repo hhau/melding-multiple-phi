@@ -226,12 +226,12 @@ As per Equation (8.8) in @kalbfleisch_statistical_2002 the likelihood function f
     &= h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \exp\left\{-\sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i})\right\}.
 \end{align*}
 
-It is now necessary to make the following assumptions:
+It is now necessary to assume
 
-- That there are no shared elements in $\theta_{1}$ and $\theta_{2}$ and they are a priori independent.
-- That $\theta_{2}$ is not of interest, i.e. we wish to integrate/marginalise $\theta_{2}$ out of the likelihood.
+- that there are no shared elements in $\theta_{1}$ and $\theta_{2}$ and they are a priori independent,
+- that $\theta_{2}$ is not of interest, i.e. we wish to integrate/marginalise $\theta_{2}$ out of the likelihood.
 
-The joint model (given covariates $\boldsymbol{w}_{i}$) is
+The model (given covariates $\boldsymbol{w}_{i}$) is
 
 \begin{equation}
   \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) =
@@ -257,13 +257,13 @@ and if $d_{i} = 2$
   = S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int h_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2}.
   \label{eqn:competing-risks-deriv-two}
 \end{equation}
-The standard survival analysis setting considers $T_{i}$ as data.
-Thus the integrals in \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} are constants that do not depend on the parameters of interest, and can be ignored in the likelihood.
-The remaining components of \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} is the likelihood obtained by considering all non $d_{i} = 1$ events as censored.
-However, in our case $T_{i}$ is a parameter, and hence the the integrals are non-ignorable functions of $T_{i}$.
+Standard survival analyses consider $T_{i}$ as data.
+Thus, the integrals in \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} are constants that do not depend on the parameters of interest, and can be ignored in the partial-likelihood.
+The remaining components of \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} comprise the likelihood that would be obtained by considering all non $d_{i} = 1$ events as censored.
+However, in our case $T_{i}$ is a parameter, and hence the integrals are non-ignorable functions of $T_{i}$.
 
 - If $d_{i} = 2$, then $T_{i}$ is 'fixed' at $C_{i}$.
-- The type-indicator $d_{i}$ is now a parameter, where as the censoring indicator before was a function of a known censoring time and the observed event time.
+- The type-indicator $d_{i}$ is now a parameter, where as the censoring indicator before was a function of the known length-of-stay and the observed event time.
 - It's probably easiest to explicitly model the death/discharge event and opt for a piecewise constant hazard.
     - In this case, the likelihood is really just a mixture of an exponential distribution and a Weibull distribution, where the covariates only affect the scale parameter of the Weibull distribution.
 
@@ -295,5 +295,9 @@ Once we have expressions or estimates of the prior marginal distributions, we ne
 - Decide what type of pooling to use (probably all of them and compare)
 - Choose pooling weights, and run some kind of prior predictive check?
 - Apportion the pooled prior over the stages of the multi-stage sampler, and which stage to divide by the marginals.
+
+# Cohort selection criteria
+
+The individuals in our data are included based
 
 # Bibliography
