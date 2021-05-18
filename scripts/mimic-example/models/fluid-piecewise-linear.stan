@@ -17,7 +17,7 @@ transformed data {
 parameters {
   vector <lower = 0, upper = 1> [n_icu_stays] breakpoint_raw;
   vector <lower = 0> [2] eta_slope [n_icu_stays];
-  vector [n_icu_stays] eta_zero_raw;
+  vector <lower = 0> [n_icu_stays] eta_zero_raw;
   real <lower = 0> y_sigma;
 }
 
@@ -54,7 +54,7 @@ model {
 
   target += normal_lpdf(y_vec | mu, y_sigma);
   // target += normal_lpdf(beta_zero | 7000, 1000);
-  target += normal_lpdf(eta_zero_raw | 0, 250.0);
+  target += lognormal_lpdf(eta_zero_raw | 8.52, 0.47);
   target += beta_lpdf(breakpoint_raw | 5.0, 5.0);
   target += normal_lpdf(y_sigma | 0.0, 500.0);
 }
