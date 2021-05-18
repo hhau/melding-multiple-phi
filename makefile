@@ -487,7 +487,7 @@ MIMIC_PF_MODEL_SAMPLES_LONG = $(MIMIC_RDS)/submodel-1-pf-samples-long.rds
 MIMIC_PF_MODEL_SAMPLES_ARRAY = $(MIMIC_RDS)/submodel-1-pf-samples-array.rds
 MIMIC_PF_MODEL_SAMPLES_PLOT_MU = $(MIMIC_RDS)/submodel-1-pf-samples-plot-mu.rds
 
-$(MIMIC_PF_MODEL_SAMPLES_LONG) : \
+$(MIMIC_PF_MODEL_SAMPLES_LONG) $(MIMIC_PF_MODEL_SAMPLES_ARRAY) $(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) &: \
 	$(MIMIC_SCRIPTS)/fit-pf-spline-model.R \
 	$(MIMIC_PF_DATA_STAN) \
 	$(MIMIC_PF_SPLINE_MODEL_STAN) \
@@ -498,28 +498,25 @@ $(MIMIC_PF_MODEL_SAMPLES_LONG) : \
 		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
 		--output-array $(MIMIC_PF_MODEL_SAMPLES_ARRAY) \
 		--output-plot-mu $(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) \
-		--output $@
-
-$(MIMIC_PF_MODEL_SAMPLES_ARRAY) : $(MIMIC_PF_MODEL_SAMPLES_LONG)
-$(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) : $(MIMIC_PF_MODEL_SAMPLES_LONG)
+		--output $(MIMIC_PF_MODEL_SAMPLES_LONG)
 
 MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY = $(MIMIC_RDS)/submodel-1-event-times-samples-array.rds
 MIMIC_PF_EVENT_TIME_SAMPLES_LONG = $(MIMIC_RDS)/submodel-1-event-times-samples-long.rds
-$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) : \
+
+$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) &: \
 	$(MIMIC_SCRIPTS)/process-pf-model-for-event-times.R \
 	$(MIMIC_PF_DATA_LIST) \
 	$(MIMIC_PF_MODEL_SAMPLES_LONG)
 	$(RSCRIPT) $< \
-	--pf-data-list-format $(MIMIC_PF_DATA_LIST) \
-	--pf-submodel-samples-long $(MIMIC_PF_MODEL_SAMPLES_LONG) \
-	--output-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
-	--output $@
-
-$(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) : $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY)
+		--pf-data-list-format $(MIMIC_PF_DATA_LIST) \
+		--pf-submodel-samples-long $(MIMIC_PF_MODEL_SAMPLES_LONG) \
+		--output-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
+		--output $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY)
 
 MIMIC_PF_FITTED_PLOT = $(MIMIC_PLOTS)/pf-data-and-bspline-fit.png
 MIMIC_PF_FITTED_PLOT_TBL = $(MIMIC_RDS)/pf-data-and-bspline-plot-tbl.rds
-$(MIMIC_PF_FITTED_PLOT) : \
+
+$(MIMIC_PF_FITTED_PLOT) $(MIMIC_PF_FITTED_PLOT_TBL) &: \
 	$(MIMIC_SCRIPTS)/plot-pf-spline-fit.R \
 	$(MIMIC_PF_MODEL_SAMPLES_PLOT_MU) \
 	$(MIMIC_PF_DATA_LIST) \
@@ -534,9 +531,7 @@ $(MIMIC_PF_FITTED_PLOT) : \
 		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
 		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
 		--output-plot-tbl $(MIMIC_PF_FITTED_PLOT_TBL) \
-		--output $@
-
-$(MIMIC_PF_FITTED_PLOT_TBL) : $(MIMIC_PF_FITTED_PLOT)
+		--output $(MIMIC_PF_FITTED_PLOT)
 
 MIMIC_DEMOGRAPHICS_QUERY = $(MIMIC_QUERIES)/demographics.sql
 MIMIC_MEDIAN_FIRST_DAY_LABS_QUERY = $(MIMIC_QUERIES)/median-labs-first-day.sql
@@ -555,7 +550,8 @@ $(MIMIC_BASELINE_DATA) : \
 
 MIMIC_CUMULATIVE_FLUID_DATA = $(MIMIC_RDS)/cumulative-summarised-fluid-data.rds
 MIMIC_FLUID_DATA_STAN = $(MIMIC_RDS)/submodel-3-fluid-data-stan-format.rds
-$(MIMIC_FLUID_DATA_STAN) : \
+
+$(MIMIC_FLUID_DATA_STAN) $(MIMIC_CUMULATIVE_FLUID_DATA) &: \
 	$(MIMIC_SCRIPTS)/prepare-fluid-stan-data.R \
 	$(MIMIC_GLOBAL_SETTINGS) \
 	$(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS)
@@ -563,16 +559,14 @@ $(MIMIC_FLUID_DATA_STAN) : \
 		--combined-pf-and-summarised-fluid-data $(MIMIC_COMBINED_PF_SUMMARISED_FLUIDS) \
 		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
 		--output-cumulative-fluid $(MIMIC_CUMULATIVE_FLUID_DATA) \
-		--output $@
-
-$(MIMIC_CUMULATIVE_FLUID_DATA) : $(MIMIC_FLUID_DATA_STAN)
+		--output $(MIMIC_FLUID_DATA_STAN)
 
 MIMIC_FLUID_MODEL_SAMPLES_LONG = $(MIMIC_RDS)/submodel-3-fluid-samples-long.rds
 MIMIC_FLUID_MODEL_SAMPLES_ARRAY = $(MIMIC_RDS)/submodel-3-fluid-samples-array.rds
 MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU = $(MIMIC_RDS)/submodel-3-fluid-samples-plot-mu.rds
 MIMIC_FLUID_PIECEWISE_MODEL_STAN = $(MIMIC_MODELS)/fluid-piecewise-linear.stan
 
-$(MIMIC_FLUID_MODEL_SAMPLES_LONG) : \
+$(MIMIC_FLUID_MODEL_SAMPLES_LONG) $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) $(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) &: \
 	$(MIMIC_SCRIPTS)/fit-fluid-piecewise-model.R \
 	$(MIMIC_FLUID_DATA_STAN) \
 	$(MIMIC_FLUID_PIECEWISE_MODEL_STAN) \
@@ -583,14 +577,12 @@ $(MIMIC_FLUID_MODEL_SAMPLES_LONG) : \
 		--mimic-globals $(MIMIC_GLOBAL_SETTINGS) \
 		--output-array $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
 		--output-plot-mu $(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) \
-		--output $@
-
-$(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) : $(MIMIC_FLUID_MODEL_SAMPLES_LONG)
-$(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) : $(MIMIC_FLUID_MODEL_SAMPLES_LONG)
+		--output $(MIMIC_FLUID_MODEL_SAMPLES_LONG)
 
 MIMIC_FLUID_FITTED_PLOT = $(MIMIC_PLOTS)/fluid-data-and-piecewise-fit.png
 MIMIC_FLUID_FITTED_PLOT_MU_TBL = $(MIMIC_RDS)/fluid-data-piecewise-plot-mu-tbl.rds
-$(MIMIC_FLUID_FITTED_PLOT) : \
+
+$(MIMIC_FLUID_FITTED_PLOT) $(MIMIC_FLUID_FITTED_PLOT_MU_TBL) &: \
 	$(MIMIC_SCRIPTS)/plot-fluid-piecewise-fit.R \
 	$(MIMIC_GLOBAL_SETTINGS) \
 	$(MIMIC_CUMULATIVE_FLUID_DATA) \
@@ -602,13 +594,12 @@ $(MIMIC_FLUID_FITTED_PLOT) : \
 		--fluid-stan-data $(MIMIC_FLUID_DATA_STAN) \
 		--fluid-plot-mu $(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) \
 		--output-plot-tbl $(MIMIC_FLUID_FITTED_PLOT_MU_TBL) \
-		--output $@
-
-$(MIMIC_FLUID_FITTED_PLOT_MU_TBL) : $(MIMIC_FLUID_FITTED_PLOT)
+		--output $(MIMIC_FLUID_FITTED_PLOT)
 
 MIMIC_BOTH_FITTED_PLOT = $(MIMIC_PLOTS)/combined-pf-fluid-fit-plot.png
 MIMIC_BOTH_FITTED_PLOT_SMALL = $(MIMIC_PLOTS)/combined-pf-fluid-fit-plot-small.pdf
-$(MIMIC_BOTH_FITTED_PLOT) : \
+
+$(MIMIC_BOTH_FITTED_PLOT) $(MIMIC_BOTH_FITTED_PLOT_SMALL) &: \
 	$(MIMIC_SCRIPTS)/plot-both-pf-and-fluid-fit.R \
 	$(MIMIC_CUMULATIVE_FLUID_DATA) \
 	$(MIMIC_FLUID_FITTED_PLOT_MU_TBL) \
@@ -622,21 +613,23 @@ $(MIMIC_BOTH_FITTED_PLOT) : \
 		--pf-plot-tbl $(MIMIC_PF_FITTED_PLOT_TBL) \
 		--pf-event-time-samples-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
 		--output-small $(MIMIC_BOTH_FITTED_PLOT_SMALL) \
-		--output $@
-
-$(MIMIC_BOTH_FITTED_PLOT_SMALL) : $(MIMIC_BOTH_FITTED_PLOT)
+		--output $(MIMIC_BOTH_FITTED_PLOT)
 
 # Fit stage two using parallel multi-stage sampler
+MIMIC_STAGE_TWO_PSI_2_SAMPLES = $(MIMIC_RDS)/stage-two-psi-2-samples.rds
 MIMIC_STAGE_TWO_PHI_12_SAMPLES = $(MIMIC_RDS)/stage-two-phi-12-samples.rds
 MIMIC_STAGE_TWO_PHI_23_SAMPLES = $(MIMIC_RDS)/stage-two-phi-23-samples.rds
-MIMIC_STAGE_TWO_PSI_2_SAMPLES = $(MIMIC_RDS)/stage-two-psi-2-samples.rds
 MIMIC_STAGE_TWO_PSI_1_INDICES = $(MIMIC_RDS)/stage-two-psi-1-indices.rds
 MIMIC_STAGE_TWO_PSI_3_INDICES = $(MIMIC_RDS)/stage-two-psi-3-indices.rds
 
 MIMIC_SURV_PSI_STEP_STAN_MODEL = $(MIMIC_MODELS)/surv-psi-step.stan
 MIMIC_SURV_PHI_STEP_INDIV_MODEL = $(MIMIC_MODELS)/surv-phi-step-indiv.stan
 
-$(MIMIC_STAGE_TWO_PSI_2_SAMPLES) : \
+$(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
+$(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
+$(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
+$(MIMIC_STAGE_TWO_PSI_1_INDICES) \
+$(MIMIC_STAGE_TWO_PSI_3_INDICES) &: \
 	$(MIMIC_SCRIPTS)/fit-stage-two.R \
 	$(MIMIC_GLOBAL_SETTINGS) \
 	$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
@@ -654,13 +647,13 @@ $(MIMIC_STAGE_TWO_PSI_2_SAMPLES) : \
 		--output-phi-23-samples $(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
 		--output-psi-1-indices $(MIMIC_STAGE_TWO_PSI_1_INDICES) \
 		--output-psi-3-indices $(MIMIC_STAGE_TWO_PSI_3_INDICES) \
-		--output $@
+		--output $(MIMIC_STAGE_TWO_PSI_2_SAMPLES
 
 # Start processing and fitting stage two with fixed subposterior median estimates.
 MIMIC_SUBPOST_MEDIAN_EVENT_TIME = $(MIMIC_RDS)/median-event-time-data.rds
 MIMIC_SUBPOST_MEDIAN_FLUID_FIT = $(MIMIC_RDS)/median-fluid-fit-data.rds
 
-$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) : \
+$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) $(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) &: \
 	$(MIMIC_SCRIPTS)/process-stage-one-outputs.R \
 	$(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
 	$(MIMIC_FLUID_MODEL_SAMPLES_LONG)
@@ -668,9 +661,7 @@ $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) : \
 		--pf-event-time-samples-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
 		--fluid-model-samples-long $(MIMIC_FLUID_MODEL_SAMPLES_LONG) \
 		--output-fluid $(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
-		--output $@
-
-$(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) : $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME)
+		--output $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME)
 
 MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES = $(MIMIC_RDS)/stage-two-median-inputs-psi-2-samples.rds
 $(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) : \
@@ -689,7 +680,8 @@ $(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) : \
 
 MIMIC_COMPARE_PSI_2_PLOT = $(MIMIC_PLOTS)/psi-2-method-comparison.pdf
 MIMIC_COMPARE_PSI_2_PLOT_SMALL = $(MIMIC_PLOTS)/psi-2-method-comparison-small.pdf
-$(MIMIC_COMPARE_PSI_2_PLOT) : \
+
+$(MIMIC_COMPARE_PSI_2_PLOT) $(MIMIC_COMPARE_PSI_2_PLOT_SMALL) &: \
 	$(MIMIC_SCRIPTS)/plot-psi-2-comparison.R \
 	$(PLOT_SETTINGS) \
 	$(MCMC_UTIL) \
@@ -699,7 +691,9 @@ $(MIMIC_COMPARE_PSI_2_PLOT) : \
 		--full-melding-psi-2-samples $(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
 		--both-fixed-psi-2-samples $(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) \
 		--output-small $(MIMIC_COMPARE_PSI_2_PLOT_SMALL) \
-		--output $@
+		--output $(MIMIC_COMPARE_PSI_2_PLOT)
+
+ALL_PLOTS += $(MIMIC_COMPARE_PSI_2_PLOT_SMALL)
 
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input
