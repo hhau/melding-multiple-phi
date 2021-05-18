@@ -52,7 +52,8 @@ p1 <- ggplot(interval_tbl) +
     mapping = aes(x = time_since_icu_adm, y = value)
   ) +
   geom_rug(
-    data = event_time_tbl,
+    data = event_time_tbl %>%
+      filter(.variable == "event_time"),
     aes(x = .value),
     colour = highlight_col,
     alpha = 0.25
