@@ -9,7 +9,7 @@ data {
   real log_crude_event_rate;
 
   // phi_{1 \cap 2} -- from the event time submodel
-  int <lower = 0, upper = 1> event_indicator [n_icu_stays];
+  int <lower = 1, upper = 2> event_indicator [n_icu_stays];
   vector <lower = 0> [n_icu_stays] event_time;
 
   // phi_{2 \cap 3} -- from the longitudinal submodel
@@ -25,6 +25,9 @@ parameters {
   // baseline hazard parameter(s) (Weibull gamma)
   real <lower = 0> hazard_gamma;
 
+  // death-discharge parameter (exponential distribution)
+  real <lower = 0> dd_gamma;
+
   // longitudinal associative strength (alpha)
   real <multiplier = 5e-4> alpha;
 }
@@ -32,7 +35,7 @@ parameters {
 model {
   for (ii in 1 : n_icu_stays) {
     real temp_surv_prob_common;
-    if (event_indicator[ii] == 1) { // add the hazard
+    if (event_indicator[ii] == 1) { // add the respiratory failure hazard
       target += log(hazard_gamma) + (hazard_gamma - 1) * log(event_time[ii]);
       target += baseline_data_x[ii, ] * theta;
 
@@ -43,8 +46,13 @@ model {
       }
     }
 
+    if (event_indicator[ii] == 2) { // add the death-discharge hazard
+      target += log(dd_gamma);
+    }
+
     // always add the survival probability
     // this term is common despite to both cases
+    // first add -H_{i,1}(T_i) -- negative cumulative hazard for the resp. fail.
     temp_surv_prob_common = -exp(baseline_data_x[ii, ] * theta);
 
     if (event_time[ii] < breakpoint[ii]) {
@@ -60,12 +68,16 @@ model {
       real temp_upper = (t1 * t2) + (t3) * (t4 - t2);
       target += temp_surv_prob_common * temp_upper;
     }
+
+    // now add the minus cumulative hazard for the dd event
+    target += -dd_gamma * event_time[ii];
   }
 
   // priors
   target += normal_lpdf(theta[1] | log_crude_event_rate, 1);
   target += normal_lpdf(theta[2 : n_theta] | 0, 1);
   target += normal_lpdf(hazard_gamma | 0, 1);
+  target += normal_lpdf(dd_gamma | 0, 1);
   target += normal_lpdf(alpha | 0, 1);
 
   // need submodel 2 priors (really a joint prior) for the longitudinal

@@ -23,7 +23,7 @@ n_theta <- samples_melded %>%
 plot_tbl <- bind_rows(
   samples_melded %>%
     array_to_mcmc_list() %>%
-    gather_draws(theta[b], hazard_gamma, alpha) %>%
+    gather_draws(theta[b], hazard_gamma, dd_gamma, alpha) %>%
     mutate(
       method = "melding",
       .value = ifelse(.variable == 'alpha', 1000 * .value, .value)
@@ -31,7 +31,7 @@ plot_tbl <- bind_rows(
     unite('plot_var', c(.variable, b), na.rm = TRUE),
   samples_point %>%
     array_to_mcmc_list() %>%
-    gather_draws(theta[b],  hazard_gamma, alpha) %>%
+    gather_draws(theta[b],  hazard_gamma, dd_gamma, alpha) %>%
     mutate(
       method = "point",
       .value = ifelse(.variable == 'alpha', 1000 * .value, .value)
@@ -44,16 +44,19 @@ plot_tbl <- bind_rows(
       levels = c(
         sprintf('theta_%d', 1 : n_theta),
         "hazard_gamma",
+        "dd_gamma",
         "alpha"
       ),
       labels = c(
         sprintf('theta[%d]', 1 : n_theta),
-        "gamma",
+        "gamma['rf']",
+        "gamma['dd']",
         "1000 %*% alpha"
       )
     ),
     method = as.factor(method)
-  )
+  ) %>%
+  filter(.iteration > 5)
 
 p1 <- ggplot(
   plot_tbl,
@@ -94,6 +97,7 @@ ggsave_base(
 interesting_subplots <- c(
   'alpha',
   'hazard_gamma',
+  'dd_gamma',
   'theta_3',
   'theta_17'
 )
