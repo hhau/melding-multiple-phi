@@ -1,0 +1,106 @@
+library(stringr)
+library(magrittr)
+
+source("scripts/common/plot-settings.R")
+source('scripts/common/mcmc-util.R')
+source("scripts/common/setup-argparse.R")
+
+parser$add_argument("--stage-two-phi-12-samples")
+parser$add_argument("--stage-two-phi-23-samples")
+parser$add_argument("--stage-two-psi-2-samples")
+parser$add_argument("--phi-12-diagnostic-plot")
+parser$add_argument("--phi-23-diagnostic-plot")
+args <- parser$parse_args()
+
+phi_12_samples <- readRDS(args$stage_two_phi_12_samples)
+phi_23_samples <- readRDS(args$stage_two_phi_23_samples)
+psi_2_samples <- readRDS(args$stage_two_psi_2_samples)
+
+event_time_names <- phi_12_samples[1, 1, ] %>%
+  names() %>%
+  grep(pattern = 'event_time', x = ., value = T)
+
+n_icustays <- length(event_time_names)
+
+n_segement_per_icustay <- names(phi_23_samples[1, 1, ]) %>%
+  grep(pattern = 'eta_slope', x = ., value = T) %>%
+  length() %>%
+  divide_by(n_icustays)
+
+eta_grid <- expand.grid(icustay_id = 1 : n_icustays, eta_alphabetic = c('b', 'a'))
+eta_grid$eta_numeric <- rep(1 : 2, each = n_icustays)
+
+n_theta <- names(psi_2_samples[1, 1, ]) %>%
+  grep(pattern = 'theta', x = .) %>%
+  length()
+
+p1 <- plot_worst_pars(
+  phi_12_samples[, , event_time_names],
+  facet_name_value_pairs = function(i) {
+    names <- c(
+      sprintf('event_time[%d]', 1 : n_icustays)
+    )
+
+    values <- c(
+      sprintf("italic(T)[%d]", 1 : n_icustays)
+    )
+
+    names(values) <- names
+    values[i]
+  }
+)
+
+ggsave_halfheight(
+  filename = args$phi_12_diagnostic_plot,
+  plot = p1
+)
+
+p2 <- plot_worst_pars(
+  phi_23_samples,
+  facet_name_value_pairs = function(i) {
+    names <- c(
+      sprintf('eta_slope[%d,%d]', eta_grid$icustay_id, eta_grid$eta_numeric),
+      sprintf('breakpoint[%d]', 1 : n_icustays)
+    )
+
+    values <- c(
+      sprintf("eta[1 * ',' ~ %d]^{%s}", eta_grid$icustay_id, eta_grid$eta_alphabetic),
+      sprintf('kappa[%d]', 1 : n_icustays)
+    )
+
+    names(values) <- names
+    values[i]
+  }
+)
+
+ggsave_halfheight(
+  filename = args$phi_23_diagnostic_plot,
+  plot = p2
+)
+
+p3 <- plot_worst_pars(
+  psi_2_samples,
+  facet_name_value_pairs = function(i) {
+    names <- c(
+      sprintf('theta[%d]', 1 : n_theta),
+      'hazard_gamma',
+      'dd_gamma',
+      'alpha'
+    )
+
+    values <- c(
+      sprintf('theta[%d]', 1 : n_theta),
+      'gamma'['rf'],
+      'gamma'['dd'],
+      'alpha'
+    )
+
+    names(values) <- names
+    values[i]
+  }
+)
+
+ggsave_halfheight(
+  filename = args$output,
+  plot = p3
+)

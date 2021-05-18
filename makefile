@@ -691,6 +691,68 @@ $(MIMIC_COMPARE_PSI_2_PLOT) $(MIMIC_COMPARE_PSI_2_PLOT_SMALL) &: \
 
 ALL_PLOTS += $(MIMIC_COMPARE_PSI_2_PLOT_SMALL)
 
+## some diagnostic plots
+MIMIC_PF_SUBMODEL_DIAGNOSTIC_PLOT = $(MIMIC_PLOTS)/submodel-1-stage-1-diagnostics.png
+$(MIMIC_PF_SUBMODEL_DIAGNOSTIC_PLOT) : \
+	$(MIMIC_SCRIPTS)/diagnostics-submodel-one-stage-one-plots.R \
+	$(PLOT_SETTINGS) \
+	$(MCMC_UTIL) \
+	$(MIMIC_PF_MODEL_SAMPLES_ARRAY)
+	$(RSCRIPT) $< \
+		--pf-submodel-samples-array $(MIMIC_PF_MODEL_SAMPLES_ARRAY) \
+		--output $@
+
+ALL_PLOTS += $(MIMIC_PF_SUBMODEL_DIAGNOSTIC_PLOT)
+
+MIMIC_FLUID_SUBMODEL_DIAGNOSTIC_PLOT = $(MIMIC_PLOTS)/submodel-3-stage-1-diagnostics.png
+$(MIMIC_FLUID_SUBMODEL_DIAGNOSTIC_PLOT) : \
+	$(MIMIC_SCRIPTS)/diagnostics-submodel-three-stage-one-plots.R \
+	$(PLOT_SETTINGS) \
+	$(MCMC_UTIL) \
+	$(MIMIC_FLUID_MODEL_SAMPLES_ARRAY)
+	$(RSCRIPT) $< \
+		--fluid-submodel-samples-array $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
+		--output $@
+
+ALL_PLOTS += $(MIMIC_FLUID_SUBMODEL_DIAGNOSTIC_PLOT)
+
+MIMIC_FULL_MELDING_PHI_12_DIAGNOSTIC_PLOT = $(MIMIC_PLOTS)/phi-12-stage-2-diagnostics.png
+MIMIC_FULL_MELDING_PHI_23_DIAGNOSTIC_PLOT = $(MIMIC_PLOTS)/phi-23-stage-2-diagnostics.png
+MIMIC_FULL_MELDING_PSI_2_DIAGNOSTIC_PLOT = $(MIMIC_PLOTS)/psi-2-stage-2-diagnostics.png
+
+$(MIMIC_FULL_MELDING_PHI_12_DIAGNOSTIC_PLOT) \
+$(MIMIC_FULL_MELDING_PHI_23_DIAGNOSTIC_PLOT) \
+$(MIMIC_FULL_MELDING_PSI_2_DIAGNOSTIC_PLOT) &: \
+	$(MIMIC_SCRIPTS)/diagnostics-full-melding-stage-two-plots.R \
+	$(PLOT_SETTINGS) \
+	$(MCMC_UTIL) \
+	$(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
+	$(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
+	$(MIMIC_STAGE_TWO_PHI_23_SAMPLES)
+	$(RSCRIPT) $< \
+		--stage-two-phi-12-samples $(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
+		--stage-two-phi-23-samples $(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
+		--stage-two-psi-2-samples $(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
+		--phi-12-diagnostic-plot $(MIMIC_FULL_MELDING_PHI_12_DIAGNOSTIC_PLOT) \
+		--phi-23-diagnostic-plot $(MIMIC_FULL_MELDING_PHI_23_DIAGNOSTIC_PLOT) \
+		--output $(MIMIC_FULL_MELDING_PSI_2_DIAGNOSTIC_PLOT)
+
+ALL_PLOTS += $(MIMIC_FULL_MELDING_PHI_12_DIAGNOSTIC_PLOT) \
+	$(MIMIC_FULL_MELDING_PHI_23_DIAGNOSTIC_PLOT) \
+	$(MIMIC_FULL_MELDING_PSI_2_DIAGNOSTIC_PLOT)
+
+MIMIC_BOTH_SUBPOST_MEDIAN_DIAGNOSTIC_PLOT = $(MIMIC_PLOTS)/psi-2-both-median-stage-2-diagnostics.png
+$(MIMIC_BOTH_SUBPOST_MEDIAN_DIAGNOSTIC_PLOT) : \
+	$(MIMIC_SCRIPTS)/diagnostics-both-median-stage-two-plots.R \
+	$(PLOT_SETTINGS) \
+	$(MCMC_UTIL) \
+	$(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES)
+	$(RSCRIPT) $< \
+		--both-median-psi-2-samples $(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) \
+		--output $@
+
+ALL_PLOTS += $(MIMIC_BOTH_SUBPOST_MEDIAN_DIAGNOSTIC_PLOT)
+
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input
 $(WRITEUP) : $(wildcard *.rmd) $(TEX_FILES) $(ALL_PLOTS) $(OWLS_DATA) $(BIBLIOGRAPHY)
