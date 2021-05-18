@@ -17,13 +17,14 @@ transformed data {
 parameters {
   vector <lower = 0, upper = 1> [n_icu_stays] breakpoint_raw;
   vector <lower = 0> [2] eta_slope [n_icu_stays];
-  vector <lower = 0> [n_icu_stays] eta_zero;
+  vector [n_icu_stays] eta_zero_raw;
   real <lower = 0> y_sigma;
 }
 
 transformed parameters {
   vector [n_icu_stays] breakpoint = breakpoint_raw .* widths + breakpoint_lower;
   vector [n_total_obs] mu;
+  vector [n_icu_stays] eta_zero;
 
   for (ii in 1 : n_icu_stays) {
     int obs_lower = subset_vector[ii];
@@ -35,12 +36,14 @@ transformed parameters {
 
     for (jj in 1 : n_obs_per_icu_stay) {
       if (indiv_obs_x[jj] < breakpoint[ii]) {
-        indiv_obs_mu[jj] = eta_zero[ii] + eta_slope[ii][1] * (indiv_obs_x[jj] - breakpoint[ii]);
+        indiv_obs_mu[jj] = eta_zero_raw[ii] + eta_slope[ii][1] * breakpoint[ii] + eta_slope[ii][1] * (indiv_obs_x[jj] - breakpoint[ii]);
       } else {
-        indiv_obs_mu[jj] = eta_zero[ii] + eta_slope[ii][2] * (indiv_obs_x[jj] - breakpoint[ii]);
+        indiv_obs_mu[jj] = eta_zero_raw[ii] + eta_slope[ii][1] * breakpoint[ii] + eta_slope[ii][2] * (indiv_obs_x[jj] - breakpoint[ii]);
       }
     }
+
     mu[obs_lower : (obs_upper - 1)] = indiv_obs_mu;
+    eta_zero[ii] = eta_zero_raw[ii] +  eta_slope[ii][1] * breakpoint[ii];
   }
 }
 
@@ -51,6 +54,7 @@ model {
 
   target += normal_lpdf(y_vec | mu, y_sigma);
   // target += normal_lpdf(beta_zero | 7000, 1000);
+  target += normal_lpdf(eta_zero_raw | 0, 250.0);
   target += beta_lpdf(breakpoint_raw | 5.0, 5.0);
   target += normal_lpdf(y_sigma | 0.0, 500.0);
 }
