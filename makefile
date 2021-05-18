@@ -579,7 +579,7 @@ $(MIMIC_FLUID_MODEL_SAMPLES_LONG) $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) $(MIMIC_FLU
 		--output-plot-mu $(MIMIC_FLUID_MODEL_SAMPLES_PLOT_MU) \
 		--output $(MIMIC_FLUID_MODEL_SAMPLES_LONG)
 
-MIMIC_FLUID_FITTED_PLOT = $(MIMIC_PLOTS)/fluid-data-piecewise-plot-mu-tblata-and-piecewise-fit.png
+MIMIC_FLUID_FITTED_PLOT = $(MIMIC_PLOTS)/fluid-data-and-piecewise-fit.png
 MIMIC_FLUID_FITTED_PLOT_MU_TBL = $(MIMIC_RDS)/fluid-data-piecewise-plot-mu-tbl.rds
 
 $(MIMIC_FLUID_FITTED_PLOT) $(MIMIC_FLUID_FITTED_PLOT_MU_TBL) &: \
