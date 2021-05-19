@@ -49,8 +49,8 @@ plot_tbl <- bind_rows(
       ),
       labels = c(
         sprintf('theta[%d]', 1 : n_theta),
-        "gamma['rf']",
-        "gamma['dd']",
+        "gamma[1]",
+        "gamma[2]",
         "1000 %*% alpha"
       )
     ),
@@ -108,7 +108,12 @@ psmall <- ggplot(
   aes(x = .value, colour = method)
 ) +
   geom_density() +
-  facet_wrap(vars(.variable), scales = "free", labeller = label_parsed) +
+  facet_wrap(
+    vars(.variable),
+    scales = "free",
+    labeller = label_parsed,
+    ncol = 2
+  ) +
   labs(colour = "Method") +
   scale_colour_manual(
     values = c(
@@ -122,7 +127,7 @@ psmall <- ggplot(
   ) +
   theme(axis.title = element_blank())
 
-ggsave_halfheight(
+ggsave_fullpage(
   filename = args$output_small,
   plot = psmall
 )
