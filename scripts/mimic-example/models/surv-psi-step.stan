@@ -29,7 +29,7 @@ parameters {
   real <lower = 0> dd_gamma;
 
   // longitudinal associative strength (alpha)
-  real <multiplier = 5e-4> alpha;
+  real alpha;
 }
 
 model {
@@ -73,13 +73,10 @@ model {
     target += -dd_gamma * event_time[ii];
   }
 
-  // priors
-  target += normal_lpdf(theta[1] | log_crude_event_rate, 1);
-  target += normal_lpdf(theta[2 : n_theta] | 0, 1);
-  target += normal_lpdf(hazard_gamma | 0, 1);
-  target += normal_lpdf(dd_gamma | 0, 1);
-  target += normal_lpdf(alpha | 0, 1);
-
-  // need submodel 2 priors (really a joint prior) for the longitudinal
-  // coefficients and for the event time (though this is trickier)
+  // priors -- only psi_2 in this model
+  target += normal_lpdf(theta[1] | log_crude_event_rate, 0.5);
+  target += normal_lpdf(theta[2 : n_theta] | 0, 0.5);
+  target += gamma_lpdf(hazard_gamma | 9.05, 8.72);
+  target += gamma_lpdf(dd_gamma | 2.0, 2.0);
+  target += skew_normal_lpdf(alpha | 0.0, 0.5, -2);
 }

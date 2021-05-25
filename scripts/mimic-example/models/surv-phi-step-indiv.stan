@@ -17,7 +17,7 @@ parameters {
   real <lower = 0> dd_gamma;
 
   // longitudinal associative strength (alpha)
-  real <multiplier = 5e-4> alpha;
+  real alpha;
 
   // phi_{1 \cap 2} -- from the event time submodel
   real event_indicator;
@@ -69,6 +69,9 @@ model {
   // now add the minus cumulative hazard for the dd event
   target += -dd_gamma * event_time;
 
-  // need submodel 2 priors (really a joint prior) for the longitudinal
-  // coefficients and for the event time (though this is trickier)
+  // priors for phi_{1 \cap 2} (implicit) and phi_{2 \cap 3} (explicit)
+  // align priors with the fluid submodel
+  // TODO: get length of stay info to this model so we can incorporate
+  // the prior on the breakpoint.
+  target += normal_lpdf(eta_slope |2.5, 1.0);
 }

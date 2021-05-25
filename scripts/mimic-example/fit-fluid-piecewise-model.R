@@ -20,10 +20,10 @@ init_function <- function(i) {
   n_icu_stays <- stan_data$n_icu_stays
 
   list(
-    y_sigma = abs(rnorm(n = 1, mean = 500, sd = 100)),
+    y_sigma = abs(rnorm(n = 1, mean = 1, sd = 1)),
     eta_zero_raw = rlnorm(
       n = n_icu_stays,
-      meanlog = 8.52,
+      meanlog = 1.61,
       sdlog = 0.47
     ) %>%
       array(dim = c(n_icu_stays)),
@@ -35,8 +35,8 @@ init_function <- function(i) {
       array(dim = c(n_icu_stays)),
     eta_slope = abs(rnorm(
       n = n_icu_stays * 2,
-      mean = 5000,
-      sd = 1000
+      mean = 2.5,
+      sd = 1.0
     )) %>%
     array(dim = c(n_icu_stays, 2))
   )

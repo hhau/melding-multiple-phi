@@ -75,7 +75,10 @@ summarised_fluid_data <- raw_fluid_data %>%
     time_since_icu_adm = mean(time_since_icu_adm)
   ) %>%
   select(-grp) %>%
-  mutate(value_type = 'fluids')
+  mutate(
+    value_type = 'fluids',
+    value = value / 1000 # convert to L
+  )
 
 final_data <- bind_rows(pf_data, summarised_fluid_data) %>%
   select(-c(amountuom, label))

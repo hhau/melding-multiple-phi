@@ -48,15 +48,15 @@ transformed parameters {
 }
 
 model {
-  for (ii in 1 : n_icu_stays) {
-    target += normal_lpdf(eta_slope[ii] | 5000, 1000);
-  }
-
   target += normal_lpdf(y_vec | mu, y_sigma);
-  // target += normal_lpdf(beta_zero | 7000, 1000);
-  target += lognormal_lpdf(eta_zero_raw | 8.52, 0.47);
+
+  target += lognormal_lpdf(eta_zero_raw | 1.61, 0.47);
   target += beta_lpdf(breakpoint_raw | 5.0, 5.0);
-  target += normal_lpdf(y_sigma | 0.0, 500.0);
+  target += normal_lpdf(y_sigma | 0.0, 5.0);
+
+  for (ii in 1 : n_icu_stays) {
+    target += normal_lpdf(eta_slope[ii] |2.5, 1.0);
+  }
 }
 
 generated quantities {
