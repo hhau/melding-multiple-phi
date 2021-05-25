@@ -24,18 +24,12 @@ plot_tbl <- bind_rows(
   samples_melded %>%
     array_to_mcmc_list() %>%
     gather_draws(theta[b], hazard_gamma, dd_gamma, alpha) %>%
-    mutate(
-      method = "melding",
-      .value = ifelse(.variable == 'alpha', 1000 * .value, .value)
-    ) %>%
+    mutate(method = "melding") %>%
     unite('plot_var', c(.variable, b), na.rm = TRUE),
   samples_point %>%
     array_to_mcmc_list() %>%
     gather_draws(theta[b],  hazard_gamma, dd_gamma, alpha) %>%
-    mutate(
-      method = "point",
-      .value = ifelse(.variable == 'alpha', 1000 * .value, .value)
-    ) %>%
+    mutate(method = "point") %>%
     unite('plot_var', c(.variable, b), na.rm = TRUE)
 ) %>%
   mutate(
@@ -51,7 +45,7 @@ plot_tbl <- bind_rows(
         sprintf('theta[%d]', 1 : n_theta),
         "gamma[1]",
         "gamma[2]",
-        "1000 %*% alpha"
+        "alpha"
       )
     ),
     method = as.factor(method)
