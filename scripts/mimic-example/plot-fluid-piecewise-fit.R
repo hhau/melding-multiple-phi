@@ -36,9 +36,12 @@ plot_mu_interval <- plot_mu_samples %>%
   left_join(plot_mu_tbl, by = c('i', 'p')) %>%
   left_join(id_tbl, by = 'i')
 
-base_plot <- ggplot(cumulative_fluid_data) +
+base_plot <- ggplot(
+  cumulative_fluid_data %>% 
+    left_join(id_tbl, by = 'icustay_id')
+) +
   geom_point(aes(x = time_since_icu_adm, y = cumulative_value)) +
-  facet_wrap(vars(icustay_id), scales = 'free')
+  facet_wrap(vars(i), scales = 'free')
 
 p1 <- base_plot +
   geom_line(

@@ -3,11 +3,11 @@ library(rriskDistributions)
 # for the y-intercept in the cumulative fluid model
 get.lnorm.par(
   p = c(0.025, 0.5, 0.99),
-  q = c(500, 5000, 15000),
+  q = c(500 / 1000, 5000 / 1000, 15000 / 1000),
   tol = 0.001
 )
 
-hist(rlnorm(n = 1e6, meanlog = 8.52, sdlog = 0.47), breaks = 100)
+hist(rlnorm(n = 1e6, meanlog = 1.61, sdlog = 0.47), breaks = 100)
 
 # eh, bit light on the left hand tail for my liking, but close enough.
 qlnorm(c(0.025, 0.5, 0.99), 8.52, 0.47)

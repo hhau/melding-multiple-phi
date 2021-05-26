@@ -55,7 +55,7 @@ model {
   target += normal_lpdf(y_sigma | 0.0, 5.0);
 
   for (ii in 1 : n_icu_stays) {
-    target += normal_lpdf(eta_slope[ii] |2.5, 1.0);
+    target += normal_lpdf(eta_slope[ii] | 5.0, 2.5);
   }
 }
 

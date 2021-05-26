@@ -10,6 +10,7 @@ parser$add_argument("--stage-two-phi-23-samples")
 parser$add_argument("--stage-two-psi-2-samples")
 parser$add_argument("--phi-12-diagnostic-plot")
 parser$add_argument("--phi-23-diagnostic-plot")
+parser$add_argument("--output-full-phi-23-trace-plot")
 args <- parser$parse_args()
 
 phi_12_samples <- readRDS(args$stage_two_phi_12_samples)
@@ -53,6 +54,15 @@ p1 <- plot_worst_pars(
 ggsave_halfheight(
   filename = args$phi_12_diagnostic_plot,
   plot = p1
+)
+
+p1_2 <- mcmc_trace(x = phi_23_samples)
+
+ggsave(
+  filename = args$full_phi_23_trace_plot,
+  plots = p1_2,
+  height = 48,
+  width = 48
 )
 
 p2 <- plot_worst_pars(

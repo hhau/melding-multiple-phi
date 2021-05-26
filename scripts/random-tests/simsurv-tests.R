@@ -14,8 +14,8 @@ generate_prior_sample <- function() {
     theta = rnorm(n = 19, sd = 0.5),
     alpha = sn::rsn(n = 1, xi = 0, omega = 0.5, alpha = -2),
     k_i = abs(rnorm(n = 1, mean = 4.5)),
-    eta_before = abs(rnorm(n = 1, mean = 2.5, sd = 1)),
-    eta_after = abs(rnorm(n = 1, mean = 2.5, sd = 1)),
+    eta_before = abs(rnorm(n = 1, mean = 5, sd = 2.5)),
+    eta_after = abs(rnorm(n = 1, mean = 5, sd = 2.5)),
     dd_gamma = rgamma(n = 1, shape = 2, rate = 2)
   )
   
