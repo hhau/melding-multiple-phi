@@ -641,6 +641,7 @@ $(MIMIC_STAGE_TWO_PSI_3_INDICES) &: \
 	$(RSCRIPT) $< \
 		--pf-event-time-samples-array $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
 		--fluid-model-samples-array $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
+		--fluid-model-stan-data $(MIMIC_FLUID_DATA_STAN) \
 		--baseline-data $(MIMIC_BASELINE_DATA) \
 		--psi-step-stan-model $(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
 		--phi-step-indiv-stan-model $(MIMIC_SURV_PHI_STEP_INDIV_MODEL) \
@@ -760,6 +761,23 @@ $(MIMIC_BOTH_SUBPOST_MEDIAN_DIAGNOSTIC_PLOT) : \
 		--output $@
 
 ALL_PLOTS += $(MIMIC_BOTH_SUBPOST_MEDIAN_DIAGNOSTIC_PLOT)
+
+MIMIC_PF_PRIOR_PLOT = $(MIMIC_PLOTS)/pf-prior-plot.png
+MIMIC_PF_PRIOR_EST_PARAMS = $(MIMIC_RDS)/submodel-1-marginal-prior-parameter-estimates.rds
+MIMIC_PF_PRIOR_STAN_MODEL = $(MIMIC_MODELS)/pf-prior-optimizer.stan
+
+$(MIMIC_PF_PRIOR_EST_PARAMS) \
+$(MIMIC_PF_PRIOR_PLOT) &: \
+	$(MIMIC_SCRIPTS)/sample-pf-model-prior-event-times.R \
+	$(PLOT_SETTINGS) \
+	$(MCMC_UTIL) \
+	$(MIMIC_PF_DATA_LIST) \
+	$(MIMIC_PF_PRIOR_STAN_MODEL)
+	$(RSCRIPT) $< \
+		--pf-data-list-format $(MIMIC_PF_DATA_LIST) \
+		--pf-prior-optim-stan-model $(MIMIC_PF_PRIOR_STAN_MODEL) \
+		--output-pf-prior-plot $(MIMIC_PF_PRIOR_PLOT) \
+		--output $(MIMIC_PF_PRIOR_EST_PARAMS)
 
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input

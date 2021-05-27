@@ -20,3 +20,11 @@ get.gamma.par(
 )
 
 hist(rgamma(n = 5e5, shape = 9.05, rate = 8.72), breaks = 500)
+
+# slopes -- definitely can't be zero, but also can't be huge.
+get.gamma.par(
+  p = c(0.025, 0.5, 0.975),
+  q = c(0.5, 5, 20)
+)
+
+hist(rgamma(n = 5e5, shape = 1.53, rate = 0.24), breaks = 500, freq = FALSE)

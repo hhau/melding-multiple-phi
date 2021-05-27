@@ -10,6 +10,7 @@ source("scripts/common/setup-argparse.R")
 
 parser$add_argument("--pf-event-time-samples-array")
 parser$add_argument("--fluid-model-samples-array")
+parser$add_argument("--fluid-model-stan-data")
 parser$add_argument("--baseline-data")
 parser$add_argument("--psi-step-stan-model")
 parser$add_argument("--phi-step-indiv-stan-model")
@@ -22,6 +23,7 @@ args <- parser$parse_args()
 submodel_one_output <- readRDS(args$pf_event_time_samples_array)
 submodel_three_output <- readRDS(args$fluid_model_samples_array)
 submodel_two_data <- readRDS(args$baseline_data)
+submodel_three_stan_data <- readRDS(args$fluid_model_stan_data)
 
 n_icu_stays <- nrow(submodel_two_data)
 
@@ -104,8 +106,10 @@ stan_data_psi_base <- list(
   log_crude_event_rate = log(mean(submodel_one_samples[, , event_time_names]))
 )
 
-flog.info("MIMIC-stage-two: compiling models", name = base_filename)
+breakpoint_lower <- submodel_three_stan_data$breakpoint_lower
+breakpoint_upper <- submodel_three_stan_data$breakpoint_upper
 
+flog.info("MIMIC-stage-two: compiling models", name = base_filename)
 prefit_psi_two_step <- stan_model(args$psi_step_stan_model)
 
 # NB: we can use the same stan file/fit for both phi_{1 \cap 2} and
@@ -151,9 +155,9 @@ psi_initialiser <- function(x) {
 
 # general MCMC options -- should be in GLOBALS really
 n_stage_two_chain <- N_CHAIN
-n_stage_two_iter <- N_POST_WARMUP_MCMC # 4e4 for min tail_ess in phi of ~500
+n_stage_two_iter <- 500 # 4e4 for min tail_ess in phi of ~500
 
-list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_id) {
+list_res <- lapply(1 : n_stage_two_chain, function(chain_id) {
   # set up containers, remember we are abind'ing over the chains
   # phi - event times (no censoring yet)
   flog.info(
@@ -275,7 +279,9 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
       phi_12_indiv_names <- phi_12_names[c(indiv_index, indiv_index + n_icu_stays)]
 
       y2_indiv <- list(
-        baseline_data_x = baseline_data_x_mat[indiv_index, ]
+        baseline_data_x = baseline_data_x_mat[indiv_index, ],
+        breakpoint_lower = breakpoint_lower[indiv_index],
+        breakpoint_upper = breakpoint_upper[indiv_index]
       )
 
       phi_23_indiv_curr_sublist <- list(
@@ -361,7 +367,9 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
       ]
 
       y2_indiv <- list(
-        baseline_data_x = baseline_data_x_mat[indiv_index, ]
+        baseline_data_x = baseline_data_x_mat[indiv_index, ],
+        breakpoint_lower = breakpoint_lower[indiv_index],
+        breakpoint_upper = breakpoint_upper[indiv_index]
       )
 
       phi_12_indiv_curr_sublist <- list(

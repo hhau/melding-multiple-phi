@@ -58,9 +58,9 @@ ggsave_halfheight(
 
 p1_2 <- mcmc_trace(x = phi_23_samples)
 
-ggsave(
-  filename = args$full_phi_23_trace_plot,
-  plots = p1_2,
+ggsave_base(
+  filename = args$output_full_phi_23_trace_plot,
+  plot = p1_2,
   height = 48,
   width = 48
 )

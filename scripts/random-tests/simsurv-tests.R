@@ -11,7 +11,7 @@ generate_prior_sample <- function() {
   res <- list(
     hazard_gamma = rgamma(n = 1, shape = 9.05, rate = 8.72),
     w_i = c(1, rnorm(n = 18)),
-    theta = rnorm(n = 19, sd = 0.5),
+    theta = sn::rsn(n = 19, xi = 0, omega = 0.5, alpha = -1),
     alpha = sn::rsn(n = 1, xi = 0, omega = 0.5, alpha = -2),
     k_i = abs(rnorm(n = 1, mean = 4.5)),
     eta_before = abs(rnorm(n = 1, mean = 5, sd = 2.5)),
@@ -92,6 +92,7 @@ ggpairs(
   data = samples_with_errors %>% 
     filter(is.na(event_time) | id < 5000),
   columns = 1 : 8,
+  mapping = aes(colour = simsurv_status),
   upper = list(continuous = function(data, mapping, ...) {
     ggplot(data = data, mapping = mapping) +
       geom_hex(bins = 20)

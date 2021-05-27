@@ -187,9 +187,28 @@ Our priors are
 where $\hat{E}$ is the log of the crude event rate [@brilleman_bayesian_2020], and $\boldsymbol{I}_{p}$ is the $p \times p$ identity matrix.
 We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i}, \eta_{1, i}^{b}$, and $\eta_{1, i}^{a}$.
 
-### Sampling the event times under the survival model
+# Sampling the priors
+
+The prior for $\phi_{2 \cap 3}$ under the third submodel has a known analytic form $\pd_{3}(\phi_{2 \cap 3})$.
+However, we must estimate $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+
+## PF submodel
+
+Samples of $T_{i}$ and $d_{i}$ are obtained from the prior predictive distribution $\pd_{1}(T_{i}, d_{i})$.
+We use a spike-and-slab mixture distribution, with a delta distribution at $C_{i}$ for the death/discharge events, and a beta distribution for the rescaled respiratory event times.
+\begin{equation}
+  \widehat{\pd_{1}}(T_{i}, d_{i}) =
+    \boldsymbol{1}_{\{d_{i} = 1\}} (\widehat{\pi}_{i}) \frac{1}{\beta\left(\widehat{a}_{i}, \widehat{b}_{i}\right)} \left(\frac{T_{i}}{C_{i}}\right)^{\widehat{a}_{i} - 1} \left(1 - \frac{T_{i}}{C_{i}}\right)^{\widehat{b}_{i} - 1} \frac{1}{C_{i}} +
+    \boldsymbol{1}_{\{d_{i} = 2, T_{i} = C_{i}\}} (1 - \widehat{\pi}_{i})
+  \label{eqn:pf-event-time-prior-dist}
+\end{equation}
+where $\widehat{\pi}_{i}, a_{i}$ and $b_{i}$ are maximum likelihood estimates using the prior predictive samples.
+
+## Sampling the event times under the survival model
 
 - Use @beyersmann_simulating_2009 and `simsurv` the latter is not working for me at the moment. I suspect overly wide priors are to blame.
+
+
 
 # Competing risk model results
 
@@ -291,3 +310,12 @@ However, in our case $T_{i}$ is a parameter, and hence the integrals are non-ign
 - The type-indicator $d_{i}$ is now a parameter, where as the censoring indicator before was a function of the known length-of-stay and the observed event time.
 - It's probably easiest to explicitly model the death/discharge event and opt for a piecewise constant hazard.
     - In this case, the likelihood is really just a mixture of an exponential distribution and a Weibull distribution, where the covariates only affect the scale parameter of the Weibull distribution.
+
+## It is not possible to plot a normalised version of Equation \eqref{eqn:pf-event-time-prior-dist}
+
+Because of limitations in `ggplot2`.
+Here is an incorrectly normalised version, for a small number of individuals.
+
+```{r pf_prior_plot}
+knitr::include_graphics('../plots/mimic-example/pf-prior-plot-small.png')
+```

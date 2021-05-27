@@ -10,6 +10,9 @@ parameters {
   vector [n_theta] theta;
   row_vector [n_theta] baseline_data_x;
 
+  real breakpoint_lower;
+  real breakpoint_upper;
+
   // baseline hazard parameter(s) (Weibull gamma)
   real <lower = 0> hazard_gamma;
 
@@ -25,8 +28,13 @@ parameters {
 
   // phi_{2 \cap 3} -- from the longitudinal submodel
   // used to calculate m'_{i}(t)
-  real <lower = 0> breakpoint;
+  real breakpoint;
   vector [n_segments] eta_slope; // first segment is eta^{b} -- eta 'before'
+}
+
+transformed parameters {
+  real width = breakpoint_upper - breakpoint_lower;
+  real breakpoint_raw = (breakpoint - breakpoint_lower) / width;
 }
 
 model {
@@ -71,7 +79,9 @@ model {
 
   // priors for phi_{1 \cap 2} (implicit) and phi_{2 \cap 3} (explicit)
   // align priors with the fluid submodel
-  // TODO: get length of stay info to this model so we can incorporate
-  // the prior on the breakpoint.
-  target += normal_lpdf(eta_slope |2.5, 1.0);
+  target += gamma_lpdf(eta_slope | 1.53, 0.24);
+
+  // prior for kappa + jacobian for linear change of variables
+  target += beta_lpdf(breakpoint_raw | 5.0, 5.0);
+  target += -log(width);
 }

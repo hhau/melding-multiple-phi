@@ -464,7 +464,7 @@ knitr::include_graphics("plots/owls-example/subposteriors.pdf")
 knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 ``` -->
 
-```{r phi_subpost_melding_only, fig.cap = 'Figure \\ref{fig:phi_subpost} without the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Different choices of pooling methods and pooling weights produce different posterior estimates for $\\alpha_{0}$ and $\\alpha_{2})$, but do not affect $\\rho$.'}
+```{r phi_subpost_melding_only, fig.cap = 'Figure \\ref{fig:phi_subpost} without the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Different choices of pooling methods and pooling weights produce different posterior estimates for $\\alpha_{0}$ and $\\alpha_{2}$, but do not affect $\\rho$.'}
 knitr::include_graphics('plots/owls-example/subposteriors-melding-only.pdf')
 ```
 
