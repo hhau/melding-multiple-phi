@@ -7,6 +7,7 @@ library(magrittr)
 library(rstan)
 library(stringr)
 library(ggh4x)
+library(patchwork)
 
 source("scripts/common/mcmc-util.R")
 source("scripts/common/setup-argparse.R")
@@ -209,30 +210,59 @@ plot_tbl <- bind_named_sublists(parameter_res, 'plot_tbl', 1) %>%
   left_join(param_tbl, by = 'id') %>% 
   mutate(plot_type = 'fitted_dens')
 
-p1 <- ggplot(data = plot_tbl) +
-  geom_line(aes(x = x, y = y)) +
-  geom_histogram(
-    data = sample_tbl %>% filter(event_indicator == 1),
-    mapping = aes(x = event_time, y = ..density.. ),
-    alpha = 0.5,
-    bins = 40,
-    fill = blues[2]
-  ) +
-  geom_linerange(
-    data = sample_tbl %>% 
-      filter(event_indicator == 2) %>%
-      distinct(),
-    mapping = aes(x = event_time, ymin = 0, ymax = (1 - weight)),
-    alpha = 0.9,
-    colour = highlight_col
-  ) +
-  facet_nested_wrap(~ plot_label + plot_type, scales = 'free', ncol = 4)
+plot_list <- lapply(1 : n_icu_stays, function(icustay_index) {
+  sub_plot_tbl <- plot_tbl %>%
+    filter(id == icustay_index)
+
+  sub_sample_tbl <- sample_tbl %>%
+    filter(id == icustay_index)
+
+  bw <- sub_sample_tbl %>%
+    filter(event_indicator == 1) %>%
+    pull(event_time) %>%
+    bw.SJ()
+
+  weight_val <- sub_sample_tbl %>%
+    pull(weight) %>%
+    unique()
+
+  ggplot(data = sub_plot_tbl) +
+    geom_line(aes(x = x, y = y)) +
+    geom_histogram(
+      data = sub_sample_tbl %>% filter(event_indicator == 1),
+      mapping = aes(x = event_time, y = after_stat(density * weight_val)),
+      alpha = 0.5,
+      binwidth = bw,
+      fill = blues[2]
+    ) +
+    geom_col(
+      data = sub_sample_tbl %>%
+        filter(event_indicator == 2) %>%
+        distinct(),
+      mapping = aes(x = event_time, y = (1 - weight)),
+      alpha = 0.7,
+      width = bw,
+      fill = highlight_col
+    ) +
+    xlab(bquote("T"[.(icustay_index)])) +
+    ylab(bquote("p"[1]("T"[.(icustay_index)]))) +
+    ggtitle(label = bquote(italic('i')==.(icustay_index)))
+})
+
+p1 <- wrap_plots(plot_list, ncol = 3)
 
 ggsave_base(
   filename = args$output_pf_prior_plot,
   plot = p1,
   height = 80,
   width = 20
+)
+
+p2 <- wrap_plots(plot_list %>% inset(10 : n_icu_stays, NULL), ncol = 3)
+
+ggsave_fullpage(
+  filename = str_replace(args$output_pf_prior_plot, '.png', '-small.png'),
+  plot = p2,
 )
 
 saveRDS(
