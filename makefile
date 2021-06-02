@@ -617,11 +617,12 @@ $(MIMIC_BOTH_FITTED_PLOT) $(MIMIC_BOTH_FITTED_PLOT_SMALL) &: \
 ALL_PLOTS += $(MIMIC_BOTH_FITTED_PLOT)
 
 # Fit stage two using parallel multi-stage sampler
-MIMIC_STAGE_TWO_PSI_2_SAMPLES = $(MIMIC_RDS)/stage-two-psi-2-samples.rds
-MIMIC_STAGE_TWO_PHI_12_SAMPLES = $(MIMIC_RDS)/stage-two-phi-12-samples.rds
-MIMIC_STAGE_TWO_PHI_23_SAMPLES = $(MIMIC_RDS)/stage-two-phi-23-samples.rds
-MIMIC_STAGE_TWO_PSI_1_INDICES = $(MIMIC_RDS)/stage-two-psi-1-indices.rds
-MIMIC_STAGE_TWO_PSI_3_INDICES = $(MIMIC_RDS)/stage-two-psi-3-indices.rds
+# poe version
+MIMIC_STAGE_TWO_PSI_2_SAMPLES = $(MIMIC_RDS)/stage-two-poe-psi-2-samples.rds
+MIMIC_STAGE_TWO_PHI_12_SAMPLES = $(MIMIC_RDS)/stage-two-poe-phi-12-samples.rds
+MIMIC_STAGE_TWO_PHI_23_SAMPLES = $(MIMIC_RDS)/stage-two-poe-phi-23-samples.rds
+MIMIC_STAGE_TWO_PSI_1_INDICES = $(MIMIC_RDS)/stage-two-poe-psi-1-indices.rds
+MIMIC_STAGE_TWO_PSI_3_INDICES = $(MIMIC_RDS)/stage-two-poe-psi-3-indices.rds
 
 MIMIC_SURV_PSI_STEP_STAN_MODEL = $(MIMIC_MODELS)/surv-psi-step.stan
 MIMIC_SURV_PHI_STEP_INDIV_MODEL = $(MIMIC_MODELS)/surv-phi-step-indiv.stan
@@ -631,13 +632,51 @@ $(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
 $(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
 $(MIMIC_STAGE_TWO_PSI_1_INDICES) \
 $(MIMIC_STAGE_TWO_PSI_3_INDICES) &: \
-	$(MIMIC_SCRIPTS)/fit-stage-two.R \
+	$(MIMIC_SCRIPTS)/fit-stage-two-poe.R \
 	$(MIMIC_GLOBAL_SETTINGS) \
 	$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
 	$(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
 	$(MIMIC_BASELINE_DATA) \
 	$(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
 	$(MIMIC_SURV_PHI_STEP_INDIV_MODEL)
+	$(RSCRIPT) $< \
+		--pf-event-time-samples-array $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
+		--fluid-model-samples-array $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
+		--fluid-model-stan-data $(MIMIC_FLUID_DATA_STAN) \
+		--baseline-data $(MIMIC_BASELINE_DATA) \
+		--psi-step-stan-model $(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
+		--phi-step-indiv-stan-model $(MIMIC_SURV_PHI_STEP_INDIV_MODEL) \
+		--output-phi-12-samples $(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
+		--output-phi-23-samples $(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
+		--output-psi-1-indices $(MIMIC_STAGE_TWO_PSI_1_INDICES) \
+		--output-psi-3-indices $(MIMIC_STAGE_TWO_PSI_3_INDICES) \
+		--output $(MIMIC_STAGE_TWO_PSI_2_SAMPLES)
+
+MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC = $(MIMIC_RDS)/stage-two-log-psi-2-samples.rds
+MIMIC_STAGE_TWO_PHI_12_SAMPLES_LOGARTHMIC = $(MIMIC_RDS)/stage-two-log-phi-12-samples.rds
+MIMIC_STAGE_TWO_PHI_23_SAMPLES_LOGARTHMIC = $(MIMIC_RDS)/stage-two-log-phi-23-samples.rds
+MIMIC_STAGE_TWO_PSI_1_INDICES_LOGARTHMIC = $(MIMIC_RDS)/stage-two-log-psi-1-indices.rds
+MIMIC_STAGE_TWO_PSI_3_INDICES_LOGARTHMIC = $(MIMIC_RDS)/stage-two-log-psi-3-indices.rds
+
+MIMIC_POOLED_PRIOR_FUNCTIONS = $(MIMIC_SCRIPTS)/pooled-prior-functions.R
+
+$(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC) \
+$(MIMIC_STAGE_TWO_PHI_12_SAMPLES_LOGARTHMIC) \
+$(MIMIC_STAGE_TWO_PHI_23_SAMPLES_LOGARTHMIC) \
+$(MIMIC_STAGE_TWO_PSI_1_INDICES_LOGARTHMIC) \
+$(MIMIC_STAGE_TWO_PSI_3_INDICES_LOGARTHMIC) &: \
+	$(MIMIC_SCRIPTS)/fit-stage-two-logarithmic.R \
+	$(MIMIC_GLOBAL_SETTINGS) \
+	$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
+	$(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
+	$(MIMIC_BASELINE_DATA) \
+	$(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
+	$(MIMIC_SURV_PHI_STEP_INDIV_MODEL) \
+	$(MIMIC_POOLED_PRIOR_FUNCTIONS) \
+	$(MIMIC_PF_DATA_LIST) \ # this and the following are in pooled-prior-functions.R
+	$(MIMIC_PF_PRIOR_EST_PARAMS) \
+	$(MIMIC_SURV_PRIOR_EST_PARAMS) \
+	$(MIMIC_FLUID_DATA_STAN) \
 	$(RSCRIPT) $< \
 		--pf-event-time-samples-array $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
 		--fluid-model-samples-array $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
@@ -778,6 +817,27 @@ $(MIMIC_PF_PRIOR_PLOT) &: \
 		--pf-prior-optim-stan-model $(MIMIC_PF_PRIOR_STAN_MODEL) \
 		--output-pf-prior-plot $(MIMIC_PF_PRIOR_PLOT) \
 		--output $(MIMIC_PF_PRIOR_EST_PARAMS)
+
+MIMIC_SURV_PRIOR_PLOTS = $(wildcard plots/mimic-example/temp-pairs/*.png)
+MIMIC_SURV_PRIOR_EST_PARAMS = $(MIMIC_RDS)/submodel-2-marginal-prior-parameter-estimates.rds
+MIMIC_SURV_PRIOR_STAN_MODEL = $(MIMIC_MODELS)/surv-prior-optimizer.stan
+
+$(MIMIC_SURV_PRIOR_PLOTS) \
+$(MIMIC_SURV_PRIOR_EST_PARAMS) &: \
+	$(MIMIC_SCRIPTS)/sample-surv-submodel-prior.R \
+	$(PLOT_SETTINGS) \
+	$(MIMIC_FLUID_DATA_STAN) \
+	$(MIMIC_PF_DATA_LIST) \
+	$(MIMIC_BASELINE_DATA) \
+	$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
+	$(MIMIC_SURV_PRIOR_STAN_MODEL)
+	$(RSCRIPT) $< \
+		--fluid-stan-data $(MIMIC_FLUID_DATA_STAN) \
+		--pf-list-data $(MIMIC_PF_DATA_LIST) \
+		--baseline-covariate-data $(MIMIC_BASELINE_DATA) \
+		--submodel-one-median-both $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
+		--surv-prior-optim-stan-model $(MIMIC_SURV_PRIOR_STAN_MODEL) \
+		--output $(MIMIC_SURV_PRIOR_EST_PARAMS)
 
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input

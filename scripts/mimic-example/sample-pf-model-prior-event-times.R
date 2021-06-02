@@ -24,6 +24,7 @@ n_icu_stays <- length(list_data)
 n_prior_samples <- 50000
 
 prefit <- stan_model(args$pf_prior_optim_stan_model)
+prefit <- stan_model("scripts/mimic-example/models/pf-prior-optimizer.stan")
 
 res <- mclapply(1 : n_icu_stays, mc.cores = 5, function(icustay_index) {
   indiv_prior_data <- list_data[[icustay_index]]
@@ -139,7 +140,8 @@ parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
     n_prior_samples = n_prior_samples,
     event_time = indiv_prior_samples[, 1],
     event_indicator = indiv_prior_samples[, 2],
-    length_of_stay = indiv_prior_data$boundary_knots[2] 
+    lower_limit = indiv_prior_data$boundary_knots[1],
+    upper_limit = indiv_prior_data$boundary_knots[2]
   )
   
   optm_res <- optimizing(
@@ -154,11 +156,11 @@ parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
   # this function will need to be reused later -- pull into a file then.
   plot_f <- function(x) {
     optm_res$par['weight'] * dbeta(
-      x / stan_data$length_of_stay,
+      (x - stan_data$lower_limit)/ (stan_data$upper_limit - stan_data$lower_limit),
       shape1 = optm_res$par['beta_alpha'],
       shape2 = optm_res$par['beta_beta'],
     ) *
-      (1 / stan_data$length_of_stay) # jacobian
+      (1 / (stan_data$upper_limit - stan_data$lower_limit)) # jacobian
     
     # There is a difficulty in visualising this 'density', because the histogram
     # normalisiation doesn't work (the spike / atom cannot be bigger than
@@ -166,12 +168,16 @@ parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
   }
   
   plot_tbl <- tibble(
-    x = seq(from = 0.1, to = stan_data$length_of_stay - 0.0001, length.out = 500),
+    x = seq(
+      from = max(stan_data$lower_limit, 0) + 0.01,
+      to = stan_data$upper_limit - 0.01,
+      length.out = 500
+    ),
     id = icustay_index
   )  %>% 
     mutate(y = plot_f(x))
   
-  res <- list(
+  inner_res <- list(
     pars = pars,
     plot_tbl = plot_tbl
   )

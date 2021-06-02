@@ -75,7 +75,7 @@ model {
 
   // priors -- only psi_2 in this model
   target += normal_lpdf(theta[1] | log_crude_event_rate, 0.5);
-  target += normal_lpdf(theta[2 : n_theta] | 0, 0.5);
+  target += skew_normal_lpdf(theta[2 : n_theta] | 0, 0.5, -1);
   target += gamma_lpdf(hazard_gamma | 9.05, 8.72);
   target += gamma_lpdf(dd_gamma | 2.0, 2.0);
   target += skew_normal_lpdf(alpha | 0.0, 0.5, -2);

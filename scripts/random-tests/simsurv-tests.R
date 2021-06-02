@@ -1,11 +1,11 @@
-devtools::load_all(path = 'other-code/simsurv')
+library(simsurv)
 library(tibble)
 library(dplyr)
 library(magrittr)
 library(GGally)
 library(sn)
 
-set.seed(12931)
+n_sims <- 20000
 
 generate_prior_sample <- function() {
   res <- list(
@@ -26,7 +26,7 @@ generate_prior_sample <- function() {
 pointwise_unnormalised_log_hazard <- function(t, x, betas) {
   with(betas, {
     log_hazard_term <- log(hazard_gamma) + ((hazard_gamma - 1) * log(t)) + (baseline_term)
-    
+
     if (t < k_i) {
       longitudinal_term <- alpha * eta_before
       log_hazard_term <- log_hazard_term + longitudinal_term
@@ -34,15 +34,14 @@ pointwise_unnormalised_log_hazard <- function(t, x, betas) {
       longitudianl_term_2 <- alpha * eta_after
       log_hazard_term <- log_hazard_term + longitudianl_term_2
     }
-    
+
     log_dd_term <- log(dd_gamma)
     log_res <- matrixStats::logSumExp(c(log_hazard_term, log_dd_term))
-    
+
     return(log_res)
   })
 }
 
-n_sims <- 20000
 
 many_df <- lapply(1 : n_sims, function(x) {
   generate_prior_sample() %>% 
