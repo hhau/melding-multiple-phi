@@ -51,8 +51,8 @@ point_est_3_meld_12_phi_12_samples <- readRDS(
 
 p4 <- bayesplot::mcmc_trace(
   point_est_3_meld_12_phi_12_samples[
-    , 
-    , 
+    ,
+    ,
     sprintf("event_time[%d]", which(as.logical(sim_settings$event_indicator)))
   ])
 
@@ -67,8 +67,8 @@ point_est_1_meld_23_phi_23_samples <- readRDS(
 
 p5 <- bayesplot::mcmc_trace(
   point_est_1_meld_23_phi_23_samples[
-    , 
-    , 
+    ,
+    ,
     c(
       sprintf("beta[%d,1]", which(as.logical(sim_settings$event_indicator))),
       sprintf("beta[%d,2]", which(as.logical(sim_settings$event_indicator)))

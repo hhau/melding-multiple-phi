@@ -16,25 +16,29 @@ source(args$mimic_globals)
 
 stan_data <- readRDS(args$fluid_submodel_stan_data)
 
-init_gen <- function(chain_id) {
+init_function <- function(i) {
   n_icu_stays <- stan_data$n_icu_stays
 
   list(
-    breakpoint_raw = array(
-      data = rbeta(n = n_icu_stays, 10, 10),
-      dim = n_icu_stays
-    ),
-    beta_slope = array(
-      data = rnorm(n = n_icu_stays * 2, mean = c(5000, 3000), sd = 500)
-        %>% abs(),
-      dim = c(n_icu_stays, 2)
-    ),
-    beta_zero = array(
-      data = rnorm(n = n_icu_stays, mean = 7500, sd = 500),
-      dim = n_icu_stays
-    ),
-    y_sigma = rnorm(n = 1, mean = 800, sd = 200)
-      %>% abs()
+    y_sigma = abs(rnorm(n = 1, mean = 1, sd = 1)),
+    eta_zero_raw = rlnorm(
+      n = n_icu_stays,
+      meanlog = 1.61,
+      sdlog = 0.47
+    ) %>%
+      array(dim = c(n_icu_stays)),
+    breakpoint_raw = rbeta(
+      n = n_icu_stays,
+      shape1 = 5,
+      shape2 = 15
+    ) %>%
+      array(dim = c(n_icu_stays)),
+    eta_slope = abs(rnorm(
+      n = n_icu_stays * 2,
+      mean = 2.5,
+      sd = 1.0
+    )) %>%
+    array(dim = c(n_icu_stays, 2))
   )
 }
 
@@ -47,7 +51,7 @@ model_fit <- sampling(
   chains = N_CHAIN,
   warmup = 1000,
   iter = N_POST_WARMUP_MCMC + 1000,
-  init = init_gen,
+  init = init_function,
   control = list(
     adapt_delta = 0.9,
     max_treedepth = 11

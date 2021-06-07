@@ -430,10 +430,11 @@ To align the notation of this example with our chained melding notation we defin
 
 #### Priors
 
-We use the priors of @abadi_estimation_2010 for the parameters in each submodel.
-Denote $\boldsymbol{\alpha} = (\alpha_{0}, \ldots, \alpha_{5})$.
-In both $\pd_{1}$ and $\pd_{2}$ the elements of $\boldsymbol{\alpha}$ are assigned independent $\text{N}(0, 100^2)$ priors truncated to $[-10, 10]$.
-A $\text{U}(0, 10)$ prior is assigned to $\rho$ in $\pd_{2}$ and $\pd_{3}$.
+We use the priors of @finke_efficient_2019 for the parameters in each submodel.
+Denote $\boldsymbol{\alpha} = (\alpha_{0}, \alpha_{1}, \alpha_{2}, \alpha_{4}, \alpha_{6})$.
+In both $\pd_{1}$ and $\pd_{2}$ the elements of $\boldsymbol{\alpha}$ are assigned independent $\text{Normal}(0, 2^2)$ priors truncated to $[-10, 10]$.
+The time varying recapture probabilities $\alpha_{5, u}$ also have $\text{Normal}(0, 2^2)$ priors truncated to $[-10, 10]$.
+A $\text{Uniform}(0, 10)$ prior is assigned to $\rho$ in $\pd_{2}$ and $\pd_{3}$.
 
 To completely specify $\pd_{\text{meld}}$ we must choose how to form $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 We form $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ using three pooling methods and estimate the melded posterior in each case.
@@ -463,7 +464,7 @@ knitr::include_graphics("plots/owls-example/subposteriors.pdf")
 knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
 ``` -->
 
-```{r phi_subpost_melding_only, fig.cap = 'Figure \\ref{fig:phi_subpost} without the individual subposteriors.'}
+```{r phi_subpost_melding_only, fig.cap = 'Figure \\ref{fig:phi_subpost} without the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Different choices of pooling methods and pooling weights produce different posterior estimates for $\\alpha_{0}$ and $\\alpha_{2}$, but do not affect $\\rho$.'}
 knitr::include_graphics('plots/owls-example/subposteriors-melding-only.pdf')
 ```
 

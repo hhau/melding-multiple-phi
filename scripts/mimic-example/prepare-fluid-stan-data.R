@@ -18,9 +18,7 @@ cumulative_fluid_data <- summarised_data %>%
   filter(value_type == 'fluids') %>%
   group_by(icustay_id) %>%
   arrange(icustay_id, time_since_icu_adm) %>%
-  mutate(
-    cumulative_value = cumsum(value)
-  )
+  mutate(cumulative_value = cumsum(value))
 
 saveRDS(
   file = args$output_cumulative_fluid,

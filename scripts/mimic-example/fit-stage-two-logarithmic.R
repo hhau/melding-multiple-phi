@@ -7,9 +7,11 @@ library(stringr)
 source("scripts/common/logger-setup.R")
 source("scripts/mimic-example/GLOBALS.R")
 source("scripts/common/setup-argparse.R")
+source("scripts/mimic-example/pooled-prior-functions.R")
 
 parser$add_argument("--pf-event-time-samples-array")
 parser$add_argument("--fluid-model-samples-array")
+parser$add_argument("--fluid-model-stan-data")
 parser$add_argument("--baseline-data")
 parser$add_argument("--psi-step-stan-model")
 parser$add_argument("--phi-step-indiv-stan-model")
@@ -22,6 +24,7 @@ args <- parser$parse_args()
 submodel_one_output <- readRDS(args$pf_event_time_samples_array)
 submodel_three_output <- readRDS(args$fluid_model_samples_array)
 submodel_two_data <- readRDS(args$baseline_data)
+submodel_three_stan_data <- readRDS(args$fluid_model_stan_data)
 
 n_icu_stays <- nrow(submodel_two_data)
 
@@ -62,8 +65,8 @@ event_time_names <- grep("event_time", phi_12_names, value = TRUE)
 event_indicator_names <- grep("event_indicator", phi_12_names, value = TRUE)
 
 phi_23_names <- c(
-  grep("eta_slope", names(submodel_three_samples[1, 1, ]), value = TRUE),
-  grep("breakpoint\\[", names(submodel_three_samples[1, 1, ]), value = TRUE)
+  grep("breakpoint\\[", names(submodel_three_samples[1, 1, ]), value = TRUE),
+  grep("eta_slope", names(submodel_three_samples[1, 1, ]), value = TRUE)
 )
 
 breakpoint_names <- grep('breakpoint', phi_23_names, value = TRUE)
@@ -79,6 +82,10 @@ n_segments <- grep(
 ) %>%
   length()
 
+# This should really only change the continuous covariates, not the factor ones
+# and should't be called 'center' when it also scales
+# an should probably be in the 'get-baseline-data.R' file, so that there is only
+# one place that modifies the baseline data.
 center_keep_intercept <- function(x) {
   p <- ncol(x)
   res <- scale(x[, 2 : p], center = TRUE, scale = TRUE)
@@ -104,8 +111,10 @@ stan_data_psi_base <- list(
   log_crude_event_rate = log(mean(submodel_one_samples[, , event_time_names]))
 )
 
-flog.info("MIMIC-stage-two: compiling models", name = base_filename)
+breakpoint_lower <- submodel_three_stan_data$breakpoint_lower
+breakpoint_upper <- submodel_three_stan_data$breakpoint_upper
 
+flog.info("MIMIC-stage-two-logarithmic: compiling models", name = base_filename)
 prefit_psi_two_step <- stan_model(args$psi_step_stan_model)
 
 # NB: we can use the same stan file/fit for both phi_{1 \cap 2} and
@@ -144,6 +153,7 @@ psi_initialiser <- function(x) {
   list(
     theta = x[sprintf('theta[%d]', 1 : n_theta)],
     hazard_gamma = x['hazard_gamma'],
+    dd_gamma = x['dd_gamma'],
     alpha = x['alpha']
   )
 }
@@ -151,12 +161,13 @@ psi_initialiser <- function(x) {
 # general MCMC options -- should be in GLOBALS really
 n_stage_two_chain <- N_CHAIN
 n_stage_two_iter <- N_POST_WARMUP_MCMC # 4e4 for min tail_ess in phi of ~500
+logarithmic_lambda_vec <- c(1 / 3, 1 / 3, 1 / 3)
 
-list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_id) {
+list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   # set up containers, remember we are abind'ing over the chains
   # phi - event times (no censoring yet)
   flog.info(
-    sprintf("MIMIC-stage-two--chain-%d: initialising", chain_id),
+    sprintf("MIMIC-stage-two-logarithmic--chain-%d: initialising", chain_id),
     name = base_filename
   )
 
@@ -214,11 +225,12 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
   psi_2_samples[1, 1, ] <- c(
     theta = rnorm(n = n_theta, mean = 0.5, sd = 0.2),
     hazard_gamma = abs(rnorm(n = 1, mean = 0.6, sd = 0.2)),
-    alpha = rnorm(n = 1, mean = 0, sd = 0.00001)
+    dd_gamma = rexp(n = 1, rate = 0.75),
+    alpha = rnorm(n = 1, mean = -0.2, sd = 0.1)
   )
 
   flog.info(
-    sprintf("MIMIC-stage-two--chain-%d: initialised okay", chain_id),
+    sprintf("MIMIC-stage-two-logarithmic--chain-%d: initialised okay", chain_id),
     name = base_filename
   )
 
@@ -273,10 +285,12 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
       phi_12_indiv_names <- phi_12_names[c(indiv_index, indiv_index + n_icu_stays)]
 
       y2_indiv <- list(
-        baseline_data_x = baseline_data_x_mat[indiv_index, ]
+        baseline_data_x = baseline_data_x_mat[indiv_index, ],
+        breakpoint_lower = breakpoint_lower[indiv_index],
+        breakpoint_upper = breakpoint_upper[indiv_index]
       )
 
-      phi_23_indiv_curr_sublist <- list(
+      phi_23_indiv_curr_list <- list(
         breakpoint = phi_23_curr_list$breakpoint[indiv_index],
         eta_slope = phi_23_curr_list$eta_slope[indiv_index, ]
       )
@@ -307,7 +321,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
         stanfit_phi_step_indiv,
         upars = unconstrain_pars(
           stanfit_phi_step_indiv,
-          pars = c(psi_2_curr_list, y2_indiv, phi_12_indiv_prop_list, phi_23_indiv_curr_sublist)
+          pars = c(psi_2_curr_list, y2_indiv, phi_12_indiv_prop_list, phi_23_indiv_curr_list)
         )
       )
 
@@ -315,11 +329,49 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
         stanfit_phi_step_indiv,
         upars = unconstrain_pars(
           stanfit_phi_step_indiv,
-          pars = c(psi_2_curr_list, y2_indiv, phi_12_indiv_curr_list, phi_23_indiv_curr_sublist)
+          pars = c(psi_2_curr_list, y2_indiv, phi_12_indiv_curr_list, phi_23_indiv_curr_list)
         )
       )
 
-      log_alpha_phi_12_indiv <- log_prob_phi_12_indiv_prop - log_prob_phi_12_indiv_curr
+      log_prob_pooled_prior_prop <- logarithmic_pooled_prior_overall(
+        phi_12 = as.numeric(phi_12_indiv_prop_list),
+        phi_23 = c(
+          as.numeric(phi_23_indiv_curr_list$breakpoint),
+          as.numeric(phi_23_indiv_curr_list$eta_slope)
+        ),
+        lambda = logarithmic_lambda_vec,
+        id = indiv_index
+      )
+
+      log_prob_pooled_prior_curr <- logarithmic_pooled_prior_overall(
+        phi_12 = as.numeric(phi_12_indiv_curr_list),
+        phi_23 = c(
+          as.numeric(phi_23_indiv_curr_list$breakpoint),
+          as.numeric(phi_23_indiv_curr_list$eta_slope)
+        ),
+        lambda = logarithmic_lambda_vec,
+        id = indiv_index
+      )
+
+      log_alpha_phi_12_indiv <- log_prob_phi_12_indiv_prop -
+        log_prob_phi_12_indiv_curr +
+        log_prob_pooled_prior_prop -
+        log_prob_pooled_prior_curr
+
+      # flog.info(
+      #   sprintf(
+      #     "phi_12 update, iteration: %d, indiv_index: %d
+      #     log_prob_phi_12_indiv_prop = %f, log_prob_phi_12_indiv_curr = %f,
+      #     log_prob_pooled_prior_prop = %f, log_prob_pooled_prior_curr = %f,
+      #     log_alpha_phi_12_indiv = %f
+      #     ",
+      #     ii, indiv_index,
+      #     log_prob_phi_12_indiv_prop, log_prob_phi_12_indiv_curr,
+      #     log_prob_pooled_prior_prop, log_prob_pooled_prior_curr,
+      #     log_alpha_phi_12_indiv
+      #   ),
+      #   name = base_filename
+      # )
 
       if (runif(1) < exp(log_alpha_phi_12_indiv)) {
         if (jj == 1) {
@@ -359,33 +411,35 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
       ]
 
       y2_indiv <- list(
-        baseline_data_x = baseline_data_x_mat[indiv_index, ]
+        baseline_data_x = baseline_data_x_mat[indiv_index, ],
+        breakpoint_lower = breakpoint_lower[indiv_index],
+        breakpoint_upper = breakpoint_upper[indiv_index]
       )
 
-      phi_12_indiv_curr_sublist <- list(
+      phi_12_indiv_curr_list <- list(
         event_time = phi_12_curr_list$event_time[indiv_index],
         event_indicator = phi_12_curr_list$event_indicator[indiv_index]
       )
 
       phi_23_indiv_prop_list <- list(
+        breakpoint = submodel_three_samples[
+          phi_23_iter_index_prop,
+          phi_23_chain_index_prop,
+          phi_23_indiv_names[1]
+        ],
         eta_slope = array(
           data = submodel_three_samples[
             phi_23_iter_index_prop,
             phi_23_chain_index_prop,
-            phi_23_indiv_names[1 : 2]
+            phi_23_indiv_names[2 : 3]
           ],
           dim = c(n_segments)
-        ),
-        breakpoint = submodel_three_samples[
-          phi_23_iter_index_prop,
-          phi_23_chain_index_prop,
-          phi_23_indiv_names[3]
-        ]
+        )
       )
 
       phi_23_indiv_curr_list <- list(
-        eta_slope = phi_23_curr_list$eta_slope[indiv_index, ],
-        breakpoint = phi_23_curr_list$breakpoint[indiv_index]
+        breakpoint = phi_23_curr_list$breakpoint[indiv_index],
+        eta_slope = phi_23_curr_list$eta_slope[indiv_index, ]
       )
 
       log_prob_phi_23_step_indiv_prop <- log_prob(
@@ -395,7 +449,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
           pars = c(
             psi_2_curr_list,
             y2_indiv,
-            phi_12_indiv_curr_sublist,
+            phi_12_indiv_curr_list,
             phi_23_indiv_prop_list
           )
         )
@@ -408,13 +462,51 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
           pars = c(
             psi_2_curr_list,
             y2_indiv,
-            phi_12_indiv_curr_sublist,
+            phi_12_indiv_curr_list,
             phi_23_indiv_curr_list
           )
         )
       )
 
-      log_alpha_23_step_indiv <- log_prob_phi_23_step_indiv_prop - log_prob_phi_23_step_indiv_curr
+      log_prob_pooled_prior_prop <- logarithmic_pooled_prior_overall(
+        phi_12 = as.numeric(phi_12_indiv_curr_list),
+        phi_23 = c(
+          as.numeric(phi_23_indiv_prop_list$breakpoint),
+          as.numeric(phi_23_indiv_prop_list$eta_slope)
+        ),
+        lambda = logarithmic_lambda_vec,
+        id = indiv_index
+      )
+
+      log_prob_pooled_prior_curr <- logarithmic_pooled_prior_overall(
+        phi_12 = as.numeric(phi_12_indiv_curr_list),
+        phi_23 = c(
+          as.numeric(phi_23_indiv_curr_list$breakpoint),
+          as.numeric(phi_23_indiv_curr_list$eta_slope)
+        ),
+        lambda = logarithmic_lambda_vec,
+        id = indiv_index
+      )
+
+      log_alpha_23_step_indiv <- log_prob_phi_23_step_indiv_prop -
+        log_prob_phi_23_step_indiv_curr +
+        log_prob_pooled_prior_prop -
+        log_prob_pooled_prior_curr
+
+      # flog.info(
+      #   sprintf(
+      #     "phi_23 update, iteration: %d, indiv_index: %d
+      #     log_prob_phi_23_step_indiv_prop = %f, log_prob_phi_23_step_indiv_curr = %f,
+      #     log_prob_pooled_prior_prop = %f, log_prob_pooled_prior_curr = %f,
+      #     log_alpha_23_step_indiv = %f
+      #     ",
+      #     ii, indiv_index,
+      #     log_prob_phi_23_step_indiv_prop, log_prob_phi_23_step_indiv_curr,
+      #     log_prob_pooled_prior_prop, log_prob_pooled_prior_curr,
+      #     log_alpha_23_step_indiv
+      #   ),
+      #   name = base_filename
+      # )
 
       if (runif(1) < exp(log_alpha_23_step_indiv)) {
         if (kk == 1) {
@@ -434,7 +526,7 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = N_CHAIN, function(chain_i
 
     if (ii %% 500 == 0) {
       flog.info(
-        sprintf("MIMIC-stage-two--chain-%d: iteration-%d", chain_id, ii),
+        sprintf("MIMIC-stage-two-logarithmic--chain-%d: iteration-%d", chain_id, ii),
         name = base_filename
       )
     }
@@ -462,7 +554,7 @@ psi_2_samples <- bind_named_sublists(list_res, "psi_2_samples")
 phi_23_samples <- bind_named_sublists(list_res, "phi_23_samples")
 psi_3_indices <- bind_named_sublists(list_res, "psi_3_indices")
 
-flog.info("MIMIC-stage-two: writing to disk", name = base_filename)
+flog.info("MIMIC-stage-two-logarithmic: writing to disk", name = base_filename)
 
 saveRDS(
   object = phi_12_samples,

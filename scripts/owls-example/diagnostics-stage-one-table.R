@@ -3,7 +3,7 @@ library(kableExtra)
 library(dplyr)
 library(tibble)
 
-# load model 1 and model 3 samples 
+# load model 1 and model 3 samples
 capture_recapture_submodel_samples <- readRDS(
   "rds/owls-example/capture-recapture-subposterior-samples.rds"
 )
@@ -17,7 +17,7 @@ fecunditiy_submodel_samples <- readRDS(
 # and plot the traces for each
 pars <- sprintf("v[%d]", c(1, 2))
 
-fecundity_diagnostics <- monitor(fecunditiy_submodel_samples)
+fecundity_diagnostics <- monitor(fecunditiy_submodel_samples, print = FALSE)
 
 capture_recapture_diagnostics <- monitor(
   capture_recapture_submodel_samples[, , pars],
@@ -28,12 +28,12 @@ parameter_recode_vector <- c(
   'v[1]' = '$\\alpha_{0}$',
   'v[2]' = '$\\alpha_{2}$',
   'rho' = '$\\rho$'
-) 
+)
 
 res <- bind_rows(
   rownames_to_column(as.data.frame(capture_recapture_diagnostics)),
   rownames_to_column(as.data.frame(fecundity_diagnostics))
-) %>% 
+) %>%
   select(par = rowname, n_eff, Rhat, Bulk_ESS, Tail_ESS) %>%
   rename(
     "Parameter" = par,
@@ -44,7 +44,7 @@ res <- bind_rows(
   )
 
 res$Parameter <- res$Parameter %>%
-  recode(!!!parameter_recode_vector) 
+  recode(!!!parameter_recode_vector)
 
 kable_res <- kable(
   x = res,
@@ -52,11 +52,11 @@ kable_res <- kable(
   digits = 2,
   booktabs = TRUE,
   escape = FALSE
-) %>%  
-  kable_styling(latex_options = c("striped",  "hold_position")) %>% 
+) %>%
+  kable_styling(latex_options = c("striped",  "hold_position")) %>%
   column_spec(1, "2cm")
 
 cat(
   kable_res,
-  file = "tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex" 
+  file = "tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex"
 )

@@ -82,10 +82,11 @@ res <- mclapply(1 : n_chain, mc.cores = n_chain, function(chain_id) {
       )
 
       if (length(res_rootsolve) == 0) {
-        # if there is no root, then we don't observe the event and they are
-        # censored at their final observation.
+        # if there is no root, then we don't observe the respiratory failure
+        # event and they are instead assumed to be discharged, or expire, at
+        # their final observation.
         event_time <- boundary_knots[2]
-        event_indicator <- 0
+        event_indicator <- 2
       } else {
         event_time <- min(res_rootsolve)
         event_indicator <- 1

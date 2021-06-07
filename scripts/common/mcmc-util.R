@@ -149,3 +149,8 @@ write_diagnostics_to_file <- function(
   
   invisible(cat(formatted_kable, file = output_filename))
 }
+
+bind_named_sublists <- function(outer_list, name, along_dim) {
+  lapply(outer_list, function(sub_list) sub_list[[name]]) %>%
+    abind(along = along_dim)
+}

@@ -10,11 +10,17 @@ parameters {
   vector [n_theta] theta;
   row_vector [n_theta] baseline_data_x;
 
+  real breakpoint_lower;
+  real breakpoint_upper;
+
   // baseline hazard parameter(s) (Weibull gamma)
   real <lower = 0> hazard_gamma;
 
+  // death-discharge parameter (exponential distribution)
+  real <lower = 0> dd_gamma;
+
   // longitudinal associative strength (alpha)
-  real <multiplier = 5e-4> alpha;
+  real alpha;
 
   // phi_{1 \cap 2} -- from the event time submodel
   real event_indicator;
@@ -22,8 +28,13 @@ parameters {
 
   // phi_{2 \cap 3} -- from the longitudinal submodel
   // used to calculate m'_{i}(t)
-  real <lower = 0> breakpoint;
+  real breakpoint;
   vector [n_segments] eta_slope; // first segment is eta^{b} -- eta 'before'
+}
+
+transformed parameters {
+  real width = breakpoint_upper - breakpoint_lower;
+  real breakpoint_raw = (breakpoint - breakpoint_lower) / width;
 }
 
 model {
@@ -38,6 +49,10 @@ model {
     } else {
       target += alpha * eta_slope[2];
     }
+  }
+
+  if (event_indicator == 2) { // add the death-discharge hazard
+    target += log(dd_gamma);
   }
 
   // always add the survival probability
@@ -59,6 +74,14 @@ model {
     target += temp_surv_prob_common * temp_upper;
   }
 
-  // need submodel 2 priors (really a joint prior) for the longitudinal
-  // coefficients and for the event time (though this is trickier)
+  // now add the minus cumulative hazard for the dd event
+  target += -dd_gamma * event_time;
+
+  // priors for phi_{1 \cap 2} (implicit) and phi_{2 \cap 3} (explicit)
+  // align priors with the fluid submodel
+  target += gamma_lpdf(eta_slope | 1.53, 0.24);
+
+  // prior for kappa + jacobian for linear change of variables
+  target += beta_lpdf(breakpoint_raw | 5.0, 5.0);
+  target += -log(width);
 }

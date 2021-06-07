@@ -13,7 +13,6 @@ parser$add_argument("--pf-event-time-samples-long")
 parser$add_argument("--output-small")
 args <- parser$parse_args()
 
-cumulative_fluid_data <- readRDS(args$cumulative_fluid_data)
 fluid_plot_tbl <- readRDS(args$fluid_plot_mu_tbl) %>%
   select(-.variable) %>%
   mutate(value_type = 'fluids')
@@ -21,10 +20,18 @@ fluid_plot_tbl <- readRDS(args$fluid_plot_mu_tbl) %>%
 link_tbl <- fluid_plot_tbl %>%
   ungroup() %>%
   select(i, icustay_id) %>%
-  distinct()
+  distinct() %>%
+  mutate(plot_id = i)
+
+fluid_plot_tbl <- fluid_plot_tbl %>%
+  left_join(link_tbl %>% select(-i), by = 'icustay_id')
+
+cumulative_fluid_data <- readRDS(args$cumulative_fluid_data) %>%
+  left_join(link_tbl, by = 'icustay_id')
 
 pf_data <- readRDS(args$pf_and_summarised_fluid_data) %>%
-  filter(value_type == 'pf')
+  filter(value_type == 'pf') %>%
+  left_join(link_tbl, by = 'icustay_id')
 
 pf_plot_tbl <- readRDS(args$pf_plot_tbl) %>%
   left_join(link_tbl, by = 'i') %>%
@@ -52,7 +59,8 @@ p1 <- ggplot(interval_tbl) +
     mapping = aes(x = time_since_icu_adm, y = value)
   ) +
   geom_rug(
-    data = event_time_tbl,
+    data = event_time_tbl %>%
+      filter(.variable == "event_time"),
     aes(x = .value),
     colour = highlight_col,
     alpha = 0.25
@@ -69,7 +77,7 @@ p1 <- ggplot(interval_tbl) +
     alpha = 0.3
   ) +
   facet_nested_wrap(
-    ~ icustay_id + value_type,
+    ~ plot_id + value_type,
     scales = 'free',
     ncol = 4
   ) +
