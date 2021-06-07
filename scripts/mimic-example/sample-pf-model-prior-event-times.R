@@ -24,16 +24,15 @@ n_icu_stays <- length(list_data)
 n_prior_samples <- 50000
 
 prefit <- stan_model(args$pf_prior_optim_stan_model)
-prefit <- stan_model("scripts/mimic-example/models/pf-prior-optimizer.stan")
 
 res <- mclapply(1 : n_icu_stays, mc.cores = 5, function(icustay_index) {
   indiv_prior_data <- list_data[[icustay_index]]
-  
+
   n_spline_coef <- indiv_prior_data %>%
     extract2('x_obs_mat') %>%
     ncol()
 
-  ## prior samples occurr on the y-rescaled scale 
+  ## prior samples occurr on the y-rescaled scale
   beta_zero_prior_samples <- rnorm(
     n = n_prior_samples,
     mean = 0,
@@ -48,14 +47,14 @@ res <- mclapply(1 : n_icu_stays, mc.cores = 5, function(icustay_index) {
       sprintf('zeta_%d', 1 : n_spline_coef)
     )
   )
-  
+
   # first spline coef is indep
   spline_coef_prior_samples[, 1] <- rnorm(
     n = n_prior_samples,
     mean = 0,
     sd = 0.5
   )
-  
+
   # rw smoothing prior on the rest
   for (coef_index in 2 : n_spline_coef) {
     spline_coef_prior_samples[, coef_index] <- rnorm(
@@ -113,24 +112,24 @@ res <- mclapply(1 : n_icu_stays, mc.cores = 5, function(icustay_index) {
       event_indicator <- 2
     } else {
       event_time <- min(res_rootsolve)
-      
+
       if (event_time == 0) {
         event_time = 1e-8 # otherwise the beta distribution falls over
       }
-      
-      # this is an annoying numeric edge case 
+
+      # this is an annoying numeric edge case
       if (event_time == boundary_knots[2]) {
         event_indicator <- 2
       } else {
-        event_indicator <- 1 
+        event_indicator <- 1
       }
     }
 
     event_samples[iteration_index, ] <- c(event_time, event_indicator)
   }
-  
+
   return(event_samples)
-}) 
+})
 
 parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
   indiv_prior_data <- list_data[[icustay_index]]
@@ -143,16 +142,16 @@ parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
     lower_limit = indiv_prior_data$boundary_knots[1],
     upper_limit = indiv_prior_data$boundary_knots[2]
   )
-  
+
   optm_res <- optimizing(
     prefit,
     data = stan_data
   )
-  
-  pars <- as.list(optm_res$par) %>% 
-    c(id = icustay_index) %>% 
+
+  pars <- as.list(optm_res$par) %>%
+    c(id = icustay_index) %>%
     as_tibble()
-  
+
   # this function will need to be reused later -- pull into a file then.
   plot_f <- function(x) {
     optm_res$par['weight'] * dbeta(
@@ -161,12 +160,12 @@ parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
       shape2 = optm_res$par['beta_beta'],
     ) *
       (1 / (stan_data$upper_limit - stan_data$lower_limit)) # jacobian
-    
+
     # There is a difficulty in visualising this 'density', because the histogram
     # normalisiation doesn't work (the spike / atom cannot be bigger than
     # one by construction, but the exact normalisation is not clear
   }
-  
+
   plot_tbl <- tibble(
     x = seq(
       from = max(stan_data$lower_limit, 0) + 0.01,
@@ -174,18 +173,18 @@ parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
       length.out = 500
     ),
     id = icustay_index
-  )  %>% 
+  )  %>%
     mutate(y = plot_f(x))
-  
+
   inner_res <- list(
     pars = pars,
     plot_tbl = plot_tbl
   )
-  
+
 })
 
-param_tbl <- bind_named_sublists(parameter_res, 'pars', 1) %>% 
-  as_tibble() %>% 
+param_tbl <- bind_named_sublists(parameter_res, 'pars', 1) %>%
+  as_tibble() %>%
   mutate(
     plot_label = sprintf(
       'pi = %.5f, a = %.2f, b = %.2f',
@@ -196,24 +195,24 @@ param_tbl <- bind_named_sublists(parameter_res, 'pars', 1) %>%
   )
 
 sample_tbl <- lapply(res, function(sub_list) {
-  id <- str_extract(names(sub_list[1, ])[1], '(\\d+)') %>% 
+  id <- str_extract(names(sub_list[1, ])[1], '(\\d+)') %>%
     as.integer()
-  
+
   tibble(
     event_time = sub_list[, 1],
     event_indicator = as.integer(sub_list[, 2]),
     id = id
   )
-}) %>% 
-  bind_rows() %>% 
+}) %>%
+  bind_rows() %>%
   mutate(
     plot_type = 'histogram'
-  ) %>% 
+  ) %>%
   left_join(param_tbl, by = 'id')
 
-plot_tbl <- bind_named_sublists(parameter_res, 'plot_tbl', 1) %>% 
-  as_tibble() %>% 
-  left_join(param_tbl, by = 'id') %>% 
+plot_tbl <- bind_named_sublists(parameter_res, 'plot_tbl', 1) %>%
+  as_tibble() %>%
+  left_join(param_tbl, by = 'id') %>%
   mutate(plot_type = 'fitted_dens')
 
 plot_list <- lapply(1 : n_icu_stays, function(icustay_index) {
@@ -264,7 +263,7 @@ ggsave_base(
   width = 20
 )
 
-p2 <- wrap_plots(plot_list %>% inset(10 : n_icu_stays, NULL), ncol = 3)
+p2 <- wrap_plots(plot_list %>% inset(1 : (n_icu_stays - 10), NULL), ncol = 3)
 
 ggsave_fullpage(
   filename = str_replace(args$output_pf_prior_plot, '.png', '-small.png'),
