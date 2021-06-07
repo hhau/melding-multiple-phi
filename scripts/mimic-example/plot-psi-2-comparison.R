@@ -85,7 +85,7 @@ p1 <- ggplot(
       "point" = "dashed"
     ),
     labels = list(
-      "melding-poe" = "Chained melding",
+      "melding-poe" = "Chained melding, PoE pooling",
       "melding-log" = "Chained melding, log pooling",
       "point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
     )
@@ -110,7 +110,7 @@ interesting_subplots <- c(
 psmall <- ggplot(
   plot_tbl %>%
     filter(plot_var %in% interesting_subplots),
-  aes(x = .value, colour = method)
+  aes(x = .value, colour = method, lintype = method)
 ) +
   geom_density() +
   facet_wrap(
@@ -122,11 +122,25 @@ psmall <- ggplot(
   labs(colour = "Method") +
   scale_colour_manual(
     values = c(
-      "melding" = highlight_col,
+      "melding-poe" = highlight_col,
+      "melding-log" = greens[2],
       "point" = blues[1]
     ),
     labels = list(
-      "melding" = "Chained melding",
+      "melding-poe" = "Chained melding, PoE pooling",
+      "melding-log" = "Chained melding, log pooling",
+      "point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
+    )
+  ) +
+  scale_linetype_manual(
+    values = c(
+      "melding-poe" = "solid",
+      "melding-log" = "solid",
+      "point" = "dashed"
+    ),
+    labels = list(
+      "melding-poe" = "Chained melding, PoE pooling",
+      "melding-log" = "Chained melding, log pooling",
       "point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
     )
   ) +

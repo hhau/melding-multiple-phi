@@ -333,6 +333,23 @@ list_res <- lapply(1 : n_stage_two_chain, function(chain_id) {
 
       log_alpha_phi_12_indiv <- log_prob_phi_12_indiv_prop - log_prob_phi_12_indiv_curr
 
+      # flog.info(
+      #   sprintf(
+      #     "PoE pooling, phi_12 update, iteration: %d, indiv_index: %d
+      #     phi_12_prop[1] = %f, phi_12_prop[2] = %d,
+      #     phi_12_curr[1] = %f, phi_12_curr[2] = %d,
+      #     log_prob_phi_12_indiv_prop = %f, log_prob_phi_12_indiv_curr = %f,
+      #     log_alpha_phi_12_indiv = %f
+      #     ",
+      #     ii, indiv_index,
+      #     phi_12_indiv_prop_list$event_time, phi_12_indiv_prop_list$event_indicator,
+      #     phi_12_indiv_curr_list$event_time, phi_12_indiv_curr_list$event_indicator,
+      #     log_prob_phi_12_indiv_prop, log_prob_phi_12_indiv_curr,
+      #     log_alpha_phi_12_indiv
+      #   ),
+      #   name = base_filename
+      # )
+
       if (runif(1) < exp(log_alpha_phi_12_indiv)) {
         if (jj == 1) {
           psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)

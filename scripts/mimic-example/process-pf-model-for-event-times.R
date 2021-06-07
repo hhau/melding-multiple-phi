@@ -89,7 +89,17 @@ res <- mclapply(1 : n_chain, mc.cores = n_chain, function(chain_id) {
         event_indicator <- 2
       } else {
         event_time <- min(res_rootsolve)
-        event_indicator <- 1
+
+        if (event_time == 0) {
+          event_time = 1e-8 # otherwise the beta distribution falls over
+        }
+
+        # this is an annoying numeric edge case
+        if (event_time == boundary_knots[2]) {
+          event_indicator <- 2
+        } else {
+          event_indicator <- 1
+        }
       }
 
       event_samples[
