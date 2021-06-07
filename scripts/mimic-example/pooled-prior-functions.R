@@ -20,12 +20,29 @@ submodel_1_prior_marginal <- function(phi_12, id, return_log = TRUE) {
   upper_limit <- indiv_data$boundary_knots[2]
   length_of_stay <- upper_limit - lower_limit
 
+  # flog.info(
+  #   sprintf(
+  #     "p_{1}(phi_12), id: %d, phi_12[1] = %f, phi_12[2] = %d, lower_limit: %f, upper_limit: %f",
+  #     id, phi_12[1], phi_12[2], lower_limit, upper_limit
+  #   ),
+  #   name = base_filename
+  # )
+
   stopifnot(
-    (phi_12[1] > lower_limit) & (phi_12[1] <= upper_limit),
+    (phi_12[1] >= lower_limit),
+    (phi_12[1] <= upper_limit),
     (phi_12[2] == 1) | (phi_12[2] == 2)
   )
 
   scaled_event_time <- (phi_12[1] - lower_limit) / length_of_stay
+
+  if (scaled_event_time == 0) {
+    scaled_event_time <- 1e-8
+  }
+
+  if ((scaled_event_time == 1) & (phi_12[2] == 1)) {
+    scaled_event_time <- 1 - 1e-8
+  }
 
   with(indiv_beta_pars, {
     if (phi_12[2] == 1) {
@@ -47,8 +64,20 @@ logit_log_jac <- function(x, lb, ub) {
 submodel_2_prior_marginal <- function(phi_12, phi_23, id, return_log = TRUE) {
   indiv_params_data <- surv_prior_params[[id]]
   with(indiv_params_data, {
+    # flog.info(
+    #   sprintf(
+    #     "p_{2}(phi_12, phi_23), id: %d,
+    #     phi_12[1] = %f, phi_12[2] = %d, lower_event_time_limit = %f, upper_event_time_limit = %f
+    #     phi_23[1] = %f, phi_23[2] = %f, phi_23[3] = %f, lower_breakpoint_limit = %f, upper_breakpoint_limit = %f",
+    #     id,
+    #     phi_12[1], phi_12[2], lower_event_time_limit, upper_event_time_limit,
+    #     phi_23[1], phi_23[2], phi_23[3], lower_breakpoint_limit, upper_breakpoint_limit
+    #   ),
+    #   name = base_filename
+    # )
+
     stopifnot(
-      (phi_12[1] > lower_event_time_limit),
+      (phi_12[1] >= lower_event_time_limit),
       (phi_12[1] <= upper_event_time_limit),
       (phi_12[2] == 1) | (phi_12[2] == 2),
       (phi_23[1] > lower_breakpoint_limit),
@@ -56,6 +85,14 @@ submodel_2_prior_marginal <- function(phi_12, phi_23, id, return_log = TRUE) {
       (phi_23[2] > 0),
       (phi_23[3] > 0)
     )
+
+    if (phi_12[1] == lower_event_time_limit) {
+      phi_12[1] <- lower_event_time_limit + 1e-8
+    }
+
+    if (phi_12[1] == upper_event_time_limit & phi_12[2] == 1) {
+      phi_12[1] <- upper_event_time_limit - 1e-8
+    }
 
     unconstrained_event_time <- suppressWarnings(brms::logit_scaled(
       x = phi_12[1],
