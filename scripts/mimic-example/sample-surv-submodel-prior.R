@@ -58,10 +58,7 @@ pointwise_unnormalised_log_hazard <- function(t, x, betas) {
       log_hazard_term <- log_hazard_term + longitudianl_term_2
     }
 
-    log_dd_term <- log(dd_gamma)
-    log_res <- matrixStats::logSumExp(c(log_hazard_term, log_dd_term))
-
-    return(log_res)
+    return(log_hazard_term)
   })
 }
 
@@ -92,8 +89,7 @@ prior_samples_raw <- mclapply(1 : n_icustays, mc.cores = 5, function(icustay_ind
       alpha = sn::rsn(n = 1, xi = 0, omega = 0.5, alpha = -2),
       k_i = (rbeta(n = 1, 5.0, 5.0) * breakpoint_scale) + lower_breakpoint_limit,
       eta_before = rgamma(n = 1, shape = 1.53, rate = 0.24),
-      eta_after = rgamma(n = 1, shape = 1.53, rate = 0.24),
-      dd_gamma = rgamma(n = 1, shape = 2, rate = 2)
+      eta_after = rgamma(n = 1, shape = 1.53, rate = 0.24)
     )
 
     res$baseline_term <- (res$w_i %*% res$theta) %>% as.numeric()
@@ -136,7 +132,7 @@ prior_samples_raw <- mclapply(1 : n_icustays, mc.cores = 5, function(icustay_ind
       simsurv_status <- 'Ok'
 
       if (event_time_res[[sample_id]][['status']] == 0) {
-       event_indicator <- 2
+        event_indicator <- 0
       } else {
         event_indicator <- 1
       }
@@ -216,14 +212,14 @@ normal_prior_approx_parameters <- mclapply(1 : n_icustays, mc.cores = 5, functio
       str_detect("rf_event_sigma_mat") %>%
       magrittr::extract(optm_res$par, .) %>%
       matrix(data = ., nrow = 4, ncol = 4),
-    dd_event_mu = optm_res$par %>%
+    censored_event_mu = optm_res$par %>%
       names() %>%
-      str_detect("dd_event_mu") %>%
+      str_detect("censored_event_mu") %>%
       magrittr::extract(optm_res$par, .) %>%
       as.numeric(),
-    dd_event_sigma_mat = optm_res$par %>%
+    censored_event_sigma_mat = optm_res$par %>%
       names() %>%
-      str_detect("dd_event_sigma_mat") %>%
+      str_detect("censored_event_sigma_mat") %>%
       magrittr::extract(optm_res$par, .) %>%
       matrix(data = ., nrow = 3, ncol = 3)
   )
@@ -232,7 +228,7 @@ normal_prior_approx_parameters <- mclapply(1 : n_icustays, mc.cores = 5, functio
 sample_from_normal_approx <- function(n_sims, pars) {
   event_indicator <- rbinom(n = n_sims, size = 1, prob = 1 - pars$mix_weight) + 1
   n_ones <- sum(event_indicator == 1)
-  n_twos <- sum(event_indicator == 2)
+  n_cens <- sum(event_indicator == 0)
 
   ones_samples <- rmvnorm(
     n = n_ones,
@@ -242,27 +238,27 @@ sample_from_normal_approx <- function(n_sims, pars) {
 
   colnames(ones_samples) <- c('event_time', 'k_i', 'eta_before', 'eta_after')
 
-  if (n_twos > 0) {
-    twos_samples <- rmvnorm(
-      n = n_twos,
-      mean = pars$dd_event_mu,
-      sigma = pars$dd_event_sigma_mat
+  if (n_cens > 0) {
+    cens_samples <- rmvnorm(
+      n = n_cens,
+      mean = pars$censored_event_mu,
+      sigma = pars$censored_event_sigma_mat
     )
   } else {
-    twos_samples <- matrix(nrow = 0, ncol = length(pars$dd_event_mu))
+    cens_samples <- matrix(nrow = 0, ncol = length(pars$censored_event_mu))
   }
 
-  colnames(twos_samples) <- c('k_i', 'eta_before', 'eta_after')
+  colnames(cens_samples) <- c('k_i', 'eta_before', 'eta_after')
 
   ones_samples <- ones_samples %>%
       as_tibble() %>%
       mutate(event_indicator = 1)
 
-  twos_samples <- twos_samples %>%
+  cens_samples <- cens_samples %>%
       as_tibble() %>%
-      mutate(event_indicator = 2, event_time = NA)
+      mutate(event_indicator = 0, event_time = NA)
 
-  final_samples <- bind_rows(ones_samples, twos_samples) %>% mutate(
+  final_samples <- bind_rows(ones_samples, cens_samples) %>% mutate(
     event_time = brms::inv_logit_scaled(
       event_time,
       pars$lower_event_time_limit,

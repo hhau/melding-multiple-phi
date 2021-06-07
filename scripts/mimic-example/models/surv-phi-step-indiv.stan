@@ -16,9 +16,6 @@ parameters {
   // baseline hazard parameter(s) (Weibull gamma)
   real <lower = 0> hazard_gamma;
 
-  // death-discharge parameter (exponential distribution)
-  real <lower = 0> dd_gamma;
-
   // longitudinal associative strength (alpha)
   real alpha;
 
@@ -51,10 +48,6 @@ model {
     }
   }
 
-  if (event_indicator == 2) { // add the death-discharge hazard
-    target += log(dd_gamma);
-  }
-
   // always add the survival probability
   // this term is common despite to both cases
   temp_surv_prob_common = -exp(baseline_data_x * theta);
@@ -73,9 +66,6 @@ model {
     real temp_upper = (t1 * t1) + (t3) * (t4 - t5);
     target += temp_surv_prob_common * temp_upper;
   }
-
-  // now add the minus cumulative hazard for the dd event
-  target += -dd_gamma * event_time;
 
   // priors for phi_{1 \cap 2} (implicit) and phi_{2 \cap 3} (explicit)
   // align priors with the fluid submodel

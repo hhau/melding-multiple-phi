@@ -31,7 +31,7 @@ submodel_1_prior_marginal <- function(phi_12, id, return_log = TRUE) {
   stopifnot(
     (phi_12[1] >= lower_limit),
     (phi_12[1] <= upper_limit),
-    (phi_12[2] == 1) | (phi_12[2] == 2)
+    (phi_12[2] == 1) | (phi_12[2] == 0)
   )
 
   scaled_event_time <- (phi_12[1] - lower_limit) / length_of_stay
@@ -79,7 +79,7 @@ submodel_2_prior_marginal <- function(phi_12, phi_23, id, return_log = TRUE) {
     stopifnot(
       (phi_12[1] >= lower_event_time_limit),
       (phi_12[1] <= upper_event_time_limit),
-      (phi_12[2] == 1) | (phi_12[2] == 2),
+      (phi_12[2] == 1) | (phi_12[2] == 0),
       (phi_23[1] > lower_breakpoint_limit),
       (phi_23[1] < upper_breakpoint_limit),
       (phi_23[2] > 0),

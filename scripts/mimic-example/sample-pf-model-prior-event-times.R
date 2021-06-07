@@ -109,7 +109,7 @@ res <- mclapply(1 : n_icu_stays, mc.cores = 5, function(icustay_index) {
       # event and they are instead assumed to be discharged, or expire, at
       # their final observation.
       event_time <- boundary_knots[2]
-      event_indicator <- 2
+      event_indicator <- 0
     } else {
       event_time <- min(res_rootsolve)
 
@@ -119,7 +119,7 @@ res <- mclapply(1 : n_icu_stays, mc.cores = 5, function(icustay_index) {
 
       # this is an annoying numeric edge case
       if (event_time == boundary_knots[2]) {
-        event_indicator <- 2
+        event_indicator <- 0
       } else {
         event_indicator <- 1
       }

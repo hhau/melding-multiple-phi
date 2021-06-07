@@ -9,7 +9,7 @@ data {
   real log_crude_event_rate;
 
   // phi_{1 \cap 2} -- from the event time submodel
-  int <lower = 1, upper = 2> event_indicator [n_icu_stays];
+  int <lower = 0, upper = 1> event_indicator [n_icu_stays];
   vector <lower = 0> [n_icu_stays] event_time;
 
   // phi_{2 \cap 3} -- from the longitudinal submodel
@@ -24,9 +24,6 @@ parameters {
 
   // baseline hazard parameter(s) (Weibull gamma)
   real <lower = 0> hazard_gamma;
-
-  // death-discharge parameter (exponential distribution)
-  real <lower = 0> dd_gamma;
 
   // longitudinal associative strength (alpha)
   real alpha;
@@ -44,10 +41,6 @@ model {
       } else {
         target += alpha * eta_slope[ii][2];
       }
-    }
-
-    if (event_indicator[ii] == 2) { // add the death-discharge hazard
-      target += log(dd_gamma);
     }
 
     // always add the survival probability
@@ -69,14 +62,11 @@ model {
       target += temp_surv_prob_common * temp_upper;
     }
 
-    // now add the minus cumulative hazard for the dd event
-    target += -dd_gamma * event_time[ii];
   }
 
   // priors -- only psi_2 in this model
   target += normal_lpdf(theta[1] | log_crude_event_rate, 0.5);
   target += skew_normal_lpdf(theta[2 : n_theta] | 0, 0.5, -1);
   target += gamma_lpdf(hazard_gamma | 9.05, 8.72);
-  target += gamma_lpdf(dd_gamma | 2.0, 2.0);
   target += skew_normal_lpdf(alpha | 0.0, 0.5, -2);
 }

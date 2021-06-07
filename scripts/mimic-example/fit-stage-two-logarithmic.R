@@ -153,7 +153,6 @@ psi_initialiser <- function(x) {
   list(
     theta = x[sprintf('theta[%d]', 1 : n_theta)],
     hazard_gamma = x['hazard_gamma'],
-    dd_gamma = x['dd_gamma'],
     alpha = x['alpha']
   )
 }
@@ -225,7 +224,6 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   psi_2_samples[1, 1, ] <- c(
     theta = rnorm(n = n_theta, mean = 0.5, sd = 0.2),
     hazard_gamma = abs(rnorm(n = 1, mean = 0.6, sd = 0.2)),
-    dd_gamma = rexp(n = 1, rate = 0.75),
     alpha = rnorm(n = 1, mean = -0.2, sd = 0.1)
   )
 

@@ -38,9 +38,9 @@ transformed data {
 
 parameters {
   vector [4] rf_event_mu;
-  vector [3] dd_event_mu;
+  vector [3] censored_event_mu;
   cov_matrix [4] rf_event_sigma_mat;
-  cov_matrix [3] dd_event_sigma_mat;
+  cov_matrix [3] censored_event_sigma_mat;
   real <lower = 0, upper = 1> mix_weight;
 }
 
@@ -64,7 +64,7 @@ model {
         unconstrained_eta_after_samples[ii]
       });
 
-      target += multi_normal_lpdf(temp_y | dd_event_mu, dd_event_sigma_mat);
+      target += multi_normal_lpdf(temp_y | censored_event_mu, censored_event_sigma_mat);
       target += log(1 - mix_weight);
     }
   }

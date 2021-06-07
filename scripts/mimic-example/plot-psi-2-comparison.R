@@ -25,17 +25,17 @@ n_theta <- samples_melded %>%
 plot_tbl <- bind_rows(
   samples_melded %>%
     array_to_mcmc_list() %>%
-    gather_draws(theta[b], hazard_gamma, dd_gamma, alpha) %>%
+    gather_draws(theta[b], hazard_gamma, alpha) %>%
     mutate(method = "melding-poe") %>%
     unite('plot_var', c(.variable, b), na.rm = TRUE),
   samples_melded_log %>%
     array_to_mcmc_list() %>%
-    gather_draws(theta[b], hazard_gamma, dd_gamma, alpha) %>%
+    gather_draws(theta[b], hazard_gamma, alpha) %>%
     mutate(method = "melding-log") %>%
     unite('plot_var', c(.variable, b), na.rm = TRUE),
   samples_point %>%
     array_to_mcmc_list() %>%
-    gather_draws(theta[b],  hazard_gamma, dd_gamma, alpha) %>%
+    gather_draws(theta[b],  hazard_gamma, alpha) %>%
     mutate(method = "point") %>%
     unite('plot_var', c(.variable, b), na.rm = TRUE)
 ) %>%
@@ -45,13 +45,11 @@ plot_tbl <- bind_rows(
       levels = c(
         sprintf('theta_%d', 1 : n_theta),
         "hazard_gamma",
-        "dd_gamma",
         "alpha"
       ),
       labels = c(
         sprintf('theta[%d]', 1 : n_theta),
         "gamma[1]",
-        "gamma[2]",
         "alpha"
       )
     ),
@@ -102,7 +100,6 @@ ggsave_base(
 interesting_subplots <- c(
   'alpha',
   'hazard_gamma',
-  'dd_gamma',
   'theta_3',
   'theta_17'
 )
@@ -110,7 +107,7 @@ interesting_subplots <- c(
 psmall <- ggplot(
   plot_tbl %>%
     filter(plot_var %in% interesting_subplots),
-  aes(x = .value, colour = method, lintype = method)
+  aes(x = .value, colour = method, linetype = method)
 ) +
   geom_density() +
   facet_wrap(
@@ -119,7 +116,7 @@ psmall <- ggplot(
     labeller = label_parsed,
     ncol = 2
   ) +
-  labs(colour = "Method") +
+  labs(colour = "Method", linetype = "Method") +
   scale_colour_manual(
     values = c(
       "melding-poe" = highlight_col,
@@ -146,7 +143,7 @@ psmall <- ggplot(
   ) +
   theme(axis.title = element_blank())
 
-ggsave_fullpage(
+ggsave_halfheight(
   filename = args$output_small,
   plot = psmall
 )
