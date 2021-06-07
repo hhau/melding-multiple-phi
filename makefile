@@ -673,10 +673,10 @@ $(MIMIC_STAGE_TWO_PSI_3_INDICES_LOGARTHMIC) &: \
 	$(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
 	$(MIMIC_SURV_PHI_STEP_INDIV_MODEL) \
 	$(MIMIC_POOLED_PRIOR_FUNCTIONS) \
-	$(MIMIC_PF_DATA_LIST) \ # this and the following are in pooled-prior-functions.R
+	$(MIMIC_PF_DATA_LIST) \
 	$(MIMIC_PF_PRIOR_EST_PARAMS) \
 	$(MIMIC_SURV_PRIOR_EST_PARAMS) \
-	$(MIMIC_FLUID_DATA_STAN) \
+	$(MIMIC_FLUID_DATA_STAN)
 	$(RSCRIPT) $< \
 		--pf-event-time-samples-array $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
 		--fluid-model-samples-array $(MIMIC_FLUID_MODEL_SAMPLES_ARRAY) \
@@ -684,11 +684,11 @@ $(MIMIC_STAGE_TWO_PSI_3_INDICES_LOGARTHMIC) &: \
 		--baseline-data $(MIMIC_BASELINE_DATA) \
 		--psi-step-stan-model $(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
 		--phi-step-indiv-stan-model $(MIMIC_SURV_PHI_STEP_INDIV_MODEL) \
-		--output-phi-12-samples $(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
-		--output-phi-23-samples $(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
-		--output-psi-1-indices $(MIMIC_STAGE_TWO_PSI_1_INDICES) \
-		--output-psi-3-indices $(MIMIC_STAGE_TWO_PSI_3_INDICES) \
-		--output $(MIMIC_STAGE_TWO_PSI_2_SAMPLES)
+		--output-phi-12-samples $(MIMIC_STAGE_TWO_PHI_12_SAMPLES_LOGARTHMIC) \
+		--output-phi-23-samples $(MIMIC_STAGE_TWO_PHI_23_SAMPLES_LOGARTHMIC) \
+		--output-psi-1-indices $(MIMIC_STAGE_TWO_PSI_1_INDICES_LOGARTHMIC) \
+		--output-psi-3-indices $(MIMIC_STAGE_TWO_PSI_3_INDICES_LOGARTHMIC) \
+		--output $(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC)
 
 # Start processing and fitting stage two with fixed subposterior median estimates.
 MIMIC_SUBPOST_MEDIAN_EVENT_TIME = $(MIMIC_RDS)/median-event-time-data.rds
@@ -727,9 +727,11 @@ $(MIMIC_COMPARE_PSI_2_PLOT) $(MIMIC_COMPARE_PSI_2_PLOT_SMALL) &: \
 	$(PLOT_SETTINGS) \
 	$(MCMC_UTIL) \
 	$(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
+	$(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC) \
 	$(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES)
 	$(RSCRIPT) $< \
 		--full-melding-psi-2-samples $(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
+		--full-melding-logarthmic-psi-2-samples $(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC) \
 		--both-fixed-psi-2-samples $(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) \
 		--output-small $(MIMIC_COMPARE_PSI_2_PLOT_SMALL) \
 		--output $(MIMIC_COMPARE_PSI_2_PLOT)
