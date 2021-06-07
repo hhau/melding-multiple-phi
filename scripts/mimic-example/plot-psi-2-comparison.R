@@ -7,11 +7,13 @@ source("scripts/common/mcmc-util.R")
 source("scripts/common/setup-argparse.R")
 
 parser$add_argument("--full-melding-psi-2-samples")
+parser$add_argument("--full-melding-logarthmic-psi-2-samples")
 parser$add_argument("--both-fixed-psi-2-samples")
 parser$add_argument("--output-small")
 args <- parser$parse_args()
 
 samples_melded <- readRDS(args$full_melding_psi_2_samples)
+samples_melded_log <- readRDS(args$full_melding_logarthmic_psi_2_samples)
 samples_point <- readRDS(args$both_fixed_psi_2_samples)
 
 n_theta <- samples_melded %>%
@@ -24,7 +26,12 @@ plot_tbl <- bind_rows(
   samples_melded %>%
     array_to_mcmc_list() %>%
     gather_draws(theta[b], hazard_gamma, dd_gamma, alpha) %>%
-    mutate(method = "melding") %>%
+    mutate(method = "melding-poe") %>%
+    unite('plot_var', c(.variable, b), na.rm = TRUE),
+  samples_melded_log %>%
+    array_to_mcmc_list() %>%
+    gather_draws(theta[b], hazard_gamma, dd_gamma, alpha) %>%
+    mutate(method = "melding-log") %>%
     unite('plot_var', c(.variable, b), na.rm = TRUE),
   samples_point %>%
     array_to_mcmc_list() %>%
@@ -61,21 +68,25 @@ p1 <- ggplot(
   labs(colour = "Method", linetype = "Method") +
   scale_colour_manual(
     values = c(
-      "melding" = highlight_col,
+      "melding-poe" = highlight_col,
+      "melding-log" = greens[2],
       "point" = blues[1]
     ),
     labels = list(
-      "melding" = "Chained melding",
+      "melding-poe" = "Chained melding, PoE pooling",
+      "melding-log" = "Chained melding, log pooling",
       "point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
     )
   ) +
   scale_linetype_manual(
     values = c(
-      "melding" = "solid",
-      "point" = "solid"
+      "melding-poe" = "solid",
+      "melding-log" = "solid",
+      "point" = "dashed"
     ),
     labels = list(
-      "melding" = "Chained melding",
+      "melding-poe" = "Chained melding",
+      "melding-log" = "Chained melding, log pooling",
       "point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
     )
   ) +
