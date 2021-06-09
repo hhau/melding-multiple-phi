@@ -10,7 +10,7 @@ get.lnorm.par(
 hist(rlnorm(n = 1e6, meanlog = 1.61, sdlog = 0.47), breaks = 100)
 
 # eh, bit light on the left hand tail for my liking, but close enough.
-qlnorm(c(0.025, 0.5, 0.99), 8.52, 0.47)
+qlnorm(c(0.025, 0.5, 0.99), 1.61, 0.47)
 
 # -----
 # For the RF hazard shape parameter in the survival models

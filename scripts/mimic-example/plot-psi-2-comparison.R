@@ -49,7 +49,7 @@ plot_tbl <- bind_rows(
       ),
       labels = c(
         sprintf('theta[%d]', 1 : n_theta),
-        "gamma[1]",
+        "gamma",
         "alpha"
       )
     ),

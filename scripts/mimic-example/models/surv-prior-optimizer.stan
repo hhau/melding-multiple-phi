@@ -5,7 +5,7 @@ data {
   real lower_breakpoint_limit;
   real upper_breakpoint_limit;
   vector <lower = lower_event_time_limit, upper = upper_event_time_limit> [n_prior_samples] event_time_samples;
-  int <lower = 1, upper = 2> event_indicator_samples [n_prior_samples];
+  int <lower = 0, upper = 1> event_indicator_samples [n_prior_samples];
   vector <lower = lower_breakpoint_limit, upper = upper_breakpoint_limit> [n_prior_samples] breakpoint_samples;
   vector <lower = 0> [n_prior_samples] eta_before_samples;
   vector <lower = 0> [n_prior_samples] eta_after_samples;
@@ -57,7 +57,7 @@ model {
 
       target += multi_normal_lpdf(temp_y | rf_event_mu, rf_event_sigma_mat);
       target += log(mix_weight);
-    } else if (event_indicator_samples[ii] == 2) { // dd event
+    } else if (event_indicator_samples[ii] == 0) { // dd event
       vector [3] temp_y = to_vector({
         unconstrained_breakpoint_samples[ii],
         unconstrained_eta_before_samples[ii],

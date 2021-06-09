@@ -143,10 +143,19 @@ parameter_res <- lapply(1 : n_icu_stays, function(icustay_index) {
     upper_limit = indiv_prior_data$boundary_knots[2]
   )
 
-  optm_res <- optimizing(
-    prefit,
-    data = stan_data
-  )
+  optm_list <- lapply(1 : 10, function(x) {
+    optimizing(
+      prefit,
+      data = stan_data
+    )
+  })
+
+  optm_best <- lapply(optm_list, function(x) {
+    x$value
+  }) %>%
+    which.max()
+
+  optm_res <- optm_list[[optm_best]]
 
   pars <- as.list(optm_res$par) %>%
     c(id = icustay_index) %>%
@@ -242,7 +251,7 @@ plot_list <- lapply(1 : n_icu_stays, function(icustay_index) {
     ) +
     geom_col(
       data = sub_sample_tbl %>%
-        filter(event_indicator == 2) %>%
+        filter(event_indicator == 0) %>%
         distinct(),
       mapping = aes(x = event_time, y = (1 - weight)),
       alpha = 0.7,
@@ -250,7 +259,7 @@ plot_list <- lapply(1 : n_icu_stays, function(icustay_index) {
       fill = highlight_col
     ) +
     xlab(bquote("T"[.(icustay_index)])) +
-    ylab(bquote("p"[1]("T"[.(icustay_index)]))) +
+    ylab(bquote("p"[1,.(icustay_index)]("T"[.(icustay_index)]))) +
     ggtitle(label = bquote(italic('i')==.(icustay_index)))
 })
 

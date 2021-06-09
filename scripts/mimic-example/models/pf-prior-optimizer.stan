@@ -1,6 +1,6 @@
 data {
   int <lower = 1> n_prior_samples;
-  int <lower = 1, upper = 2> event_indicator [n_prior_samples];
+  int <lower = 0, upper = 1> event_indicator [n_prior_samples];
   vector <lower = 0> [n_prior_samples] event_time;
   real lower_limit;
   real <lower = lower_limit> upper_limit;
@@ -28,7 +28,7 @@ model {
       }
 
       target += log(weight);
-    } else if (event_indicator[ii] == 2) {
+    } else if (event_indicator[ii] == 0) {
       target += log(1 - weight);
     }
     // this jacobian is constant and so technically could be ignored, but i'd
