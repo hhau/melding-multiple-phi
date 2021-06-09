@@ -187,7 +187,7 @@
 \title{Submodels, priors, and pooling the link parameters in the
 survival example}
 \author{Andrew Manderson}
-\date{27 May, 2021}
+\date{08 June, 2021}
 
 \begin{document}
 \maketitle
@@ -217,8 +217,7 @@ between the two boundary knots. These choices result in
 coefficients \(\zeta_{i, k}\) where
 \(\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})\). We
 denote the individual specific B-spline basis evaluated at time
-\(t_{i, j}\) as
-\(B_{i}(t_{i, j}) \in \left\{\mathbb{R}_{+} \cup \{0\}\right\}^{10}\).
+\(t_{i, j}\) as \(B_{i}(t_{i, j}) \in \mathbb{R}_{+} \cup \{0\}\).
 
 An individual's P/F data are standardised to improve computational
 performance. That is to say we actually observe \(\tilde{z}_{i, j}\),
@@ -233,18 +232,15 @@ We write the submodel \begin{equation}
   z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})\boldsymbol{\zeta}_{i} + \varepsilon_{i, j} \\
   \beta_{0, i} \sim \text{N}(0, 1^2), \,\, \varepsilon_{i, j} \sim t_{5}(0, \omega), \,\,  \omega \sim \text{N}_{+}(0, 1^2).
 \end{gathered}
-\end{equation} For the spline basis coefficients
-\(\boldsymbol{\zeta}_{i}\), when \(k = 1\) we set
+\end{equation} For the spline basis coefficients we set
 \(\zeta_{i, 1} \sim \text{N}(0, 0.5^2)\), and for \(k = 2, \ldots, 10\)
-we employ a random-walk smoothing prior\footnote{This doesn't impart as
-  much smoothing as I thought it would, so we could reduce the
-  inter-coefficient prior variance substantially.}
+we employ a random-walk prior
 \(\zeta_{i, k} \sim \text{N}(\zeta_{i, k - 1}, 0.5^2)\).
 
-Individuals experience either the respiratory failure event denoted
-\(d_{i} = 1\), or the death or discharge event \(d_{i} = 2\). The
-respiratory failure event time \(T_{i}\) is defined as the solution to
-the following optimisation problem \begin{equation}
+Individuals experience either the respiratory failure event
+(\(d_{i} = 1\)) or are censored (\(d_{i} = 0\)) at time \(C_{i}\). The
+event time \(T_{i}\) is defined as the solution to the following
+optimisation problem \begin{equation}
   T_{i} = \min_{t} \left\{
     \tau_{i} = \beta_{0, i} + B_{i}(t)\boldsymbol{\zeta}_{i}
     \mid
@@ -255,24 +251,22 @@ the following optimisation problem \begin{equation}
 \(\tau_{i} = \beta_{0, i} + B_{i}(t)\boldsymbol{\zeta}_{i}\) are
 obtained using the multiple root finder of
 \protect\hyperlink{ref-soetaert_rootsolve_2020}{Soetaert \emph{et al.}}
-(\protect\hyperlink{ref-soetaert_rootsolve_2020}{2020}). If there are no
-roots then we assume the individual experiences the death or discharge
-event, and set \(T_{i} = C_{i}\) and \(d_{i} = 2\).
+(\protect\hyperlink{ref-soetaert_rootsolve_2020}{2020}). If no solutions
+are found then we assume the individual is censored, and set
+\(T_{i} = C_{i}\) and \(d_{i} = 0\).
 
-We define \(\phi_{1 \cap 2} = (\{T_{i}, d_{i}\}_{i = 1}^{N})\), which
-implies
-\(\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1}(T_{i}, d_{i})\).
-Note that \(\pd_{1}(T_{i}, d_{i})\) implicitly conditions on each
-individual's length of stay, as well as the range, mean, and standard
-deviation of the P/F data. The analytic form of
-\(\pd_{1}(T_{i}, d_{i})\) is not available. Instead, I think we should
-scale the samples of \(T_{i}\) by dividing by \(C_{i}\) so that they lie
-in \([0, 1]\), then fit a mixture of a point mass at \(1\) and a beta
-distribution (possibly a mixture of two betas?). Fitting a KDE to
-samples from such a mixture seems unwise.
+We define \(\phi_{1 \cap 2} = (\{T_{i}, d_{i}\}_{i = 1}^{N})\) noting
+that
+\(\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})\).
+It is also important to note that \(\pd_{1, i}(T_{i}, d_{i})\)
+conditions on each individual's length of stay (in specifying the
+location of the knots), as well as the range, mean, and standard
+deviation of the P/F data (by standardising the \(\tilde{z}_{i, j}\)).
+The analytic form of \(\pd_{1, i}(T_{i}, d_{i})\) is not available and
+must be estimated, which we discuss in Section
+\ref{estimating-submodel-prior-marginal-distributions}.
 
-To align the notation of \eqref{eqn:event_time_model_def} with the
-melding notation, we define
+To align with our chained melding notation we define
 \(Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})\) and
 \(\psi_{1} = (\{\beta_{0, i}, \boldsymbol{\zeta}_{i}\}_{i = 1}^{N}, \omega)\).
 
@@ -281,25 +275,37 @@ melding notation, we define
 \(\pd_{3}\)}{Cumulative fluid model (piecewise linear) \textbackslash pd\_\{3\}}}\label{cumulative-fluid-model-piecewise-linear-pd_3}}
 
 Each individual has \(l = 1, \ldots, L_{i}\) 24-hourly fluid balance
-observations\footnote{How these are derived from the raw fluid data is
-  detail for the appendix. The fluid times are the average of the
-  non-zero input/output event chart-times.}, which are used to compute
-the cumulative fluid balance data \(x_{i, l}\) with with
-\(\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})\). These data
-are `observed' at times \(u_{i, l}\) with
-\(\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})\). We assume a
-piecewise linear model for the cumulative fluid balance data. This model
-is linear with slope \(\eta_{1, i}^{b}\) before the breakpoint at time
-\(\kappa_{i}\), and linear with slope \(\eta_{1, i}^{a}\) after the
-breakpoint. Mathematically, \begin{gather}
-  x_{i, l} = \eta_{0, i} + \eta^{b}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} < \kappa_{i}\}} + \eta^{a}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} \geq \kappa_{i}\}} + \epsilon_{i, l}
-  \label{eqn:piecewise-fluid-model-one}\\
-  \eta^{b}_{1, i} \sim \text{N}(5000, 1000^2), \,\, \eta^{a}_{1, i} \sim \text{N}(5000, 1000^2), \\
-  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x}),  \,\, \sigma_{x} \sim \text{N}_{+}(0, 500^2).
-\end{gather}
+observations\footnote{Details about the derivation of these values from
+  the raw fluid data are contained in Appendix
+  \ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.},
+which are used to compute the cumulative fluid balance data \(x_{i, l}\)
+with with \(\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})\).
+These data are measured in litres and observed at times \(u_{i, l}\)
+with \(\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})\). We use a
+piecewise linear model for these data, with with slope
+\(\eta_{1, i}^{b}\) before the breakpoint at time \(\kappa_{i}\), and
+slope \(\eta_{1, i}^{a}\) after the breakpoint. Mathematically,
+\begin{equation}
+\begin{gathered}
+  x_{i, l} = \eta_{0, i} + \eta^{b}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} < \kappa_{i}\}} + \eta^{a}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} \geq \kappa_{i}\}} + \epsilon_{i, l} \\
+  \eta^{b}_{1, i} \sim \text{Gamma}(1.53, 0.24), \,\, \eta^{a}_{1, i} \sim \text{Gamma}(1.53, 0.24), \\
+  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x}),  \,\, \sigma_{x} \sim \text{N}_{+}(0, 5^2).
+  \label{eqn:piecewise-fluid-model}
+\end{gathered}
+\end{equation}
 
-The prior for the breakpoint \(\kappa_{i}\) is derived using the
-following steps. Define \(u_{i, (1)} = \min(\boldsymbol{u}_{i})\) and
+The parameters for the gamma prior for \(\eta^{b}_{1, i}\) and
+\(\eta^{a}_{1, i}\) are obtained by assuming that the 2.5-, 50-, and
+97.5- percentiles are at 0.5, 5, and 20
+(\protect\hyperlink{ref-belgorodski_rriskdistributions_2017}{Belgorodski
+\emph{et al.}, 2017}). A slope of \(0.5\) (i.e.~the change in cumulative
+fluid balance per day) is unlikely but possible due to missing data; a
+slope of \(20\) is also unlikely but possible as extremely unwell
+patients can have very high respiratory rates and thus require large
+fluid inputs.
+
+The prior for the breakpoint \(\kappa_{i}\) is derived as follows.
+Define \(u_{i, (1)} = \min(\boldsymbol{u}_{i})\) and
 \(u_{i, (n)} = \max(\boldsymbol{u}_{i})\), with
 \(r_{i} = u_{i, (n)} - u_{i, (1)}\). We reparameterise the breakpoint by
 noting that \(\kappa_{i} = \kappa^{\text{raw}}_{i}r_{i} + u_{i, (1)}\),
@@ -317,30 +323,29 @@ thus depends on the length of stay. Instead, we reparameterise
   \eta_{0, i} =
     (\eta_{0, i}^{\text{raw}} + \eta^{b}_{1, i} \kappa_{i}) \boldsymbol{1}_{\{0 < \kappa_{i}\}} +
     (\eta_{0, i}^{\text{raw}} + \eta^{a}_{1, i} \kappa_{i}) \boldsymbol{1}_{\{0 \geq \kappa_{i}\}}.
-\end{equation} We place a \(\text{LogNormal}(8.52, 0.47^2)\) prior on
-\(\eta_{0, i}^{\text{raw}}\). These values are obtained using the
-\texttt{rriskDistributions} package
+\end{equation} We place a \(\text{LogNormal}(1.61, 0.47^2)\) prior on
+\(\eta_{0, i}^{\text{raw}}\). These values are obtained assuming that, a
+priori, the \(2.5\%, 50\%\), and \(99\%\) percentiles of
+\(\eta_{0, i}^{\text{raw}}\) are \(0.5, 5\), and \(15\) respectively
 (\protect\hyperlink{ref-belgorodski_rriskdistributions_2017}{Belgorodski
-\emph{et al.}, 2017}) assuming that, a priori, the \(2.5\%, 50\%\), and
-\(99\%\) percentiles of \(\eta_{0, i}^{\text{raw}}\) are \(500, 5000\),
-and \(15000\) respectively. This is a broad prior, that reflects the
-diverse admission routes into ICU We expect those admitted from the
-wards to have little pre-admission fluid data. Those admitted from the
-operating theatre often have their in-theatre fluid input recorded after
-admission into the ICU, with no easy way to distinguish these records in
-the data.
+\emph{et al.}, 2017}). This is a broad prior that reflects the numerous
+possible admission routes into the ICU. We expect those admitted from
+the wards to have little pre-admission fluid data. Those admitted from
+the operating theatre often have their in-theatre fluid input recorded
+after admission into the ICU, with no easy way to distinguish these
+records in the data.
 
-To completely align with our melding notation we define
+To align with our melding notation we define
 \(m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}\),
-and
-\(\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)\).
-Note that we have explicit, analytic priors for the components of
+with
+\(\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)\),
+\(Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})\),
+and \(\psi_{3} = (\{\eta_{0, i}\}_{i = 1}^{N}, \sigma^{2}_{x})\). Note
+that we have explicit, analytic priors for the components of
 \(\phi_{2 \cap 3}\). Hence, \begin{equation}
   \pd_{3}(\phi_{2 \cap 3}) = \prod_{i = 1}^{N} \pd(\eta^{b}_{1, i}) \pd(\eta^{a}_{1, i}) \pd(\kappa_{i}), \,\, \text{with} \,\,\,
   \pd(\kappa_{i}) = \pd_{\kappa^{\text{raw}}_{i}}(\frac{\kappa_{i} - u_{i, (1)}}{r_{i}}) \frac{1}{r_{i}}
-\end{equation} by the change of variables formula. Also define
-\(Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})\) and
-\(\psi_{3} = (\{\eta_{0, i}\}_{i = 1}^{N}, \sigma^{2}_{x})\).
+\end{equation} by the change of variables formula.
 
 \hypertarget{competing-risks-survival-model-pd_2}{%
 \subsection{\texorpdfstring{Competing risks survival model
@@ -406,41 +411,93 @@ al.}, 2020}), and \(\boldsymbol{I}_{p}\) is the \(p \times p\) identity
 matrix. We adopt the same priors as the cumulative fluid balance
 submodel for \(\kappa_{i}, \eta_{1, i}^{b}\), and \(\eta_{1, i}^{a}\).
 
-\hypertarget{sampling-the-priors}{%
-\section{Sampling the priors}\label{sampling-the-priors}}
+\hypertarget{estimating-submodel-prior-marginal-distributions}{%
+\section{Estimating submodel prior marginal
+distributions}\label{estimating-submodel-prior-marginal-distributions}}
 
-The prior for \(\phi_{2 \cap 3}\) under the third submodel has a known
-analytic form \(\pd_{3}(\phi_{2 \cap 3})\). However, we must estimate
-\(\pd_{1}(\phi_{1 \cap 2})\) and
-\(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\).
+We must estimate \(\pd_{1}(\phi_{1 \cap 2})\) and
+\(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\). Because these
+distributions are functions of discrete and continuous parameters, and
+some of the latter have different supports, standard kernel density
+estimation as suggested by
+\protect\hyperlink{ref-goudie_joining_2019}{Goudie \emph{et al.}}
+(\protect\hyperlink{ref-goudie_joining_2019}{2019}) is inappropriate.
+Instead we fit appropriate parametric mixture distributions using Monte
+Carlo samples from the priors.
 
 \hypertarget{pf-submodel}{%
 \subsection{PF submodel}\label{pf-submodel}}
 
-Samples of \(T_{i}\) and \(d_{i}\) are obtained from the prior
-predictive distribution \(\pd_{1}(T_{i}, d_{i})\). We use a
-spike-and-slab mixture distribution, with a delta distribution at
-\(C_{i}\) for the death/discharge events, and a beta distribution for
-the rescaled respiratory event times. \begin{equation}
-  \widehat{\pd_{1}}(T_{i}, d_{i}) =
-    \boldsymbol{1}_{\{d_{i} = 1\}} (\widehat{\pi}_{i}) \frac{1}{\beta\left(\widehat{a}_{i}, \widehat{b}_{i}\right)} \left(\frac{T_{i}}{C_{i}}\right)^{\widehat{a}_{i} - 1} \left(1 - \frac{T_{i}}{C_{i}}\right)^{\widehat{b}_{i} - 1} \frac{1}{C_{i}} +
-    \boldsymbol{1}_{\{d_{i} = 2, T_{i} = C_{i}\}} (1 - \widehat{\pi}_{i})
+We approximate \(\pd_{1}(\phi_{1 \cap 2})\) using spike-and-slab mixture
+distributions, with a spike at \(C_{i}\) for the censored events and a
+beta distribution for the rescaled event times. Monte Carlo samples of
+\(T_{i}\) and \(d_{i}\) are obtained from \(\pd_{1, i}(T_{i}, d_{i})\)
+by drawing \(\beta_{0, i}\) and \(\boldsymbol{\zeta}_{i}\) from their
+respective prior distributions and then solving
+\eqref{eqn:event_time_model_def}. Mathematically, \begin{equation}
+  \widehat{\pd}_{1}(T_{i}, d_{i}) =
+    \widehat{\pi}_{i} \, \text{Beta}\left(\frac{T_{i}}{C_{i}}; \widehat{a}, \widehat{b}\right) \frac{1}{C_{i}} \boldsymbol{1}_{\{d_{i} = 1\}} +
+    (1 - \widehat{\pi}_{i}) \boldsymbol{1}_{\{d_{i} = 2, T_{i} = C_{i}\}}
   \label{eqn:pf-event-time-prior-dist}
-\end{equation} where \(\widehat{\pi}_{i}, a_{i}\) and \(b_{i}\) are
-maximum likelihood estimates using the prior predictive samples.
+\end{equation} where \(\widehat{\pi}_{i}, \widehat{a}_{i}\) and
+\(\widehat{b}_{i}\) are maximum likelihood estimates obtained using the
+prior predictive samples. Estimates of \(\pd_{1, i}(T_{i}, d_{i})\) are
+displayed in Figure \ref{fig:pf_prior_fit}.
 
-\hypertarget{sampling-the-event-times-under-the-survival-model}{%
-\subsection{Sampling the event times under the survival
-model}\label{sampling-the-event-times-under-the-survival-model}}
+\begin{figure}
+
+{\centering \includegraphics{../plots/mimic-example/pf-prior-plot-small} 
+
+}
+
+\caption{Fitted distribution (curve) and Monte Carlo samples drawn from the prior (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar) has been set to $1 - \widehat{\pi}_{i}$}\label{fig:pf_prior_fit}
+\end{figure}
+
+\hypertarget{survival-submodel}{%
+\subsection{Survival submodel}\label{survival-submodel}}
+
+Our estimate of \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) relies on
+the fact that
+\(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \prod_{i = 1}^{N}\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})\).
+We focus on estimating
+\(\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})\)
+for each individual and taking the product of these estimates.
+
+Drawing samples from
+\(\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})\)
+is a non-trivial task. We use the methodology of
+\protect\hyperlink{ref-crowther_simulating_2013}{Crowther and Lambert}
+(\protect\hyperlink{ref-crowther_simulating_2013}{2013}) as implemented
+in \protect\hyperlink{ref-brilleman_simulate_2021}{Brilleman}
+(\protect\hyperlink{ref-brilleman_simulate_2021}{2021}).
+
+An inspection of the samples reveals correlation between
+\((T_{i}, d_{i})\) and
+\((\kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})\) that we would like to
+capture in our estimate. To do so, we define transformed versions of the
+continuous parameters, which have support on \(\mathbb{R}\) (which we
+call the unconstrained parameters) \begin{equation}
+  \tilde{T}_{i} = \text{Logit}\left(\frac{T_{i}}{C_{i}}\right), \quad
+  \tilde{\kappa}_{i} = \text{Logit}\left(\frac{\kappa_{i} - u_{i, (1)}}{u_{i, (n)} - u_{i, (1)}}\right), \quad
+  \tilde{\eta}^{b}_{1, i} = \log(\eta^{b}_{1, i}), \quad
+  \tilde{\eta}^{a}_{1, i} = \log(\eta^{a}_{1, i})
+\end{equation}
+
+\hypertarget{other-details}{%
+\section{Other details}\label{other-details}}
 
 \begin{itemize}
 \tightlist
 \item
-  Use \protect\hyperlink{ref-beyersmann_simulating_2009}{Beyersmann
-  \emph{et al.}}
-  (\protect\hyperlink{ref-beyersmann_simulating_2009}{2009}) and
-  \texttt{simsurv} the latter is not working for me at the moment. I
-  suspect overly wide priors are to blame.
+  log pooling info
+\item
+  multi-stage sampler info
+
+  \begin{itemize}
+  \tightlist
+  \item
+    chains / iterations / diagnostics
+  \end{itemize}
 \end{itemize}
 
 \hypertarget{competing-risk-model-results}{%
@@ -469,11 +526,6 @@ distributions, we need to:
   and which stage to divide by the marginals.
 \end{itemize}
 
-\hypertarget{cohort-selection-criteria}{%
-\section{Cohort selection criteria}\label{cohort-selection-criteria}}
-
-The individuals in our data are included based
-
 \hypertarget{bibliography}{%
 \section{Bibliography}\label{bibliography}}
 
@@ -484,16 +536,27 @@ Belgorodski, N., Greiner, M., Tolksdorf, K., et al. (2017)
 {rriskDistributions}: {Fitting} distributions to given data or known
 quantiles.
 
-\leavevmode\hypertarget{ref-beyersmann_simulating_2009}{}%
-Beyersmann, J., Latouche, A., Buchholz, A., et al. (2009) Simulating
-competing risks data in survival analysis. \emph{Statistics in
-Medicine}, \textbf{28}, 956--971. DOI:
-\href{https://doi.org/10.1002/sim.3516}{10.1002/sim.3516}.
+\leavevmode\hypertarget{ref-brilleman_simulate_2021}{}%
+Brilleman, S. (2021) Simulate {Survival Data} {[}{R} package simsurv
+version 1.0.0{]}. https://CRAN.R-project.org/package=simsurv;
+{Comprehensive R Archive Network (CRAN)}.
 
 \leavevmode\hypertarget{ref-brilleman_bayesian_2020}{}%
 Brilleman, S. L., Elci, E. M., Novik, J. B., et al. (2020) Bayesian
 survival analysis using the rstanarm {R} package. \emph{arXiv:2002.09633
 {[}stat{]}}. Available at: \url{http://arxiv.org/abs/2002.09633}.
+
+\leavevmode\hypertarget{ref-crowther_simulating_2013}{}%
+Crowther, M. J. and Lambert, P. C. (2013) Simulating biologically
+plausible complex survival data. \emph{Statistics in Medicine},
+\textbf{32}, 4118--4134. DOI:
+\href{https://doi.org/10.1002/sim.5823}{10.1002/sim.5823}.
+
+\leavevmode\hypertarget{ref-goudie_joining_2019}{}%
+Goudie, R. J. B., Presanis, A. M., Lunn, D., et al. (2019) Joining and
+splitting models with {Markov} melding. \emph{Bayesian Analysis},
+\textbf{14}, 81--109. DOI:
+\href{https://doi.org/10.1214/18-BA1104}{10.1214/18-BA1104}.
 
 \leavevmode\hypertarget{ref-kalbfleisch_statistical_2002}{}%
 Kalbfleisch, J. D. and Prentice, R. L. (2002) \emph{The Statistical
@@ -501,7 +564,7 @@ Analysis of Failure Time Data}. 2nd ed. Wiley series in probability and
 statistics. {Hoboken, N.J}: {J. Wiley}.
 
 \leavevmode\hypertarget{ref-soetaert_rootsolve_2020}{}%
-Soetaert, K., lsodes.f, A. C. H. (files., sparse.f), et al. (2020)
+Soetaert, K., Hindmarsh, A. C., Eisenstat, S. C., et al. (2020)
 {rootSolve}: {Nonlinear Root Finding}, {Equilibrium} and {Steady}-{State
 Analysis} of {Ordinary Differential Equations}.
 
@@ -510,16 +573,27 @@ Analysis} of {Ordinary Differential Equations}.
 \renewcommand{\thesection}{\Alph{section}}
 \setcounter{section}{0}
 
-\hypertarget{appendix}{%
-\section{Appendix}\label{appendix}}
+\hypertarget{a-comparison-with-the-competing-risk-approach}{%
+\section{A comparison with the competing risk
+approach}\label{a-comparison-with-the-competing-risk-approach}}
 
-\hypertarget{why-the-censoring-competing-risk-approaches-are-not-the-same}{%
-\subsection{Why the censoring / competing risk approaches are not the
-same}\label{why-the-censoring-competing-risk-approaches-are-not-the-same}}
-
-Patients who expire or are discharged are not actually censored.
-Instead, they experience the competing, non-independent event of
-death/discharge.
+An initially appealing approach is to consider a competing risks model
+for \(\pd_{2}\), where each individual experiences either the
+respiratory failure event or the competing, non-independent event of
+death or discharge. However, issues arise due to the need to practically
+align the supports of \(\pd_{1}(\phi_{1 \cap 2})\) and
+\(\pd_{2}(\phi_{1 \cap 2})\), which requires conditioning on \(C_{i}\)
+(the length of stay) in \(\pd_{2}\). Conditional on \(C_{i}\), the death
+or discharge event can only happen at a known, fixed time, which
+violates the competing risk assumption (that each event can occur at any
+moment in time the individual is exposed to both risks). In light of
+this, we feel that it is more correct to consider the time of death or
+discharge as a censoring time. Standard survival analyses arguments tell
+us that these approaches are equivalent. However, these arguments make
+the key assumption that the survival times and indicators
+\((T_{i}, d_{i})\) are known quantities. This assumption is not valid in
+our example, and below we show why this invalidates the usual
+equivalence between the competing risk and censoring approaches.
 
 Suppose that each individual \(i\) experiences one of \(d_{i} = 1, 2\)
 competing risks. We observe \(\{T_{i}, d_{i}\}\), where \(d_{i} = 1\)
@@ -587,44 +661,63 @@ We are interested in the following marginal
 Under this assumption the integrals in
 \eqref{eqn:competing-risks-deriv-one} and
 \eqref{eqn:competing-risks-deriv-two} are constants that do not depend
-on the parameters of interest, and can be ignored in the
-partial-likelihood. The remaining components of
+on the parameters of interest, and can be ignored when maximising the
+likelihood for \(\theta_{1}\). The remaining components of
 \eqref{eqn:competing-risks-deriv-one} and
 \eqref{eqn:competing-risks-deriv-two} comprise the likelihood that would
 be obtained by considering all non \(d_{i} = 1\) events as censored.
 However, in our case \(T_{i}\) is a parameter, and hence the integrals
-are non-ignorable functions of \(T_{i}\).
+are non-ignorable functions of \(T_{i}\). This implies that the
+censoring model and the competing risks model are not equivalent, which
+we see in practice when comparing the posterior distributions for
+\(\theta_{1}\) under both models.
 
-\begin{itemize}
-\tightlist
-\item
-  If \(d_{i} = 2\), then \(T_{i}\) is `fixed' at \(C_{i}\).
-\item
-  The type-indicator \(d_{i}\) is now a parameter, where as the
-  censoring indicator before was a function of the known length-of-stay
-  and the observed event time.
-\item
-  It's probably easiest to explicitly model the death/discharge event
-  and opt for a piecewise constant hazard.
+\hypertarget{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}{%
+\section{Calculating the cumulative fluid balance from the raw fluid
+data}\label{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}}
 
-  \begin{itemize}
-  \tightlist
-  \item
-    In this case, the likelihood is really just a mixture of an
-    exponential distribution and a Weibull distribution, where the
-    covariates only affect the scale parameter of the Weibull
-    distribution.
-  \end{itemize}
-\end{itemize}
+In the raw fluid data each patient has
+\(\tilde{l} = 1, \ldots, \tilde{L}_{i}\) observations. Each observation
+\(\tilde{x}_{i, \tilde{l}}\) is typically a small fluid administration
+(e.g.~an injection of some medicine in saline solution), or a fluid
+discharge (almost always urine excretion). The observations have
+corresponding observation times \(\tilde{u}_{i, \tilde{l}}\), with
+\(\tilde{\boldsymbol{u}}_{i} = \{\tilde{u}_{i, 1}, \ldots, \tilde{u}_{i, \tilde{L}_{i}}\}\)
+and
+\(\tilde{\boldsymbol{x}}_{i} = \{\tilde{x}_{i, 1}, \ldots, \tilde{x}_{i, \tilde{L}_{i}}\}\).
+We code the fluid administrations/inputs as positive values, and the
+excretions/outputs as negative values. Each patient has an enormous
+number of raw fluid observations \((L_{i} \ll \tilde{L}_{i})\) and it is
+computationally infeasible to consider them all at once. Because the
+time scale of interest is typically a number of days, we aggregate the
+raw fluid observations into 24-hourly changes in fluid balance. From
+these 24-hourly changes we calculate the cumulative fluid balance.
 
-\hypertarget{it-is-not-possible-to-plot-a-normalised-version-of-equation}{%
-\subsection{\texorpdfstring{It is not possible to plot a normalised
-version of Equation
-\eqref{eqn:pf-event-time-prior-dist}}{It is not possible to plot a normalised version of Equation }}\label{it-is-not-possible-to-plot-a-normalised-version-of-equation}}
+Mathematically, we define an ordered integer-vector of boundary values
+\begin{equation}
+  \boldsymbol{b}_{i} = (\lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor,  \lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor + 1, \ldots, \lceil \max\{\tilde{\boldsymbol{u}}_{i}\} \rceil),
+\end{equation} noting that \(\dim(\boldsymbol{b}_{i}) = L_{i} + 1\). The
+raw fluid observations are then divided up into \(L_{i}\) subsets of
+\(\{\tilde{\boldsymbol{x}}_{i}, \tilde{\boldsymbol{u}}_{i}\}\) based on
+which boundary values the observation falls in between: \begin{equation}
+  B_{i, l} = \left\{
+    \{\tilde{\boldsymbol{x}}_{i}, \tilde{\boldsymbol{u}}_{i}\}
+    \mid
+    b_{i, l} \leq \tilde{\boldsymbol{u}}_{i} < b_{i, l + 1}
+  \right\},
+\end{equation} for \(l = 1, \ldots, L_{i}\). Denote
+\(N^{B}_{i, l} = \lvert B_{i, l} \rvert \mathop{/} 2\) (dividing by two
+as \(B_{i, l}\) contains both the observation and the observation time).
+The \(l\)\textsuperscript{th} 24-hourly fluid change \(\Delta_{i, l}\)
+and corresponding observation time \(u_{i, l}\) can then be computed as
+\begin{equation}
+  \Delta_{i, l} = \sum_{s = 1}^{N^{B}_{i, l}} \tilde{x}_{i, s}, \,\, \text{s.t.} \,\, \tilde{x}_{i, s} \in B_{i, l}, \qquad
+  u_{i, l} = \frac{1}{N^{B}_{i, l}} \sum_{s = 1}^{N^{B}_{i, l}} \tilde{u}_{i, s}, \,\, \text{s.t.} \,\, \tilde{u}_{i, s} \in B_{i, l}.
+\end{equation} Finally, the 24-hourly cumulative fluid balance data are
+computed by \(x_{i, l} = \sum_{s = 1}^{l} \Delta_{i, s}\), and we assume
+they too are observed at \(u_{i, l}\).
 
-Because of limitations in \texttt{ggplot2}. Here is an incorrectly
-normalised version, for a small number of individuals.
-
-\begin{center}\includegraphics{../plots/mimic-example/pf-prior-plot-small} \end{center}
+\hypertarget{cohort-selection-criteria}{%
+\section{Cohort selection criteria}\label{cohort-selection-criteria}}
 
 \end{document}
