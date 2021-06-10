@@ -259,7 +259,7 @@ plot_list <- lapply(1 : n_icu_stays, function(icustay_index) {
       fill = highlight_col
     ) +
     xlab(bquote("T"[.(icustay_index)])) +
-    ylab(bquote("p"[1,.(icustay_index)]("T"[.(icustay_index)]))) +
+    ylab(bquote("p"[1 * ',' ~ .(icustay_index)]("T"[.(icustay_index)]))) +
     ggtitle(label = bquote(italic('i')==.(icustay_index)))
 })
 
@@ -272,10 +272,15 @@ ggsave_base(
   width = 20
 )
 
-p2 <- wrap_plots(plot_list %>% inset(1 : (n_icu_stays - 10), NULL), ncol = 3)
+p2 <- wrap_plots(
+  plot_list %>%
+    inset(sample(1 : n_icu_stays, n_icu_stays - 3), NULL),
+  ncol = 3
+)
 
 ggsave_fullpage(
-  filename = str_replace(args$output_pf_prior_plot, '.png', '-small.png'),
+  filename = str_replace(args$output_pf_prior_plot, '.png', '-small.pdf'),
+  adjust_height = -15,
   plot = p2,
 )
 
