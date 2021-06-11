@@ -119,8 +119,8 @@ submodel_2_prior_marginal <- function(phi_12, phi_23, id, return_log = TRUE) {
 
       lp <- dmvnorm(
         x = par_vec,
-        mean = indiv_params_data$rf_event_mu,
-        sigma = indiv_params_data$rf_event_sigma_mat,
+        mean = rf_event_mu,
+        sigma = rf_event_sigma_mat,
         log = TRUE,
         checkSymmetry = FALSE
       )
@@ -149,8 +149,8 @@ submodel_2_prior_marginal <- function(phi_12, phi_23, id, return_log = TRUE) {
 
       lp <- dmvnorm(
         x = par_vec,
-        mean = indiv_params_data$dd_event_mu,
-        sigma = indiv_params_data$dd_event_sigma_mat,
+        mean = censored_event_mu,
+        sigma = censored_event_sigma_mat,
         log = TRUE,
         checkSymmetry = FALSE
       )
