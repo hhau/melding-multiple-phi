@@ -2,14 +2,12 @@ library(simsurv)
 library(tibble)
 library(dplyr)
 library(magrittr)
-library(GGally)
 library(sn)
 library(parallel)
 library(rstan)
 library(stringr)
 library(mvtnorm)
 
-source('scripts/common/plot-settings.R')
 source('scripts/common/logger-setup.R')
 source('scripts/common/setup-argparse.R')
 
@@ -18,6 +16,7 @@ parser$add_argument("--pf-list-data")
 parser$add_argument("--baseline-covariate-data")
 parser$add_argument("--submodel-one-median-both")
 parser$add_argument("--surv-prior-optim-stan-model")
+parser$add_argument("--output-raw-monte-carlo-prior-samples")
 args <- parser$parse_args()
 
 fluid_stan_data <- readRDS(args$fluid_stan_data)
@@ -225,100 +224,10 @@ normal_prior_approx_parameters <- mclapply(1 : n_icustays, mc.cores = 5, functio
   )
 })
 
-sample_from_normal_approx <- function(n_sims, pars) {
-  event_indicator <- rbinom(n = n_sims, size = 1, prob = 1 - pars$mix_weight) + 1
-  n_ones <- sum(event_indicator == 1)
-  n_cens <- sum(event_indicator == 0)
-
-  ones_samples <- rmvnorm(
-    n = n_ones,
-    mean = pars$rf_event_mu,
-    sigma = pars$rf_event_sigma_mat
-  )
-
-  colnames(ones_samples) <- c('event_time', 'k_i', 'eta_before', 'eta_after')
-
-  if (n_cens > 0) {
-    cens_samples <- rmvnorm(
-      n = n_cens,
-      mean = pars$censored_event_mu,
-      sigma = pars$censored_event_sigma_mat
-    )
-  } else {
-    cens_samples <- matrix(nrow = 0, ncol = length(pars$censored_event_mu))
-  }
-
-  colnames(cens_samples) <- c('k_i', 'eta_before', 'eta_after')
-
-  ones_samples <- ones_samples %>%
-      as_tibble() %>%
-      mutate(event_indicator = 1)
-
-  cens_samples <- cens_samples %>%
-      as_tibble() %>%
-      mutate(event_indicator = 0, event_time = NA)
-
-  final_samples <- bind_rows(ones_samples, cens_samples) %>% mutate(
-    event_time = brms::inv_logit_scaled(
-      event_time,
-      pars$lower_event_time_limit,
-      pars$upper_event_time_limit
-    ),
-    k_i = brms::inv_logit_scaled(
-      k_i,
-      pars$lower_breakpoint_limit,
-      pars$upper_breakpoint_limit
-    ),
-    eta_before = exp(eta_before),
-    eta_after = exp(eta_after)
-  ) %>%
-    tidyr::replace_na(list(event_time = pars$upper_event_time_limit))
-}
-
-# plot the relevant cols and samples by method
-lapply(1 : n_icustays, function(icustay_index) {
-  local_normal_approx_pars <- normal_prior_approx_parameters[[icustay_index]]
-  samples_from_normal_approx <- sample_from_normal_approx(
-    n_prior_samples,
-    local_normal_approx_pars
-  ) %>%
-    mutate(type = 'normal approx')
-
-  samples_from_monte_carlo <- prior_samples_raw[[icustay_index]] %>%
-    select(event_time, k_i, eta_before, eta_after, event_indicator) %>%
-    mutate(type = 'monte carlo')
-
-  plot_tbl <- bind_rows(samples_from_normal_approx, samples_from_monte_carlo) %>%
-    mutate(
-      event_indicator = as.factor(event_indicator),
-      type = as.factor(type)
-    )
-
-  p1 <- ggpairs(
-    data = plot_tbl,
-    columns = 1 : 4,
-    mapping = aes(colour = interaction(event_indicator, type)),
-    lower = list(continuous = function(data, mapping ,...) {
-      ggally_points(data, mapping, alpha = 0.5, shape = ".", ...) +
-        scale_x_log10() +
-        scale_y_log10()
-    }),
-    diag = list(continuous = function(data, mapping, ...) {
-      ggally_barDiag(data, mapping, bins = 25, alpha = 0.75 ,...) +
-        scale_x_log10()
-    }),
-    upper = list(continuous = 'blank'),
-    title = bquote(italic('i')==.(icustay_index)),
-    legend = c(1, 1)
-  )
-
-  ggsave_base(
-    filename = sprintf("plots/mimic-example/temp-pairs/pairs-%02d.png", icustay_index),
-    plot = p1,
-    height = 25,
-    width = 25
-  )
-})
+saveRDS(
+  object = prior_samples_raw,
+  file = args$output_raw_monte_carlo_prior_samples
+)
 
 saveRDS(
   object = normal_prior_approx_parameters,

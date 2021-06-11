@@ -633,11 +633,12 @@ $(MIMIC_PF_PRIOR_EST_PARAMS) &: \
 		--output-pf-prior-plot $(MIMIC_PF_PRIOR_PLOT) \
 		--output $(MIMIC_PF_PRIOR_EST_PARAMS)
 
-MIMIC_SURV_PRIOR_PLOTS = $(wildcard plots/mimic-example/temp-pairs/*.png)
+MIMIC_SURV_PRIOR_PLOTS = $(wildcard plots/mimic-example/p3-prior-pairs/*.png)
 MIMIC_SURV_PRIOR_EST_PARAMS = $(MIMIC_RDS)/submodel-2-marginal-prior-parameter-estimates.rds
 MIMIC_SURV_PRIOR_STAN_MODEL = $(MIMIC_MODELS)/surv-prior-optimizer.stan
+MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES = $(MIMIC_RDS)/submodel-2-marignal-prior-raw-samples.rds
 
-$(MIMIC_SURV_PRIOR_PLOTS) \
+$(MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES) \
 $(MIMIC_SURV_PRIOR_EST_PARAMS) &: \
 	$(MIMIC_SCRIPTS)/sample-surv-submodel-prior.R \
 	$(PLOT_SETTINGS) \
@@ -652,7 +653,18 @@ $(MIMIC_SURV_PRIOR_EST_PARAMS) &: \
 		--baseline-covariate-data $(MIMIC_BASELINE_DATA) \
 		--submodel-one-median-both $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
 		--surv-prior-optim-stan-model $(MIMIC_SURV_PRIOR_STAN_MODEL) \
+		--output-raw-monte-carlo-prior-samples $(MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES) \
 		--output $(MIMIC_SURV_PRIOR_EST_PARAMS)
+
+$(MIMIC_SURV_PRIOR_PLOTS) &: \
+	$(MIMIC_SCRIPTS)/plot-surv-prior-est.R \
+	$(PLOT_SETTINGS) \
+	$(MIMIC_SURV_PRIOR_EST_PARAMS) \
+	$(MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES)
+	$(RSCRIPT) $< \
+		--normal-approx-prior-estimates $(MIMIC_SURV_PRIOR_EST_PARAMS) \
+		--raw-monte-carlo-prior-samples $(MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES) \
+		--output ''
 
 # Fit stage two using parallel multi-stage sampler
 # poe version

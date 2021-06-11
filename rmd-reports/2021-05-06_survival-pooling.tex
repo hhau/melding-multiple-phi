@@ -187,7 +187,7 @@
 \title{Submodels, priors, and pooling the link parameters in the
 survival example}
 \author{Andrew Manderson}
-\date{09 June, 2021}
+\date{11 June, 2021}
 
 \begin{document}
 \maketitle
@@ -541,12 +541,23 @@ the Jacobian correction \(J_{i}\) is \begin{equation}
   \right].
 \end{equation}
 
-\begin{itemize}
-\tightlist
-\item
-  TODO: Some nice picture of the fitted density + raw samples (nicer
-  pairs plot?)
-\end{itemize}
+We asses the fit of this estimate by drawing samples from
+\(\widehat{\pd}_{2, i}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) and comparing
+them to the Monte Carlo samples drawn using \texttt{simsurv}. Our visual
+assessment is displayed in Figure \ref{fig:surv_prior_plot_fit} for
+individual \(i = 19\). The normal approximation seems to fit the samples
+well, with the shape of \(\pd_{2, i}(T_{i} \mid d_{i} = 1)\) closely
+matching that of the Monte Carlo samples, and with a similar mix of
+\(d_{i} = 0\) and \(d_{i} = 1\) samples.
+
+\begin{figure}
+
+{\centering \includegraphics{../plots/mimic-example/p3-prior-pairs/pairs-19} 
+
+}
+
+\caption{Monte Carlo (MC) samples from $\pd_{2, i}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ obtained using \texttt{simsurv} and samples from the fitted normal approximation (NA) for $i = 19$. The panels on the off diagonal elements contain a 2D kernel density estimate for $d_{i} = 1$ and the samples for $d_{i} = 0$. Diagonal and lower-triangular panels are on their original scales, whilst the upper-triangular panels are on the log scale.}\label{fig:surv_prior_plot_fit}
+\end{figure}
 
 \hypertarget{other-details}{%
 \section{Other details}\label{other-details}}
