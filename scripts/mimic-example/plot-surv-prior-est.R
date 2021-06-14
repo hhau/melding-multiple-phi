@@ -74,10 +74,10 @@ sample_from_normal_approx <- function(n_sims, pars) {
 }
 
 future_lapply(1 : n_icustays, future.seed = TRUE, function(icustay_index) {
-  
+
   source('scripts/common/plot-settings.R')
   source('scripts/common/logger-setup.R')
-  
+
   local_normal_approx_pars <- normal_prior_approx_parameters[[icustay_index]]
   samples_from_normal_approx <- sample_from_normal_approx(
     n_sims = n_prior_samples,
@@ -95,8 +95,8 @@ future_lapply(1 : n_icustays, future.seed = TRUE, function(icustay_index) {
       type = as.factor(type),
       "italic(T)[i]" = event_time,
       "kappa[i]" = k_i,
-      "eta[1 * ',' ~ 1]^{b}" = eta_before,
-      "eta[1 * ',' ~ 1]^{a}" = eta_after,
+      "eta[1 * ',' ~ i]^{b}" = eta_before,
+      "eta[1 * ',' ~ i]^{a}" = eta_after,
       col_lab = paste0(event_indicator, '.', type)
     )
 
