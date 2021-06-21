@@ -114,3 +114,109 @@ ggsave_halfheight(
   filename = args$output,
   plot = p3
 )
+
+# fix phi_12 meld phi_23
+fp12mp23_psi_2 <- readRDS('rds/mimic-example/stage-two-poe-psi-2-samples-fix-phi-12-meld-phi-23.rds')
+fp12mp23_phi_23 <- readRDS('rds/mimic-example/stage-two-poe-phi-23-samples-fix-phi-12-meld-phi-23.rds')
+
+p4 <- plot_worst_pars(
+  fp12mp23_psi_2,
+  facet_name_value_pairs = function(i) {
+    names <- c(
+      sprintf('theta[%d]', 1 : n_theta),
+      'hazard_gamma',
+      'dd_gamma',
+      'alpha'
+    )
+
+    values <- c(
+      sprintf('theta[%d]', 1 : n_theta),
+      'gamma'['rf'],
+      'gamma'['dd'],
+      'alpha'
+    )
+
+    names(values) <- names
+    values[i]
+  }
+)
+
+ggsave_halfheight(
+  filename = 'plots/mimic-example/psi-2-stage-2-fix-phi-12-meld-phi-23-diagnostics.png',
+  plot = p4
+)
+
+p5 <- plot_worst_pars(
+  fp12mp23_phi_23,
+  facet_name_value_pairs = function(i) {
+    names <- c(
+      sprintf('eta_slope[%d,%d]', eta_grid$icustay_id, eta_grid$eta_numeric),
+      sprintf('breakpoint[%d]', 1 : n_icustays)
+    )
+
+    values <- c(
+      sprintf("eta[1 * ',' ~ %d]^{%s}", eta_grid$icustay_id, eta_grid$eta_alphabetic),
+      sprintf('kappa[%d]', 1 : n_icustays)
+    )
+
+    names(values) <- names
+    values[i]
+  }
+)
+
+ggsave_halfheight(
+  filename = 'plots/mimic-example/phi-23-stage-2-fix-phi-12-meld-phi-23-diagnostics.png',
+  plot = p5
+)
+
+# meld phi_12 fix phi_23
+mp12fp23_psi_2 <- readRDS('rds/mimic-example/stage-two-poe-psi-2-samples-meld-phi-12-fix-phi-23.rds')
+mp12fp23_phi_12 <- readRDS('rds/mimic-example/stage-two-poe-phi-12-samples-meld-phi-12-fix-phi-23.rds')
+
+p6 <- plot_worst_pars(
+  mp12fp23_psi_2,
+  facet_name_value_pairs = function(i) {
+    names <- c(
+      sprintf('theta[%d]', 1 : n_theta),
+      'hazard_gamma',
+      'dd_gamma',
+      'alpha'
+    )
+
+    values <- c(
+      sprintf('theta[%d]', 1 : n_theta),
+      'gamma'['rf'],
+      'gamma'['dd'],
+      'alpha'
+    )
+
+    names(values) <- names
+    values[i]
+  }
+)
+
+ggsave_halfheight(
+  filename = 'plots/mimic-example/psi-2-stage-2-meld-phi-12-fix-phi-23-diagnostics.png',
+  plot = p6
+)
+
+p7 <- plot_worst_pars(
+  mp12fp23_phi_12[, , sprintf('event_time[%d]', 1 : n_icustays)],
+  facet_name_value_pairs = function(i) {
+    names <- c(
+      sprintf('event_time[%d]', 1 : n_icustays)
+    )
+
+    values <- c(
+      sprintf("italic(T)[%d]", 1 : n_icustays)
+    )
+
+    names(values) <- names
+    values[i]
+  }
+)
+
+ggsave_halfheight(
+  filename = 'plots/mimic-example/phi-12-stage-2-meld-phi-12-fix-phi-23-diagnostics.png',
+  plot = p7
+)
