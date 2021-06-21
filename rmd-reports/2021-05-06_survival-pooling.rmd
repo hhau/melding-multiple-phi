@@ -46,9 +46,9 @@ To improve computational performance, we standardise the P/F data for each indiv
 Similarly we rescale the threshold for respiratory failure: $\tau_{i} = \frac{300 - \overline{z}_{i}}{\hat{s}_{i}}$.
 
 We choose to model the P/F ratio using a B-spline of degree 3, with 2 boundary knots and 7 internal knots, and do not include an intercept column in the spline basis.
-The internal knots evenly spaced between the two boundary knots at $\min(\boldsymbol{t_{i}})$ and $\max(\boldsymbol{t_{i}})$.
+The internal knots are evenly spaced between the two boundary knots at $\min(\boldsymbol{t_{i}})$ and $\max(\boldsymbol{t_{i}})$.
 These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, with coefficients $\zeta_{i, k}$ where $\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})$.
-We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in \left\{\mathbb{R}_{+} \cup \{0\}\right\}^{10}$ so that the submodel can be written as
+We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in \mathbb{R}_{+} \cup \{0\}$ so that the submodel can be written as
 \begin{equation}
   z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
 \end{equation}
@@ -67,8 +67,8 @@ If a solution to the following optimisation problem exists, then we conclude tha
   \right\},
   \label{eqn:event_time_model_def}
 \end{equation}
-We use a standard multiple root finder @soetaert_rootsolve_2020 to obtain a solution.
-If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 2$.
+We use a standard multiple root finder [@soetaert_rootsolve_2020] to obtain a solution.
+If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 0$.
 
 
 We define $\phi_{1 \cap 2} = (\{T_{i}, d_{i}\}_{i = 1}^{N})$ noting that $\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})$.
@@ -217,7 +217,7 @@ To do so, we fit a mixture of multivariate normal distributions to transformatio
   \tilde{\eta}^{b}_{1, i} = \log(\eta^{b}_{1, i}), \quad
   \tilde{\eta}^{a}_{1, i} = \log(\eta^{a}_{1, i}).
 \end{equation}
-The resulting density estimate, mixture weight $\widehat{\theta}_{i} \in [0, 1]$, is
+The resulting density estimate, with estimated mixture weight $\widehat{\theta}_{i} \in [0, 1]$, is
 \begin{align*}
   \widehat{\pd}_{2}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i}) =
     \Big[&(\widehat{\theta}_{i})
