@@ -76,8 +76,10 @@ If no solutions are found then we assume the individual is censored, and set $T_
 We define $\phi_{1 \cap 2} = (\{T_{i}, d_{i}\}_{i = 1}^{N})$ noting that $\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})$.
 It is also important to note that $\pd_{1, i}(T_{i}, d_{i})$ conditions on each individual's length of stay (in specifying the location of the knots), as well as the range, mean, and standard deviation of the P/F data (by standardising the $\tilde{z}_{i, j}$).
 The analytic form of $\pd_{1, i}(T_{i}, d_{i})$ is not available and must be estimated, which we discuss in Section \ref{estimating-submodel-prior-marginal-distributions}.
+To completely align with our chained melding notation we also define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\{\beta_{0, i}, \boldsymbol{\zeta}_{i}\}_{i = 1}^{N}, \omega)$.
 
-To align with our chained melding notation we define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\{\beta_{0, i}, \boldsymbol{\zeta}_{i}\}_{i = 1}^{N}, \omega)$.
+Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 13$, and 15$.
+The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
 
 ## Cumulative fluid model (piecewise linear) $\pd_{3}$
 
@@ -126,6 +128,11 @@ Hence,
 by the change of variables formula.
 
 [^fluidobs]: Details about the derivation of these values from the raw fluid data are contained in Appendix \ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
+
+```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 6, 13$, and $15$.'}
+knitr::include_graphics('../plots/mimic-example/combined-pf-fluid-fit-plot-small.pdf')
+```
+
 
 ## Survival submodel $\pd_{2}$
 
@@ -181,7 +188,7 @@ We must estimate $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{
 Because these distributions are functions of discrete and continuous parameters, and some of the latter have different supports, standard kernel density estimation as suggested by @goudie_joining_2019 is inappropriate.
 Instead we fit appropriate parametric mixture distributions using Monte Carlo samples from the priors.
 
-## PF submodel
+## P/F submodel
 
 We approximate $\pd_{1}(\phi_{1 \cap 2})$ using a mixture of discrete and continuous distributions, with a discrete spike at $C_{i}$ for the censored events and a beta distribution for the rescaled event times.
 Monte Carlo samples of $T_{i}$ and $d_{i}$ are obtained from $\pd_{1, i}(T_{i}, d_{i})$ by drawing $\beta_{0, i}$ and $\boldsymbol{\zeta}_{i}$ from their respective prior distributions and then solving \eqref{eqn:event_time_model_def}.
@@ -195,7 +202,7 @@ Denoting the estimated mixture weight $\widehat{\pi}_{i} \in [0, 1]$, the densit
 where $\widehat{\pi}_{i}, \widehat{a}_{i}$ and $\widehat{b}_{i}$ are maximum likelihood estimates obtained using the prior samples.
 Examples of $\widehat{\pd}_{1, i}(T_{i}, d_{i})$ for a subset of individuals are displayed in Figure \ref{fig:pf_prior_fit}.
 
-```{r pf_prior_fit, fig.cap = "Fitted distribution (curve) and Monte Carlo samples drawn from the prior (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar) has been set to $1 - \\widehat{\\pi}_{i}$"}
+```{r pf_prior_fit, fig.cap = "Fitted distribution (curve) and Monte Carlo samples drawn from $\\pd_{1}(\\phi_{1 \\cap 2})$ (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar) has been set to $1 - \\widehat{\\pi}_{i}$"}
 knitr::include_graphics("../plots/mimic-example/pf-prior-plot-small.pdf")
 ```
 
@@ -204,7 +211,7 @@ knitr::include_graphics("../plots/mimic-example/pf-prior-plot-small.pdf")
 Our estimate of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ relies on the fact that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \prod_{i = 1}^{N}\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$.
 As such we estimate $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ for each individual and take the product of these estimates.
 Drawing samples from $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ is a non-trivial task.
-We use the methodology of @crowther_simulating_2013 as implemented in @brilleman_simulate_2021.
+We use the methodology of @crowther_simulating_2013 as implemented in @brilleman_simsurv_2021.
 Inspecting the samples reveals correlation between $(T_{i}, d_{i})$ and $(\kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ that we would like to capture in our estimate.
 To do so, we define 'unconstrained' versions of the continuous parameters, which have support on $\mathbb{R}$,
 \begin{equation}
@@ -249,6 +256,13 @@ where $\widehat{\theta}_{i}, \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i}, \wid
 We asses the fit of this estimate by drawing samples from $\widehat{\pd}_{2, i}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ and comparing them to the Monte Carlo samples drawn using `simsurv`.
 Our visual assessment is displayed in Figure \ref{fig:surv_prior_plot_fit} for individual $i = 19$.
 The normal approximation seems to fit the samples well, with the shape of $\pd_{2, i}(T_{i} \mid d_{i} = 1)$ closely matching that of the Monte Carlo samples, and with a similar mix of $d_{i} = 0$ and $d_{i} = 1$ samples.
+
+We also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$ for experiments discussed in Section \ref{results}.
+This is obtained using the samples generated under the survival submodel prior and the methodology of Section \ref{pf-submodel}.
+
+```{r surv_prior_phi_12_marginal_plot_fit, fig.cap = "Fitted distribution (curve) and Monte Carlo samples drawn from $\\pd_{2}(\\phi_{1 \\cap 2})$ (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar) has been set to $1 - \\widehat{\\theta}_{i}$"}
+knitr::include_graphics("../plots/mimic-example/submodel-2-phi-12-marginal-fit-plot-small.pdf")
+```
 
 ```{r surv_prior_plot_fit, fig.cap = 'Monte Carlo (MC) samples from $\\pd_{2, i}(\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3})$ obtained using \\texttt{simsurv} and samples from the fitted normal approximation (NA) for $i = 19$. The panels on the off diagonal elements contain a 2D kernel density estimate for $d_{i} = 1$ and the samples for $d_{i} = 0$. Diagonal and lower-triangular panels are on their original scales, whilst the upper-triangular panels are on the log scale.'}
 knitr::include_graphics("../plots/mimic-example/p3-prior-pairs/pairs-19.png")
@@ -483,6 +497,7 @@ In this appendix $i$ represents a single stay in ICU.
     - This is to ensure we have enough data to fit a B-spline with 7 internal knots. The restriction on the first 6 observations is to avoid selecting those who have already started to experience respiratory failure prior to ICU admission.
 1. The time between any 2 consecutive PF observations cannot exceed 2 days.
     - This is because some data are aggregated into a single ICU stay when they perhaps should be two or more stays.
+1. The fluid observations must be after ICU admission (some observations are entered as 'Pre-admission intake') and cannot be associated with fluid administered in the operating room (OR).
 1. There must be sufficient temporal overlap between the fluid data and the PF data. Specifically,
   \begin{equation}
     \frac{
