@@ -21,9 +21,17 @@ log_crude_event_rate <- event_time_samples %>%
   filter(.variable == 'event_time') %>%
   summarise(log_crude_event_rate = log(mean(.value)))
 
+med_iter <- event_time_samples %>%
+  group_by(i) %>%
+  filter(.variable == 'event_time') %>%
+  arrange(i, .value) %>%
+  slice(floor(n() / 2)) %>%
+  select(i, .chain, .iteration, .draw)
+
 median_event_time <- event_time_samples %>%
-  group_by(i, .variable) %>%
-  summarise(median = median(.value))
+  inner_join(med_iter) %>%
+  arrange(i, desc(.variable)) %>%
+  mutate(median = .value)
 
 median_fluid_fit_value <- fluid_model_samples %>%
   filter(.variable %in% c('eta_slope', 'breakpoint')) %>%
