@@ -299,7 +299,8 @@ p_alpha <- ggplot(
       "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
     ),
     guide = guide_legend(reverse = TRUE)
-  )
+  ) +
+  labs(colour = "")
 
 ggsave_halfheight(
   plot = p_alpha,

@@ -272,9 +272,10 @@ ggsave_base(
   width = 20
 )
 
+interesting_plot_ids <- c(6, 13, 15)
+
 p2 <- wrap_plots(
-  plot_list %>%
-    inset(sample(1 : n_icu_stays, n_icu_stays - 3), NULL),
+  plot_list[interesting_plot_ids],
   ncol = 3
 )
 

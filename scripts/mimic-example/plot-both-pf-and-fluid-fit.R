@@ -59,6 +59,7 @@ p1 <- ggplot(interval_tbl) +
     mapping = aes(x = time_since_icu_adm, y = value)
   ) +
   geom_rug(
+    inherit.aes = FALSE,
     data = event_time_tbl %>%
       filter(.variable == "event_time"),
     aes(x = .value),
@@ -91,28 +92,28 @@ ggsave(
   height = 48
 )
 
-interesting_icustay_ids <- c(
-  273811,
-  268712
-)
+interesting_plot_ids <- c(6, 13, 15)
 
 p2 <- ggplot(
     interval_tbl %>%
-      filter(icustay_id %in% interesting_icustay_ids)
-  ) +
-  geom_point(
-    data = cumulative_fluid_data %>%
-      filter(icustay_id %in% interesting_icustay_ids),
-    mapping = aes(x = time_since_icu_adm, y = cumulative_value)
+      filter(plot_id %in% interesting_plot_ids)
   ) +
   geom_point(
     data = pf_data %>%
-      filter(icustay_id %in% interesting_icustay_ids),
+      filter(plot_id %in% interesting_plot_ids),
     mapping = aes(x = time_since_icu_adm, y = value)
+  ) +
+  geom_point(
+    data = cumulative_fluid_data %>%
+      filter(plot_id %in% interesting_plot_ids),
+    mapping = aes(x = time_since_icu_adm, y = cumulative_value)
   ) +
   geom_rug(
     data = event_time_tbl %>%
-      filter(icustay_id %in% interesting_icustay_ids),
+      filter(
+        plot_id %in% interesting_plot_ids,
+        .variable == "event_time"
+      ),
     aes(x = .value),
     colour = highlight_col,
     alpha = 0.01
@@ -129,17 +130,15 @@ p2 <- ggplot(
     alpha = 0.3
   ) +
   facet_nested_wrap(
-    ~ icustay_id + value_type,
+    ~ plot_id + factor(value_type, levels = c('pf', 'fluids'), labels = c('P/F ratio', 'Cumulative fluid')),
     scales = 'free',
-    ncol = 4
+    ncol = 2
   ) +
   xlab('Days since ICU admission') +
   theme(axis.title.y = element_blank())
 
-ggsave(
+ggsave_fullpage(
   filename = args$output_small,
-  plot = p2,
-  width = 5.625,
-  height = 2.66
+  plot = p2
 )
 
