@@ -11,13 +11,13 @@ flog.info(
 )
 
 parser$add_argument("--pf-event-time-median")
-parser$add_argument("--fluid-model-median")
+parser$add_argument("--fluid-model-mean")
 parser$add_argument("--baseline-data")
 parser$add_argument("--psi-step-stan-model")
 args <- parser$parse_args()
 
 submodel_one_median_both <- readRDS(args$pf_event_time_median)
-submodel_three_median <- readRDS(args$fluid_model_median)
+submodel_three_mean <- readRDS(args$fluid_model_mean)
 submodel_two_data <- readRDS(args$baseline_data)
 
 submodel_one_median <- submodel_one_median_both[[1]]
@@ -39,7 +39,7 @@ baseline_data_x_mat <- model.matrix(
   center_keep_intercept()
 
 n_icu_stays <- nrow(submodel_two_data)
-n_segments <- max(submodel_three_median$b, na.rm = TRUE)
+n_segments <- max(submodel_three_mean$b, na.rm = TRUE)
 
 stan_data <- list(
   n_icu_stays = n_icu_stays,
@@ -53,13 +53,13 @@ stan_data <- list(
   event_time = submodel_one_median %>%
     filter(.variable == 'event_time') %>%
     pull(median),
-  breakpoint = submodel_three_median %>%
+  breakpoint = submodel_three_mean %>%
     filter(.variable == 'breakpoint') %>%
-    pull(median),
-  eta_slope = submodel_three_median %>%
+    pull(mean),
+  eta_slope = submodel_three_mean %>%
     filter(.variable == 'eta_slope') %>%
     arrange(b, i) %>%
-    pull(median) %>%
+    pull(mean) %>%
     array(dim = c(n_icu_stays, n_segments))
 )
 

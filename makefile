@@ -616,6 +616,35 @@ $(MIMIC_BOTH_FITTED_PLOT) $(MIMIC_BOTH_FITTED_PLOT_SMALL) &: \
 
 ALL_PLOTS += $(MIMIC_BOTH_FITTED_PLOT)
 
+# Start processing and fitting stage two with fixed subposterior median estimates.
+MIMIC_SUBPOST_MEDIAN_EVENT_TIME = $(MIMIC_RDS)/median-event-time-data.rds
+MIMIC_SUBPOST_MEAN_FLUID_FIT = $(MIMIC_RDS)/mean-fluid-fit-data.rds
+
+$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) $(MIMIC_SUBPOST_MEAN_FLUID_FIT) &: \
+	$(MIMIC_SCRIPTS)/process-stage-one-outputs.R \
+	$(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
+	$(MIMIC_FLUID_MODEL_SAMPLES_LONG)
+	$(RSCRIPT) $< \
+		--pf-event-time-samples-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
+		--fluid-model-samples-long $(MIMIC_FLUID_MODEL_SAMPLES_LONG) \
+		--output-fluid $(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
+		--output $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME)
+
+MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES = $(MIMIC_RDS)/stage-two-median-inputs-psi-2-samples.rds
+$(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) : \
+	$(MIMIC_SCRIPTS)/fit-stage-two-both-phi-median.R \
+	$(MIMIC_GLOBAL_SETTINGS) \
+	$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
+	$(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
+	$(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
+	$(MIMIC_BASELINE_DATA)
+	$(RSCRIPT) $< \
+		--pf-event-time-median $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
+		--fluid-model-mean $(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
+		--baseline-data $(MIMIC_BASELINE_DATA) \
+		--psi-step-stan-model $(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
+		--output $@
+
 MIMIC_PF_PRIOR_PLOT = $(MIMIC_PLOTS)/pf-prior-plot.png
 MIMIC_PF_PRIOR_EST_PARAMS = $(MIMIC_RDS)/submodel-1-marginal-prior-parameter-estimates.rds
 MIMIC_PF_PRIOR_STAN_MODEL = $(MIMIC_MODELS)/pf-prior-optimizer.stan
@@ -742,35 +771,6 @@ $(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC) &: \
 		--output-psi-3-indices $(MIMIC_STAGE_TWO_PSI_3_INDICES_LOGARTHMIC) \
 		--output $(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC)
 
-# Start processing and fitting stage two with fixed subposterior median estimates.
-MIMIC_SUBPOST_MEDIAN_EVENT_TIME = $(MIMIC_RDS)/median-event-time-data.rds
-MIMIC_SUBPOST_MEDIAN_FLUID_FIT = $(MIMIC_RDS)/median-fluid-fit-data.rds
-
-$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) $(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) &: \
-	$(MIMIC_SCRIPTS)/process-stage-one-outputs.R \
-	$(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
-	$(MIMIC_FLUID_MODEL_SAMPLES_LONG)
-	$(RSCRIPT) $< \
-		--pf-event-time-samples-long $(MIMIC_PF_EVENT_TIME_SAMPLES_LONG) \
-		--fluid-model-samples-long $(MIMIC_FLUID_MODEL_SAMPLES_LONG) \
-		--output-fluid $(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
-		--output $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME)
-
-MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES = $(MIMIC_RDS)/stage-two-median-inputs-psi-2-samples.rds
-$(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) : \
-	$(MIMIC_SCRIPTS)/fit-stage-two-both-phi-median.R \
-	$(MIMIC_GLOBAL_SETTINGS) \
-	$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
-	$(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
-	$(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
-	$(MIMIC_BASELINE_DATA)
-	$(RSCRIPT) $< \
-		--pf-event-time-median $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
-		--fluid-model-median $(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
-		--baseline-data $(MIMIC_BASELINE_DATA) \
-		--psi-step-stan-model $(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
-		--output $@
-
 # this is where the fixed phi_12 / phi_23 versions should go.
 ## 1: PoE, fix phi 12, meld phi 23
 MIMIC_STAGE_TWO_PSI_2_SAMPLES_FIX_PHI_12_MELD_PHI_23 = $(MIMIC_RDS)/stage-two-poe-psi-2-samples-fix-phi-12-meld-phi-23.rds
@@ -809,13 +809,13 @@ $(MIMIC_STAGE_TWO_PSI_1_INDICES_MELD_PHI_12_FIX_PHI_23) &: \
 	$(MIMIC_SCRIPTS)/fit-stage-two-poe-meld-phi-12-fix-phi-23.R \
 	$(MIMIC_GLOBAL_SETTINGS) \
 	$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
-	$(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
+	$(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
 	$(MIMIC_BASELINE_DATA) \
 	$(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
 	$(MIMIC_SURV_PHI_STEP_INDIV_MODEL)
 	$(RSCRIPT) $< \
 		--pf-event-time-samples-array $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
-		--fluid-model-median-value $(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
+		--fluid-model-median-value $(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
 		--fluid-model-stan-data $(MIMIC_FLUID_DATA_STAN) \
 		--baseline-data $(MIMIC_BASELINE_DATA) \
 		--psi-step-stan-model $(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
@@ -866,7 +866,7 @@ $(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC_MELD_PHI_12_FIX_PHI_23) &: \
 	$(MIMIC_SCRIPTS)/fit-stage-two-logarithmic-meld-phi-12-fix-phi-23.R \
 	$(MIMIC_GLOBAL_SETTINGS) \
 	$(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
-	$(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
+	$(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
 	$(MIMIC_BASELINE_DATA) \
 	$(MIMIC_SURV_PSI_STEP_STAN_MODEL) \
 	$(MIMIC_SURV_PHI_STEP_INDIV_MODEL) \
@@ -877,7 +877,7 @@ $(MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC_MELD_PHI_12_FIX_PHI_23) &: \
 	$(MIMIC_FLUID_DATA_STAN)
 	$(RSCRIPT) $< \
 		--pf-event-time-samples-array $(MIMIC_PF_EVENT_TIME_SAMPLES_ARRAY) \
-		--fluid-model-median-value $(MIMIC_SUBPOST_MEDIAN_FLUID_FIT) \
+		--fluid-model-median-value $(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
 		--fluid-model-stan-data $(MIMIC_FLUID_DATA_STAN) \
 		--baseline-data $(MIMIC_BASELINE_DATA) \
 		--psi-step-stan-model $(MIMIC_SURV_PSI_STEP_STAN_MODEL) \

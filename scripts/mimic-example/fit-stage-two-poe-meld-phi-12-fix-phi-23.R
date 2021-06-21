@@ -56,7 +56,7 @@ phi_23_full_list <- list(
     pull(median),
   eta_slope = submodel_three_median %>%
     filter(.variable == 'eta_slope') %>%
-    pull(median) %>%
+    pull(mean) %>%
     matrix(nrow = n_icu_stays, ncol = 2, byrow = TRUE)
 )
 
