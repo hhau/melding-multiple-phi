@@ -105,6 +105,19 @@ relevant_fluid_events <- bind_rows(
     )
   ) %>%
   filter(complete.cases(.)) %>%
+  filter(
+    value > 0,
+    time_since_icu_adm > 0,
+    label != 'OR Crystalloid Intake',
+    label != 'OR Crystalloid',
+    label != 'Pre-Admission Intake',
+    label != 'OR Colloid',
+    label != 'OR Colloid Intake',
+    label != 'OR Packed RBC Intake',
+    label != "OR Packed RBC's",
+    label != 'OR FFP Intake',
+    label != 'OR FFP'
+  ) %>%
   as_tibble()
 
 flog.info(
