@@ -24,6 +24,11 @@ pf_list_data <- readRDS(args$pf_list_data)
 baseline_covariate_data <- readRDS(args$baseline_covariate_data)
 submodel_one_median_both <- readRDS(args$submodel_one_median_both)
 
+flog.info(
+  "MIMIC-example-survival-submodel-prior: compiling model",
+  name = base_filename
+)
+
 prefit <- stan_model(args$surv_prior_optim_stan_model)
 
 n_prior_samples <- 20000
