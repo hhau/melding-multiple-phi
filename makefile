@@ -664,6 +664,10 @@ $(MIMIC_PF_PRIOR_EST_PARAMS) &: \
 
 MIMIC_SURV_PRIOR_PLOTS = $(wildcard plots/mimic-example/p3-prior-pairs/*.png)
 MIMIC_SURV_PRIOR_EST_PARAMS = $(MIMIC_RDS)/submodel-2-marginal-prior-parameter-estimates.rds
+
+MIMIC_SURV_PRIOR_PHI_12_MARGINAL_PLOT = $(MIMIC_PLOTS)/submodel-2-phi-12-marginal-fit-plot.png
+MIMIC_SURV_PRIOR_PHI_12_MARGINAL_EST_PARAMS = $(MIMIC_RDS)/submodel-2-phi-12-marginal-prior-parameter-estimates.rds
+
 MIMIC_SURV_PRIOR_STAN_MODEL = $(MIMIC_MODELS)/surv-prior-optimizer.stan
 MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES = $(MIMIC_RDS)/submodel-2-marignal-prior-raw-samples.rds
 
@@ -684,6 +688,20 @@ $(MIMIC_SURV_PRIOR_EST_PARAMS) &: \
 		--surv-prior-optim-stan-model $(MIMIC_SURV_PRIOR_STAN_MODEL) \
 		--output-raw-monte-carlo-prior-samples $(MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES) \
 		--output $(MIMIC_SURV_PRIOR_EST_PARAMS)
+
+$(MIMIC_SURV_PRIOR_PHI_12_MARGINAL_PLOT) \
+$(MIMIC_SURV_PRIOR_PHI_12_MARGINAL_EST_PARAMS) &: \
+	$(MIMIC_SCRIPTS)/estimate-surv-submodel-event-time-marginal.R \
+	$(PLOT_SETTINGS) \
+	$(MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES) \
+	$(MIMIC_PF_DATA_LIST) \
+	$(MIMIC_PF_PRIOR_STAN_MODEL)
+	$(RSCRIPT) $< \
+		--surv-prior-samples-raw $(MIMIC_SURV_PRIOR_RAW_PRIOR_SAMPLES) \
+		--pf-data-list $(MIMIC_PF_DATA_LIST) \
+		--pf-prior-optim-stan-model $(MIMIC_PF_PRIOR_STAN_MODEL) \
+		--output-surv-event-time-only-prior-plot $(MIMIC_SURV_PRIOR_PHI_12_MARGINAL_PLOT) \
+		--output $(MIMIC_SURV_PRIOR_PHI_12_MARGINAL_EST_PARAMS)
 
 $(MIMIC_SURV_PRIOR_PLOTS) &: \
 	$(MIMIC_SCRIPTS)/plot-surv-prior-est.R \
@@ -733,7 +751,7 @@ $(MIMIC_STAGE_TWO_PSI_3_INDICES) &: \
 		--output $(MIMIC_STAGE_TWO_PSI_2_SAMPLES)
 
 MIMIC_POOLED_PRIOR_FUNCTIONS = $(MIMIC_SCRIPTS)/pooled-prior-functions.R
-$(MIMIC_POOLED_PRIOR_FUNCTIONS) : $(MIMIC_PF_PRIOR_EST_PARAMS) $(MIMIC_SURV_PRIOR_EST_PARAMS)
+$(MIMIC_POOLED_PRIOR_FUNCTIONS) : $(MIMIC_PF_PRIOR_EST_PARAMS) $(MIMIC_SURV_PRIOR_EST_PARAMS) $(MIMIC_SURV_PRIOR_PHI_12_MARGINAL_EST_PARAMS)
 
 MIMIC_STAGE_TWO_PSI_2_SAMPLES_LOGARTHMIC = $(MIMIC_RDS)/stage-two-log-psi-2-samples.rds
 MIMIC_STAGE_TWO_PHI_12_SAMPLES_LOGARTHMIC = $(MIMIC_RDS)/stage-two-log-phi-12-samples.rds
@@ -951,7 +969,7 @@ $(MIMIC_FULL_MELDING_PHI_12_DIAGNOSTIC_PLOT) \
 $(MIMIC_FULL_MELDING_PHI_23_DIAGNOSTIC_PLOT) \
 $(MIMIC_FULL_MELDING_ALL_PHI_23_TRACE_PLOT) \
 $(MIMIC_FULL_MELDING_PSI_2_DIAGNOSTIC_PLOT) &: \
-	$(MIMIC_SCRIPTS)/diagnostics-full-melding-stage-two-plots.R \
+	$(MIMIC_SCRIPTS)/diagnostics-full-melding-poe-stage-two-plots.R \
 	$(PLOT_SETTINGS) \
 	$(MCMC_UTIL) \
 	$(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \

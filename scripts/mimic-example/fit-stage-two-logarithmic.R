@@ -123,6 +123,21 @@ prefit_psi_two_step <- stan_model(args$psi_step_stan_model)
 # and because we do both phi_{1 \cap 2} and phi_{2 \cap 3} element-at-a-time
 prefit_phi_step_indiv <- stan_model(args$phi_step_indiv_stan_model)
 
+init_func <- function(chain_id) {
+  list(
+    theta = rnorm(n = n_theta, sd = 0.2),
+    baseline_data_x = rnorm(n = n_theta, sd = 0.2),
+    breakpoint_lower = 0.1,
+    breakpoint_upper = 0.8,
+    hazard_gamma = rexp(n = 1),
+    alpha = rnorm(n = 1, mean = -0.5, sd = 0.2),
+    event_indicator = 1,
+    event_time = rexp(1),
+    breakpoint = runif(n = 1, 0.1, 0.8),
+    eta_slope = rexp(n = 2)
+  )
+}
+
 stanfit_phi_step_indiv <- sampling(
   prefit_phi_step_indiv,
   data = list(
@@ -132,6 +147,7 @@ stanfit_phi_step_indiv <- sampling(
   chains = 1,
   cores = 1,
   iter = 1,
+  init = init_func,
   refresh = 0
 )
 
@@ -160,7 +176,7 @@ psi_initialiser <- function(x) {
 # general MCMC options -- should be in GLOBALS really
 n_stage_two_chain <- N_CHAIN
 n_stage_two_iter <- N_POST_WARMUP_MCMC # 4e4 for min tail_ess in phi of ~500
-logarithmic_lambda_vec <- c(1 / 3, 1 / 3, 1 / 3)
+logarithmic_lambda_vec <- rep(0.8, times = 3)
 
 list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   # set up containers, remember we are abind'ing over the chains

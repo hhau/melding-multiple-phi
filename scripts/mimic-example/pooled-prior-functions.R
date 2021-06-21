@@ -4,6 +4,7 @@ library(mvtnorm)
 pf_list_data <- readRDS('rds/mimic-example/submodel-1-pf-data-list-format.rds')
 pf_prior_params <- readRDS('rds/mimic-example/submodel-1-marginal-prior-parameter-estimates.rds')
 surv_prior_params <- readRDS('rds/mimic-example/submodel-2-marginal-prior-parameter-estimates.rds')
+surv_phi_12_marginal_prior_params <- readRDS('rds/mimic-example/submodel-2-phi-12-marginal-prior-parameter-estimates.rds')
 fluid_stan_data <- readRDS('rds/mimic-example/submodel-3-fluid-data-stan-format.rds')
 
 # we know we have to do individual-at-a-time updating, so lets write the
@@ -170,6 +171,54 @@ submodel_2_prior_marginal <- function(phi_12, phi_23, id, return_log = TRUE) {
   })
 }
 
+submodel_2_phi_12_prior_marginal <- function(phi_12, id, return_log = TRUE) {
+  indiv_beta_pars <- surv_phi_12_marginal_prior_params[id, ]
+  indiv_data <- pf_list_data[[id]]
+  lower_limit <- 0
+  upper_limit <- indiv_data$boundary_knots[2]
+  length_of_stay <- upper_limit - lower_limit
+  
+  # flog.info(
+  #   sprintf(
+  #     "p_{1}(phi_12), id: %d, phi_12[1] = %f, phi_12[2] = %d, lower_limit: %f, upper_limit: %f",
+  #     id, phi_12[1], phi_12[2], lower_limit, upper_limit
+  #   ),
+  #   name = base_filename
+  # )
+  
+  stopifnot(
+    (phi_12[1] >= lower_limit),
+    (phi_12[1] <= upper_limit),
+    (phi_12[2] == 1) | (phi_12[2] == 0)
+  )
+  
+  scaled_event_time <- (phi_12[1] - lower_limit) / length_of_stay
+  
+  if (scaled_event_time == 0) {
+    scaled_event_time <- 1e-8
+  }
+  
+  if ((scaled_event_time == 1) & (phi_12[2] == 1)) {
+    scaled_event_time <- 1 - 1e-8
+  }
+  
+  with(indiv_beta_pars, {
+    if (phi_12[2] == 1) {
+      lp <- log(weight) + dbeta(scaled_event_time, beta_alpha, beta_beta, log = TRUE)
+    } else {
+      lp <- log(1 - weight)
+    }
+    
+    lp <- lp - log(length_of_stay)
+    
+    ifelse(return_log, return(lp), return(exp(lp)))
+  })
+}
+
+submodel_2_phi_23_prior_marginal <- function(phi_23, id, return_log = TRUE) {
+  submodel_3_prior_marginal(phi_23, id, return_log = return_log)
+}
+
 submodel_3_prior_marginal <- function(phi_23, id, return_log = TRUE) {
   breakpoint_lower <- fluid_stan_data$breakpoint_lower[id]
   breakpoint_upper <- fluid_stan_data$breakpoint_upper[id]
@@ -215,5 +264,33 @@ logarithmic_pooled_prior_overall <- function(phi_12, phi_23, lambda, id, return_
     submodel_2_prior_marginal(phi_12, phi_23, id) -
     submodel_3_prior_marginal(phi_23, id)
 
+  ifelse(return_log, return(lp), return(exp(lp)))
+}
+
+logarithmic_pooled_prior_fix_phi_12_meld_phi_23_overall <- function(
+  phi_23,
+  lambda,
+  id,
+  return_log = TRUE
+) {
+  stopifnot(length(lambda) == 2)
+  
+  lp <- (lambda[1] - 1) * submodel_2_phi_23_prior_marginal(phi_23, id) +
+    (lambda[2] - 1) * submodel_3_prior_marginal(phi_23, id)
+  
+  ifelse(return_log, return(lp), return(exp(lp)))
+}
+
+logarithmic_pooled_prior_meld_phi_12_fix_phi_23_overall <- function(
+  phi_12,
+  lambda,
+  id,
+  return_log = TRUE
+) {
+  stopifnot(length(lambda) == 2)
+  
+  lp <- (lambda[1] - 1) * submodel_1_prior_marginal(phi_12, id) + 
+    (lambda[2] - 1) * submodel_2_phi_12_prior_marginal(phi_12, id)
+    
   ifelse(return_log, return(lp), return(exp(lp)))
 }

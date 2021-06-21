@@ -119,6 +119,21 @@ prefit_psi_two_step <- stan_model(args$psi_step_stan_model)
 # and because we do both phi_{1 \cap 2} and phi_{2 \cap 3} element-at-a-time
 prefit_phi_step_indiv <- stan_model(args$phi_step_indiv_stan_model)
 
+init_func <- function(chain_id) {
+  list(
+    theta = rnorm(n = n_theta, sd = 0.2),
+    baseline_data_x = rnorm(n = n_theta, sd = 0.2),
+    breakpoint_lower = 0.1,
+    breakpoint_upper = 0.8,
+    hazard_gamma = rexp(n = 1),
+    alpha = rnorm(n = 1, mean = -0.5, sd = 0.2),
+    event_indicator = 1,
+    event_time = rexp(1),
+    breakpoint = runif(n = 1, 0.1, 0.8),
+    eta_slope = rexp(n = 2)
+  )
+}
+
 stanfit_phi_step_indiv <- sampling(
   prefit_phi_step_indiv,
   data = list(
@@ -128,6 +143,7 @@ stanfit_phi_step_indiv <- sampling(
   chains = 1,
   cores = 1,
   iter = 1,
+  init = init_func,
   refresh = 0
 )
 
