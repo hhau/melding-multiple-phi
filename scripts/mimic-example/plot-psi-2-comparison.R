@@ -167,8 +167,11 @@ interesting_subplots <- c(
 
 psmall <- ggplot(
   plot_tbl %>%
-    filter(plot_var %in% interesting_subplots),
-  aes(x = .value, colour = method, linetype = fix)
+    filter(
+      plot_var %in% interesting_subplots,
+      fix %in% c("Not applic.", "none", "both")
+    ),
+  aes(x = .value, colour = method, linetype = method)
 ) +
   geom_density() +
   facet_wrap(
@@ -177,35 +180,33 @@ psmall <- ggplot(
     labeller = label_parsed,
     ncol = 2
   ) +
-  labs(colour = "Method", linetype = "Fixed") +
+  labs(colour = "", linetype = "") +
   scale_colour_manual(
     values = c(
       "prior" = 'grey',
       "melding-poe" = highlight_col,
-      "melding-log" = greens[2],
-      "a_point" = blues[1]
+      "melding-log" = blues[2],
+      "a_point" = 'black'
     ),
     labels = list(
       "prior" = TeX("Prior: $\\mathrm{p}_{2}(\\psi_{2})$"),
-      "melding-poe" = "Chained melding, PoE pooling",
-      "melding-log" = "Chained melding, log pooling",
+      "melding-poe" = "PoE pooling",
+      "melding-log" = "Log pooling",
       "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
     )
   ) +
   scale_linetype_manual(
     values = c(
-      "Not applic." = "solid",
-      "none" = "solid",
-      "both" = "solid",
-      "phi_12" = "dashed",
-      "phi_23" = "dotted"
+      "prior" = '1111',
+      "melding-poe" = 'solid',
+      "melding-log" = 'solid',
+      "a_point" = '3131'
     ),
     labels = list(
-      "Not applic." = "Not applic.",
-      "none" = "Full chained melding",
-      "both" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$"),
-      "phi_12" = TeX("Fix $\\phi_{1 \\bigcap 2}$, meld $\\phi_{2 \\bigcap 3}$"),
-      "phi_23" = TeX("Meld $\\phi_{1 \\bigcap 2}$, fix $\\phi_{2 \\bigcap 3}$")
+      "prior" = TeX("Prior: $\\mathrm{p}_{2}(\\psi_{2})$"),
+      "melding-poe" = "PoE pooling",
+      "melding-log" = "Log pooling",
+      "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
     )
   ) +
   theme(axis.title = element_blank())
