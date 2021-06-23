@@ -52,11 +52,13 @@ We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as
 \begin{equation}
   z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
 \end{equation}
-BROAD COMMENT ON PRIOR CHOICES EG WEAKLY INFORMATIVE? + comment on heavy tailed epsilon here.
+We employ a weakly informative prior for the intercept, and a heavy tailed ($t_{5}$) distribution for the error term[^pfoutliers] with a weakly informative half-normal prior for unknown scale parameter
 \begin{equation}
   \beta_{0, i} \sim \text{N}(0, 1^2), \,\, \varepsilon_{i, j} \sim t_{5}(0, \omega), \,\,  \omega \sim \text{N}_{+}(0, 1^2).
 \end{equation}
 For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.5^2)$, and for $k = 2, \ldots, 10$ we employ a random-walk prior $\zeta_{i, k} \sim \text{N}(\zeta_{i, k - 1}, 0.5^2)$.
+
+[^pfoutliers]: P/F data contain many outliers for, amongst many possible reasons, arterial/venous blood sample mis-labelling; incorrectly recorded oxygenation support information; and differences between sample collection time, lab result time, and the observation time recorded as in the EHR.
 
 If a solution to the following optimisation problem exists, then we conclude that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$.
 \begin{equation}
@@ -76,7 +78,7 @@ It is also important to note that $\pd_{1, i}(T_{i}, d_{i})$ conditions on each 
 The analytic form of $\pd_{1, i}(T_{i}, d_{i})$ is not available and must be estimated, which we discuss in Section \ref{estimating-submodel-prior-marginal-distributions}.
 To completely align with our chained melding notation we also define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\{\beta_{0, i}, \boldsymbol{\zeta}_{i}\}_{i = 1}^{N}, \omega)$.
 
-Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 13$, and 15$.
+Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 13$, and $15$.
 The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
 
 ## Cumulative fluid model (piecewise linear) $\pd_{3}$
@@ -91,13 +93,16 @@ We assume a piecewise linear model, with slope $\eta_{1, i}^{b}$ before the brea
    \label{eqn:piecewise-fluid-model}
 \end{equation}
 
+We assume a weakly informative prior for the error term
+\begin{equation}
+  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x}),  \,\, \sigma_{x} \sim \text{N}_{+}(0, 5^2).
+\end{equation}
+
 The parameters for the gamma prior for $\eta^{b}_{1, i}$ and $\eta^{a}_{1, i}$ are obtained by assuming that the 2.5-, 50-, and 97.5- percentiles are at 0.5, 5, and 20 [@belgorodski_rriskdistributions_2017].
 A slope of $0.5$ (i.e. the change in cumulative fluid balance per day) is unlikely but possible due to missing data; a slope of $20$ is also unlikely but possible as extremely unwell patients can have very high respiratory rates and thus require large fluid inputs.
+Thus
 \begin{equation}
-\begin{gathered}
-  \eta^{b}_{1, i} \sim \text{Gamma}(1.53, 0.24), \,\, \eta^{a}_{1, i} \sim \text{Gamma}(1.53, 0.24), \\
-  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x}),  \,\, \sigma_{x} \sim \text{N}_{+}(0, 5^2).
-\end{gathered}
+  \eta^{b}_{1, i} \sim \text{Gamma}(1.53, 0.24), \,\, \eta^{a}_{1, i} \sim \text{Gamma}(1.53, 0.24).
 \end{equation}
 
 The prior for the breakpoint $\kappa_{i}$ is derived as follows.
@@ -117,7 +122,7 @@ We place a $\text{LogNormal}(1.61, 0.47^2)$ prior on $\eta_{0, i}^{\text{raw}}$.
 These values are obtained assuming that, a priori, the $2.5\%, 50\%$, and $99\%$ percentiles of $\eta_{0, i}^{\text{raw}}$ are $0.5, 5$, and $15$ respectively [@belgorodski_rriskdistributions_2017].
 This is a broad prior that reflects the numerous possible admission routes into the ICU.
 We expect those admitted from the wards to have little pre-admission fluid data.
-Those admitted from the operating theatre often have their in-theatre fluid input recorded after admission into the ICU, with no easy way to distinguish these records in the data.
+Those admitted from the operating theatre occasionally have their in-theatre fluid input recorded after admission into the ICU, with no easy way to distinguish these records in the data.
 
 To align with our melding notation we define $m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}$, with $\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)$, $Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})$, and $\psi_{3} = (\{\eta_{0, i}\}_{i = 1}^{N}, \sigma^{2}_{x})$.
 Note that we have explicit, analytic priors for the components of $\phi_{2 \cap 3}$, and
@@ -158,7 +163,7 @@ where we suppress the dependence on the parameters on the right hand side for br
 Our prior for $(\gamma, \alpha, \boldsymbol{\theta})$ must result in a plausible distribution for $\pd_{2, i}(T_{i} \mid d_{i} = 1)$, and a reasonable balance between $d_{i} = 1$ and $d_{i} = 0$ events.
 The primary concern is unintentionally specifying a prior for which the bulk of $\pd_{2, i}(T_{i} \mid d_{i} = 1)$ is very close to zero.
 In addition, certain extreme configurations of $(\gamma, \alpha, \boldsymbol{\theta})$ cause issues for the methodology of @crowther_simulating_2013, particularly the numerical root finding and numerical integration steps.
-MENTION OF CROWTHER IS HARD TO UNDERSTAND AT THIS POINT, SINCE NEED TO SIMUALTE FROM PRIOR NOT YET EXPLAINED - IN ANY CASE, I THINK WE DONT NEED TO WORK TOO HARD TO EXPLAIN OUR DESIRE FOR A SENSIBLE PRIOR, SO COULD DROP CROWTHER ARGUMENT HERE?
+MENTION OF CROWTHER IS HARD TO UNDERSTAND AT THIS POINT, SINCE NEED TO SIMUALTE FROM PRIOR NOT YET EXPLAINED - IN ANY CASE, I THINK WE DONT NEED TO WORK TOO HARD TO EXPLAIN OUR DESIRE FOR A SENSIBLE PRIOR, SO COULD DROP CROWTHER ARGUMENT HERE? (_I think we just move it to the appendix and refer back to the prior sampling bit in said appendix.)
 We would like to rule out such extreme configurations a priori.
 Ideally we would encode this information a joint prior for $(\gamma, \alpha, \boldsymbol{\theta})$, but specifying the appropriate correlation structure for these parameters is prohibitively challenging.
 Instead we focus on specifying appropriate marginals for each of $\gamma, \alpha$, and $\boldsymbol{\theta}$, and create visual prior predictive checks [@gabry_visualization_2019; @gelman_bayesian_2020] to ensure the induced prior for $(T_{i}, d_{i})$ is acceptable.
@@ -214,7 +219,7 @@ knitr::include_graphics("../plots/mimic-example/pf-prior-plot-small.pdf")
 
 Our estimate of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ relies on the fact that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \prod_{i = 1}^{N}\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$.
 As such we estimate $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ for each individual and take the product of these estimates.
-Drawing samples from $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ is challenging: we use the approach proposed by @crowther_simulating_2013 as implemented in @brilleman_simulate_2021.
+Drawing samples from $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ is challenging: we use the approach proposed by @crowther_simulating_2013 as implemented in @brilleman_simsurv_2021.
 Inspecting the samples reveals correlation between $(T_{i}, d_{i})$ and $(\kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ that we would like to capture in our estimate.
 To do so, we fit a mixture of multivariate normal distributions to transformations of the continuous parameters with support on $\mathbb{R}$,
 \begin{equation}
@@ -287,7 +292,11 @@ We consider logarithmic pooling with $\lambda = (\frac{1}{3}, \frac{1}{3}, \frac
 knitr::include_graphics('../plots/mimic-example/psi-2-method-comparison-small.pdf')
 ```
 
-- TODO: try and get the KM picture working again
+```{r kap_meier_pc_plot, fig.cap = 'this will take some explaining'}
+knitr::include_graphics('../plots/mimic-example/kaplan-meier-pc.pdf')
+```
+
+
 
 # Discussion
 
@@ -499,7 +508,7 @@ In this appendix $i$ represents a single stay in ICU.
     - This is to ensure we have enough data to fit a B-spline with 7 internal knots. The restriction on the first 6 observations is to avoid selecting those who have already started to experience respiratory failure prior to ICU admission.
 1. The time between any 2 consecutive PF observations cannot exceed 2 days.
     - This is because some data are aggregated into a single ICU stay when they perhaps should be two or more stays.
-1. The fluid observations must be after ICU admission (some observations are entered as 'Pre-admission intake') and cannot be associated with fluid administered in the operating room (OR).
+1. The fluid observations must be after ICU admission (some observations are entered as 'Pre-admission intake') and cannot be associated with fluid administered in the operating room (OR). Note that this does not mean all OR fluid administrations are removed, as some are mis-labelled.
 1. There must be sufficient temporal overlap between the fluid data and the PF data. Specifically,
   \begin{equation}
     \frac{
