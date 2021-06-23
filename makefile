@@ -715,7 +715,6 @@ $(MIMIC_SURV_PRIOR_PLOTS) &: \
 
 # Fit stage two using parallel multi-stage sampler
 # poe version
-
 MIMIC_SURV_PSI_STEP_STAN_MODEL = $(MIMIC_MODELS)/surv-psi-step.stan
 MIMIC_SURV_PHI_STEP_INDIV_MODEL = $(MIMIC_MODELS)/surv-phi-step-indiv.stan
 
@@ -999,6 +998,30 @@ $(MIMIC_BOTH_SUBPOST_MEDIAN_DIAGNOSTIC_PLOT) : \
 		--output $@
 
 ALL_PLOTS += $(MIMIC_BOTH_SUBPOST_MEDIAN_DIAGNOSTIC_PLOT)
+
+MIMIC_KAPLAN_MEIER_POST_CHECK_PLOT = $(MIMIC_PLOTS)/kaplan-meier-pc.pdf
+$(MIMIC_KAPLAN_MEIER_POST_CHECK_PLOT) : \
+	$(MIMIC_SCRIPTS)/plot-km-post-check.R \
+	$(PLOT_SETTINGS) \
+	$(MIMIC_GLOBAL_SETTINGS) \
+	$(MIMIC_BASELINE_DATA) \
+	$(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
+	$(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
+	$(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
+	$(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) \
+	$(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
+	$(MIMIC_SUBPOST_MEAN_FLUID_FIT)
+	$(RSCRIPT) $< \
+		--baseline-covariate-data $(MIMIC_BASELINE_DATA) \
+		--stage-two-poe-psi-2-samples $(MIMIC_STAGE_TWO_PSI_2_SAMPLES) \
+		--stage-two-poe-phi-23-samples $(MIMIC_STAGE_TWO_PHI_23_SAMPLES) \
+		--stage-two-poe-phi-12-samples $(MIMIC_STAGE_TWO_PHI_12_SAMPLES) \
+		--stage-two-median-inputs-psi-2-samples $(MIMIC_BOTH_SUBPOST_MEDIAN_PSI_2_SAMPLES) \
+		--stage-one-phi-12-point-est $(MIMIC_SUBPOST_MEDIAN_EVENT_TIME) \
+		--stage-one-phi-23-point-est $(MIMIC_SUBPOST_MEAN_FLUID_FIT) \
+		--output $@
+
+ALL_PLOTS += $(MIMIC_KAPLAN_MEIER_POST_CHECK_PLOT)
 
 ################################################################################
 # knitr is becoming more picky about encoding, specify UTF-8 input
