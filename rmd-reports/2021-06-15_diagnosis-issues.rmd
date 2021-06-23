@@ -62,6 +62,28 @@ pre.plot {
 
 ```{r defs_includes, message = FALSE, warning = FALSE, comment = NA, cache = FALSE}
 suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(rstan))
+suppressPackageStartupMessages(library(kableExtra))
+
+local_monitor <- function(x) {
+  rstan::monitor(
+    sims = x,
+    warmup = 1,
+    probs = c(0.01, 0.025, 0.10, 0.5, 0.9, 0.975, 0.99),
+    print = FALSE,
+    digits_summary = 2
+  ) %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column() %>%
+  as_tibble() %>%
+  relocate(mean, sd, n_eff, Rhat, Bulk_ESS, Tail_ESS, valid, .before = se_mean)
+}
+
+local_styling <- function(x) {
+  kbl(x) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  scroll_box(width = '100%', height = '300px')
+}
 
 source("../scripts/common/plot-settings.R")
 
@@ -122,12 +144,18 @@ stage_one_phi_23_samples <- readRDS('../rds/mimic-example/submodel-3-fluid-sampl
 
 ```{r stage_one_phi_12_times, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/submodel-1-event-times-samples-array.rds')), collapse = '')}
 mcmc_trace(stage_one_phi_12_samples[, , event_time_names])
+stage_one_phi_12_samples[, , event_time_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### Event indicators $d_{i}$
 
 ```{r stage_one_phi_12_indicators, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/submodel-1-event-times-samples-array.rds')), collapse = '')}
 mcmc_trace(stage_one_phi_12_samples[, , event_indicator_names])
+stage_one_phi_12_samples[, , event_indicator_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ## Submodel 3 - Fluids
@@ -138,6 +166,9 @@ mcmc_trace(stage_one_phi_12_samples[, , event_indicator_names])
 
 ```{r stage_one_phi_23_breakpoints, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/submodel-3-fluid-samples-array.rds')), collapse = '')}
 mcmc_trace(stage_one_phi_23_samples[, , breakpoint_names])
+stage_one_phi_23_samples[, , breakpoint_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### Slope before $\eta_{1, i}^{b}$
@@ -146,12 +177,18 @@ mcmc_trace(stage_one_phi_23_samples[, , breakpoint_names])
 
 ```{r stage_one_phi_23_eta_befores, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/submodel-3-fluid-samples-array.rds')), collapse = '')}
 mcmc_trace(stage_one_phi_23_samples[, , eta_before_names])
+stage_one_phi_23_samples[, , eta_before_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### Slope after $\eta_{1, i}^{a}$
 
 ```{r stage_one_phi_23_eta_afters, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/submodel-3-fluid-samples-array.rds')), collapse = '')}
 mcmc_trace(stage_one_phi_23_samples[, , eta_after_names])
+stage_one_phi_23_samples[, , eta_after_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 # Stage 2
@@ -174,12 +211,18 @@ stage_two_poe_none_fixed_phi_23_samples <- readRDS('../rds/mimic-example/stage-t
 
 ```{r stage_two_poe_none_fixed_times, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-12-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_none_fixed_phi_12_samples[, , event_time_names])
+stage_two_poe_none_fixed_phi_12_samples[, , event_time_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Event indicators $d_{i}$
 
 ```{r stage_two_poe_none_fixed_indicators, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-12-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_none_fixed_phi_12_samples[, , event_indicator_names])
+stage_two_poe_none_fixed_phi_12_samples[, , event_indicator_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\phi_{2 \cap 3}$
@@ -188,24 +231,36 @@ mcmc_trace(stage_two_poe_none_fixed_phi_12_samples[, , event_indicator_names])
 
 ```{r stage_two_poe_none_fixed_breakpoints, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-23-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_none_fixed_phi_23_samples[, , breakpoint_names])
+stage_two_poe_none_fixed_phi_23_samples[, , breakpoint_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope before $\eta_{1, i}^{b}$
 
 ```{r stage_two_poe_none_fixed_eta_befores, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-23-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_none_fixed_phi_23_samples[, , eta_before_names])
+stage_two_poe_none_fixed_phi_23_samples[, , eta_before_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope after $\eta_{1, i}^{a}$
 
 ```{r stage_two_poe_none_fixed_eta_afters, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-23-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_none_fixed_phi_23_samples[, , eta_after_names])
+stage_two_poe_none_fixed_phi_23_samples[, , eta_after_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\psi_{2}$
 
 ```{r stage_two_poe_none_fixed_psi_2, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-psi-2-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_none_fixed_psi_2_samples)
+stage_two_poe_none_fixed_psi_2_samples %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ### Fix $\phi_{1 \cap 2}$
@@ -223,24 +278,36 @@ stage_two_poe_fix_phi_12_phi_23_samples <- readRDS('../rds/mimic-example/stage-t
 
 ```{r stage_two_poe_fix_phi_12_breakpoints, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-23-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_fix_phi_12_phi_23_samples[, , breakpoint_names])
+stage_two_poe_fix_phi_12_phi_23_samples[, , breakpoint_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope before $\eta_{1, i}^{b}$
 
 ```{r stage_two_poe_fix_phi_12_eta_befores, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-23-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_fix_phi_12_phi_23_samples[, , eta_before_names])
+stage_two_poe_fix_phi_12_phi_23_samples[, , eta_before_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope after $\eta_{1, i}^{a}$
 
 ```{r stage_two_poe_fix_phi_12_eta_afters, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-23-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_fix_phi_12_phi_23_samples[, , eta_after_names])
+stage_two_poe_fix_phi_12_phi_23_samples[, , eta_after_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\psi_{2}$
 
 ```{r stage_two_poe_fix_phi_12_psi_2, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-psi-2-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_fix_phi_12_psi_2_samples)
+stage_two_poe_fix_phi_12_psi_2_samples %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ### Fix $\phi_{2 \cap 3}$
@@ -258,18 +325,27 @@ stage_two_poe_fix_phi_23_phi_12_samples <- readRDS('../rds/mimic-example/stage-t
 
 ```{r stage_two_poe_fix_phi_23_times, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-12-samples-meld-phi-12-fix-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_fix_phi_23_phi_12_samples[, , event_time_names])
+stage_two_poe_fix_phi_23_phi_12_samples[, , event_time_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Event indicators $d_{i}$
 
 ```{r stage_two_poe_fix_phi_23_indicators, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-phi-12-samples-meld-phi-12-fix-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_fix_phi_23_phi_12_samples[, , event_indicator_names])
+stage_two_poe_fix_phi_23_phi_12_samples[, , event_indicator_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\psi_{2}$
 
 ```{r stage_two_poe_fix_phi_23_psi_2, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-poe-psi-2-samples-meld-phi-12-fix-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_poe_fix_phi_23_psi_2_samples)
+stage_two_poe_fix_phi_23_psi_2_samples %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ## Log
@@ -301,12 +377,18 @@ stage_two_log_none_fixed_phi_23_samples <- readRDS('../rds/mimic-example/stage-t
 
 ```{r stage_two_log_none_fixed_times, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-12-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_log_none_fixed_phi_12_samples[, , event_time_names])
+stage_two_log_none_fixed_phi_12_samples[, , event_time_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Event indicators $d_{i}$
 
 ```{r stage_two_log_none_fixed_indicators, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-12-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_log_none_fixed_phi_12_samples[, , event_indicator_names])
+stage_two_log_none_fixed_phi_12_samples[, , event_indicator_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\phi_{2 \cap 3}$
@@ -315,24 +397,36 @@ mcmc_trace(stage_two_log_none_fixed_phi_12_samples[, , event_indicator_names])
 
 ```{r stage_two_log_none_fixed_breakpoints, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-23-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_log_none_fixed_phi_23_samples[, , breakpoint_names])
+stage_two_log_none_fixed_phi_23_samples[, , breakpoint_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope before $\eta_{1, i}^{b}$
 
 ```{r stage_two_log_none_fixed_eta_befores, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-23-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_log_none_fixed_phi_23_samples[, , eta_before_names])
+stage_two_log_none_fixed_phi_23_samples[, , eta_before_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope after $\eta_{1, i}^{a}$
 
 ```{r stage_two_log_none_fixed_eta_afters, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-23-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_log_none_fixed_phi_23_samples[, , eta_after_names])
+stage_two_log_none_fixed_phi_23_samples[, , eta_after_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\psi_{2}$
 
 ```{r stage_two_log_none_fixed_psi_2, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-psi-2-samples.rds')), collapse = '')}
 mcmc_trace(stage_two_log_none_fixed_psi_2_samples)
+stage_two_log_none_fixed_psi_2_samples %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ### Fix $\phi_{1 \cap 2}$
@@ -350,24 +444,36 @@ stage_two_log_fix_phi_12_phi_23_samples <- readRDS('../rds/mimic-example/stage-t
 
 ```{r stage_two_log_fix_phi_12_breakpoints, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-23-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_log_fix_phi_12_phi_23_samples[, , breakpoint_names])
+stage_two_log_fix_phi_12_phi_23_samples[, , breakpoint_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope before $\eta_{1, i}^{b}$
 
 ```{r stage_two_log_fix_phi_12_eta_befores, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-23-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_log_fix_phi_12_phi_23_samples[, , eta_before_names])
+stage_two_log_fix_phi_12_phi_23_samples[, , eta_before_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Slope after $\eta_{1, i}^{a}$
 
 ```{r stage_two_log_fix_phi_12_eta_afters, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-23-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_log_fix_phi_12_phi_23_samples[, , eta_after_names])
+stage_two_log_fix_phi_12_phi_23_samples[, , eta_after_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\psi_{2}$
 
 ```{r stage_two_log_fix_phi_12_psi_2, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-psi-2-samples-fix-phi-12-meld-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_log_fix_phi_12_psi_2_samples)
+stage_two_log_fix_phi_12_psi_2_samples %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ### Fix $\phi_{2 \cap 3}$
@@ -386,18 +492,27 @@ stage_two_log_fix_phi_23_phi_12_samples <- readRDS('../rds/mimic-example/stage-t
 
 ```{r stage_two_log_fix_phi_23_times, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-12-samples-meld-phi-12-fix-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_log_fix_phi_23_phi_12_samples[, , event_time_names])
+stage_two_log_fix_phi_23_phi_12_samples[, , event_time_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ##### Event indicators $d_{i}$
 
 ```{r stage_two_log_fix_phi_23_indicators, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-phi-12-samples-meld-phi-12-fix-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_log_fix_phi_23_phi_12_samples[, , event_indicator_names])
+stage_two_log_fix_phi_23_phi_12_samples[, , event_indicator_names] %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 #### $\psi_{2}$
 
 ```{r stage_two_log_fix_phi_23_psi_2, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-log-psi-2-samples-meld-phi-12-fix-phi-23.rds')), collapse = '')}
 mcmc_trace(stage_two_log_fix_phi_23_psi_2_samples)
+stage_two_log_fix_phi_23_psi_2_samples %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 ## Point (marginal median value)
@@ -410,6 +525,9 @@ both_fixed_psi_2_samples <- readRDS('../rds/mimic-example/stage-two-median-input
 
 ```{r both_fixed_psi_2_samples, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/stage-two-median-inputs-psi-2-samples.rds')), collapse = '')}
 mcmc_trace(both_fixed_psi_2_samples)
+both_fixed_psi_2_samples %>%
+  local_monitor() %>%
+  local_styling()
 ```
 
 # Other updates
