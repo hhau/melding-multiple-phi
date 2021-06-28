@@ -1,5 +1,51 @@
 ---
 title: "Extending Markov melding for chains of submodels"
+runtitle: "Chained Markov melding"
+author:
+  - name: "Andrew A."
+    surname: "Manderson"
+    email: "andrew.manderson@mrc-bsu.cam.ac.uk"
+    label: e1
+    addressLabel: A
+    sepNext: and
+  - name: "Robert J. B."
+    surname: "Goudie"
+    email: "robert.goudie@mrc-bsu.cam.ac.uk"
+    label: e2
+    addressLabel: B
+affiliation:
+  - label: A
+    name: MRC Biostatistics Unit, University of Cambridge, United Kingdom, and The Alan Turing Institute
+    authorsLabels: e1
+  - label: B
+    name: MRC Biostatistics Unit, University of Cambridge, United Kingdom
+    authorsLabels: e2
+year: "`r format(Sys.time(), '%Y')`"
+abstract: |
+  A challenge for practitioners of Bayesian inference is specifying a model that incorporates multiple relevant, heterogeneous data.
+  It may be easier to instead specify distinct submodels for each source of data, then join the submodels together.
+  We consider chains of submodels, where submodels directly relate to their neighbours via common quantities which may be parameters or deterministic functions thereof.
+  We propose _chained Markov melding_, an extension of Markov melding, to combine chains of submodels into a joint model.
+  Estimating the posterior of a complex joint model is challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
+  We demonstrate our methodology using two examples.
+  The first example considers an ecological integrated population model, where multiple data are required to accurately estimate population immigration and reproduction rates.
+  We also consider a joint longitudinal and time-to-event model with uncertain, submodel-derived event times.
+  Chained Markov melding is a conceptually appealing approach to integrating submodels in these settings.
+keywords:
+  - First keyword
+  - Second keyword
+bibliography: bibliography/multi-phi-bib.bib
+biblio-style: ba ## alternative: imsart-number
+output:
+  rticles::ba_article:
+    includes:
+      in_header:
+        tex-input/pre.tex
+      keep_tex: true
+---
+
+<!-- arXiv / local YAML header -->
+<!-- title: "Extending Markov melding for chains of submodels"
 author: "Andrew Manderson"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 abstract: |
@@ -30,14 +76,12 @@ output:
     fig_caption: true
     number_sections: true
     keep_tex: true
----
+-->
+
+
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.align = "center")
 ```
-<!--
-  - RSS conference, the abstract can be 300 words.
--->
-
 
 # Introduction
 
@@ -478,135 +522,183 @@ This also suggests that the normal approximations are good summaries of the subp
 
 Trace plots, rank plots, and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process are presented in Appendix \ref{diagnostics-for-the-owls-example}.
 
-## Uncertain event times in joint longitudinal and survival models.
+## Uncertain time to respiratory failure
 
-- what: brief overview of the submodels, relate to @lu_using_1993 and @sweeting_estimating_2010
+We now return to the example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
+There are $i = 1, \ldots, N$ individuals in the data set.
+Each individual is admitted to the ICU at time $0$, and is discharged or dies at time $C_{i}$.
+See appendix \ref{cohort-selection-criteria} for information on $N$ and how the individuals were selected from MIMIC-III [@johnson_mimic-iii_2016].
 
-- why we're using simulated data
+### P/F ratio model (B-spline): $\pd_{1}$
 
-### Submodels
+Each individual has P/F ratio observations $z_{i, j}$ at times $t_{i, j}$, with $j = 1, \ldots, J_{i}$.
+For each individual denote the vector of observations $\boldsymbol{z}_{i} = (z_{i, 1}, \ldots, z_{i, J_{i}})$ and observation times $\boldsymbol{t}_{i} = (t_{i, 1}, \ldots, t_{i, J_{i}})$.
+To improve computational performance, we standardise the P/F data for each individual such that $z_{i, j} = \frac{\tilde{z}_{i, j} - \overline{z}_{i}}{\hat{s}_{i}}$, where $\tilde{z}_{i, j}$ is the underlying unstandardised observation with mean $\overline{z}_{i}$ and standard deviation $\hat{s}_{i}$.
+Similarly we rescale the threshold for respiratory failure: $\tau_{i} = \frac{300 - \overline{z}_{i}}{\hat{s}_{i}}$.
 
-#### First submodel: Event submodel
+We choose to model the P/F ratio using a B-spline of degree 3, with 2 boundary knots and 7 internal knots, and do not include an intercept column in the spline basis.
+The internal knots are evenly spaced between the two boundary knots at $\min(\boldsymbol{t_{i}})$ and $\max(\boldsymbol{t_{i}})$.
+These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, with coefficients $\zeta_{i, k}$ where $\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})$.
+We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in \mathbb{R}_{+} \cup \{0\}$ so that the submodel can be written as
+\begin{equation}
+  z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
+\end{equation}
+We employ a weakly informative prior for the intercept, and a heavy tailed ($t_{5}$) distribution for the error term[^pfoutliers] with a weakly informative half-normal prior for unknown scale parameter
+\begin{equation}
+  \beta_{0, i} \sim \text{N}(0, 1^2), \,\, \varepsilon_{i, j} \sim t_{5}(0, \omega_{i}), \,\,  \omega_{i} \sim \text{N}_{+}(0, 1^2).
+\end{equation}
+For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.1^2)$, and for $k = 2, \ldots, 10$ we employ a random-walk prior $\zeta_{i, k} \sim \text{N}(\zeta_{i, k - 1}, 0.1^2)$.
 
-The first submodel describes an observable process, and say that an event to occurs when the process crosses some threshold.
-Consider individuals $i = 1, \ldots, N$ for whom we record $j = 1, \ldots, J_{i}$ measurements $z_{i, j}$ at times $t_{i, j}$, further denoting $\boldsymbol{z}_{i} = (z_{i, 1}, \ldots, z_{i, J_{i}})$ and $\boldsymbol{t}_{i}$ analogously.
-We fit the following hierarchical linear regression model
-\input{tex-input/surv-example/0020-submodel-one-model.tex}
-Individuals are said to experience the event of interest $T^{*}_{i}$ when their fitted model crosses some threshold $\kappa$, which is to say $T^{*}_{i} = (\kappa -\beta_{0, i})\mathop{/} \beta_{1, i}$.
-In addition, we censor the events at time $t = 1$ such that we only record event times $T_{i} = \min(T^{*}_{i}, 1)$ and event indicators $\delta_{i} = \boldsymbol{1}(T^{*}_{i} \in (0, 1))$.
-Due to our simple regression model it is possible for $T^{*}_{i}$ to be less than zero.
-However, we do not consider the possibility that events occur prior to $t = 0$, and in cases where $T^{*}_{i} < 0$ we set $T_{i} = 1$ and $\delta_{i} = 0$.
-We also remark that even this simple definition for $T^{*}_{i}$ results in a  non-invertible link function; one cannot uniquely compute the values of $\beta_{0, i}$ and $\beta_{1, i}$ given $T^{*}_{i}$ and $\kappa$.
-Hence we consider this submodel in stage 1 when estimating the chained melded posterior.
+[^pfoutliers]: P/F data contain many outliers for, amongst many possible reasons, arterial/venous blood sample mis-labelling; incorrectly recorded oxygenation support information; and differences between sample collection time, lab result time, and the observation time recorded as in the EHR.
 
-To align this submodel with our notation we denote this submodels data as $Y_{1} = (\boldsymbol{t}_{1}, \ldots, \boldsymbol{t}_{N}, \boldsymbol{z}_{1}, \ldots, \boldsymbol{z}_{N})$ and common quantity $\phi_{1 \cap 2} = (T_{1}, \ldots, T_{N}, \delta_{1}, \ldots, \delta_{N})$, with $\psi_{1}$ defined to be all model parameters in Equation \eqref{eqn:submodel-one-model}.
+If a solution to the following optimisation problem exists, then we conclude that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$.
+\begin{equation}
+  T_{i} = \min_{t} \left\{
+    \tau_{i} = \beta_{0, i} + B_{i}(t)\boldsymbol{\zeta}_{i}
+    \mid
+    t \in [\max(0, \min(\boldsymbol{t_{i}})), \max(\boldsymbol{t_{i}})]
+  \right\},
+  \label{eqn:event_time_model_def}
+\end{equation}
+We use a standard multiple root finder [@soetaert_rootsolve_2020] to obtain a solution.
+If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 0$.
 
-#### Second submodel: Survival submodel
+We would like to link this submodel with the other submodels via $(\{T_{i}, d_{i}\}_{i = 1}^{N})$.
+However, we require a careful definition of the link parameter $\phi_{1 \cap 2}$ as it is a deterministic function of $(\beta_{0, i}, \boldsymbol{\zeta}_{i})$.
+Keeping with the notation of @goudie_joining_2019, we define $\theta_{1, i} = (\beta_{0, i}, \boldsymbol{\zeta}_{i})$, with $\phi_{1 \cap 2, i} = f(\theta_{1, i}) = (T_{i}, d_{i})$, where $f$ is the solution to \eqref{eqn:event_time_model_def}, and $\phi_{1 \cap 2} = \phi_{1 \cap 2}(\theta_{1}) = (f(\theta_{1, i}), \ldots, f(\theta_{1, N}))$.
+It is also convenient to define $\theta_{1} = (\theta_{1, 1}, \ldots, \theta_{1, N})$.
 
-- _in the thesis, there should be a brief discussion on the issues encountered when trying to compute this_.
+Care is also required when considering the prior marginal $\pd_{1}(\phi_{1 \cap 2})$.
+We note that $\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})$, and that $\pd_{1, i}(T_{i}, d_{i})$ conditions on each individual's length of stay (in specifying the location of the knots), as well as the range, mean, and standard deviation of the P/F data (by standardising $\tilde{z}_{i, j}$).
+The analytic form of $\pd_{1, i}(T_{i}, d_{i})$ is not available and must be estimated, which we discuss in Section \ref{estimating-submodel-prior-marginal-distributions}.
+To completely align with our chained melding notation we also define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\{\omega_{i}\}_{i = 2}^{N})$.
 
-Our second submodel is a standard parametric Weibull survival model with rate $\gamma$.
-Say we observe a baseline covariate $w_{i}$ for each individual.
-We define the hazard and survival probabilities at time $t$
-\input{tex-input/surv-example/0030-submodel-two-hazard-general.tex}
-where $\theta_{0}$ is an intercept, $\theta_{1}$ is the regression parameter for the baseline covariate, and $\alpha$ quantifies the strength of the association between the event time and the fitted value from the longitudinal model $m_{i}(t)$, which we will define momentarily.
-The log-likelihood is proportional to $\boldsymbol{1}_{\{\delta_{i} = 1\}} h_{i}(t) + S_{i}(t)$.
-We complete the model by specifying the following priors
-\input{tex-input/surv-example/0033-surv-model-priors.tex}
-where $\overline{T}$ is the log of the crude event rate, in line with @brilleman_bayesian_2020.
-Note that the model in Equation $\eqref{eqn:surv-model-priors}$ is written in terms of generic event time $t$, but we will consider uncertain event times for each individual $T_{i}$ from submodel 1.
+Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 13$, and $15$.
+The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
+It is interesting to see the relatively wide, multimodal distribution for $\{T_{13}, d_{13}\}$ (and for some other individuals not shown here).
 
-In melding notation we have $Y_{3} = (w_{1}, \ldots, w_{N})$, and $\psi_{2} = (\gamma, \theta_{0}, \theta_{1}, \alpha)$. The common quantities, $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are defined in previous and following sections respectively.
+### Cumulative fluid model (piecewise linear) $\pd_{3}$
 
-#### Third submodel: Longitudinal submodel
+We model the 24-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
+The cumulative data are derived from the raw fluid balance observations[^fluidobs].
+We denote the complete vector of observations by $\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})$ and times by $\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})$.
 
-The third submodel is the longitudinal submodel.
-Specifically, we collect $k = 1, \ldots, K_{i}$ longitudinal observations for each individual $x_{i, k}$ at times $\tau_{i, k}$, which are not necessarily the same as the observations times in the event submodel $t_{i, j}$.
-We stack each individuals observations and observation times in appropriate vectors $\boldsymbol{x}_{i} = (x_{1}, \ldots, x_{K_{i}})$ and $\boldsymbol{\tau}_{i} = (\tau_{1}, \ldots, \tau_{K_{i}})$.
-The model is
-\input{tex-input/surv-example/0040-submodel-three-model.tex}
-and we define $m_{i}(t) = \eta_{0, i} + \eta_{1, i}t$.
-Note that this form of $m_{i}(t)$ requires numerical integration to obtain the survival probability in Equation \eqref{eqn:submodel-two-hazard-general}.
+We assume a piecewise linear model, with intercept $\eta_{0, i}$, slope $\eta_{1, i}^{b}$ before the breakpoint at time $\kappa_{i}$, and slope $\eta_{1, i}^{a}$ after the breakpoint.
+\begin{equation}
+  x_{i, l} = \eta_{0, i} + \eta^{b}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} < \kappa_{i}\}} + \eta^{a}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} \geq \kappa_{i}\}} + \epsilon_{i, l} \\
+   \label{eqn:piecewise-fluid-model}
+\end{equation}
+Prior distributions and justification are available in Appendix \ref{priors-and-justification-for-the-fluid-submodel}.
 
-In our notation we denote data $Y_{3} = (\boldsymbol{x}_{1}, \ldots, \boldsymbol{x}_{N})$, and define the common quantity to be the parameters governing $m_{i}(t)$, i.e. $\phi_{2 \cap 3} = \boldsymbol{\eta} = (\eta_{0, 1}, \ldots, \eta_{0, N}, \eta_{1, 1}, \ldots, \eta_{1, N})$.
-The remaining parameters are absorbed into $\psi_{3} = (\mu_{\eta, 0}, \mu_{\eta, 1}, \sigma_{\eta, 0}, \sigma_{\eta, 1}, \sigma_{x})$.
+To align with our melding notation we define $m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}$, with $\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)$, $Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})$, and $\psi_{3} = (\{\eta_{0, i}\}_{i = 1}^{N}, \sigma^{2}_{x})$.
 
-#### Pooled prior:
+Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for individuals $i = 6, 13$, and $15$.
+There is relatively little noise in these data, which results in tight subposterior distributions for $\eta_{1, i}^{b}$ and $\eta_{1, i}^{a}$.
 
-- What are we going to do about it?
-- exchangeable individuals means the prior marginals are $\pd_{1}(\phi_{1 \cap 2})^{N}$ and $\pd_{3}(\phi_{2 \cap 3})^{N}$.
-- What on earth is $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$?
-    - particularly $\pd_{2}(\phi_{1 \cap 2})$, the prior distribution for the event times and indicators in the survival model?
-    - there is a suite a methodology for simulating realistic event times from a survival model i.e. @crowther_simulating_2013. Can we repurpose this to sample from the prior?
-        - Or, we can be lazy and use MCMC as $N$ is small.
-- Just do PoE and not worry about it.
+[^fluidobs]: Details about the derivation of these values from the raw fluid data are contained in Appendix \ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
 
-### Simulation details
-
-Because we have multiple models for the common quantities, the joint model obtained via the product of the independent submodels is not generative.
-As simulating from the prior predictive distribution is not possible, we need to choose how we generate synthetic data.
-We do so by first simulating a latent event indicator for each of $N = 36$ individuals, then joint simulating the relevant submodel parameters.
-
-Specifically, we first simulate a latent indicator variable $E_{i} \sim \text{Bern}(0.5)$ which is 1 if individual $i$ truly experiences the event of interest, and is 0 otherwise.
-If $E_{i} = 1$, the critical parameters and covariates $(\beta_{1, i}, w_{i}, \eta_{0, i}, \eta_{1, i})$ are simulated from a multivariate normal distribution with mean $(1.5, 5, 3, 1.5)$ and covariance $\Sigma = \boldsymbol{I} + \boldsymbol{C}$, where $\boldsymbol{I}$ is the identity matrix and $\boldsymbol{C}$ is a matrix with non-diagonal entries of $0.5$ and diagonal entries of $0$.
-Alternatively, if $E_{i} = 0$, all elements of $(\beta_{1, i}, w_{i}, \eta_{0, i}, \eta_{1, i})$ are independently simulated from standard normal distributions.
-
-Observation times $\boldsymbol{t}_{i}$ and $\boldsymbol{\tau}_{i}$ are uniformly distributed between 0 and 1, and the number of observations $J_{i}$ and $K_{i}$ are uniformly distributed on the integers between 2 and 8 inclusive.
-
-Remaining parameters and submodel data are simulated conditionally given the critical parameters.
-In submodel 1, the random intercept $\beta_{0, i}$ is simulated from $\text{N}(1, 0.1^2)$, and observations are then simulated such that $\boldsymbol{z}_{i} \sim \text{N}(\beta_{0, i} + \beta_{1, i}\boldsymbol{t}_{i}, 0.1\boldsymbol{I})$.
-We simulate observations in submodel 3 such that $\boldsymbol{x}_{i} \sim \text{N}(\eta_{0, i} + \eta_{1, i}\boldsymbol{\tau}_{i}, \boldsymbol{I})$.
-
-- need to introduce this now it contains both submodels
-Figure \ref{fig:both_long_submodels} displays the simulated data and fitted model where we set $\kappa = 0.2$, and depict the subposterior $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ via the blue uncertainty intervals.
-
-
-```{r both_long_submodels, fig.cap = "REWRITE"}
-knitr::include_graphics("plots/surv-example/both-longitudinal-submodels.pdf")
+```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 6, 13$, and $15$.'}
+knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pdf')
 ```
 
-### Estimation and results
+### Survival submodel $\pd_{2}$
 
-#### Estimation
+Individuals experience respiratory failure ($d_{i} = 1$) at time $T_{i}$, or are censored[^competerisks] $(d_{i} = 2, T_{i} = C_{i})$.
+We assume a Weibull hazard with shape parameter $\gamma$ for the event times.
+All individuals have $b = 1, \ldots, B$ baseline (time invariant) covariates $w_{i, b}$ with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, B})$(i.e. including an intercept term), and coefficient $\theta \in \mathbb{R}^{B + 1}$.
+The hazard is assumed to be influenced by these covariates and the rate of increase $\frac{\partial}{\partial t} m_{i}(t)$ in the cumulative fluid balance.
+The strength of the latter relationship is captured by $\alpha$.
+Hence, the hazard is
+\begin{gather}
+  h_{i}(T_{i}) = \gamma T_{i}^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\right\} \\
+  \frac{\partial}{\partial T_{i}} m_{i}(T_{i}) = \eta^{b}_{1, i}\boldsymbol{1}_{\{T_{i} < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{T_{i} \geq \kappa_{i}\}},
+\end{gather}
 
-The chained posterior is estimated using the parallel sampler.
-In addition, the stage two Metropolis-within-Gibbs sampler updates each individual in $\phi_{1 \cap 2}$ separately, also in a Metropolis-within-Gibbs manner.
-Such a proposal scheme is not obviously correct, so we show that it targets the desired chained posterior in Appendix BLAH.
-All submodels are implemented in `Stan`[^stanver]; The stage one subposteriors are sampled using `Stan`'s dynamic HMC algorithm, and we use the `log_prob` function from `rstan` to evaluate the survival submodel in stage two.
-All MCMC samplers consist of 5 chains of 5000 iterations each. The stage one samplers add an additional 1000 warmup iterations, which are discarded.
-Numerical diagnostics including the split-$\widehat{R}$, bulk and tail effective sample sizes from @vehtari_rank-normalization_2020 are provided in Appendix \ref{diagnostics-for-the-survival-example}, as well as visual diagnostics of parameters with the worst numerical diagnostics.
+The survival probability $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$ has an analytic form, which we derive in Appendix \ref{analytic-form-for-the-survival-probability}
+The likelihood for the submodel is
+\begin{equation}
+  \pd(T_{i}, d_{i} \mid \gamma, \boldsymbol{\theta}, \alpha, \kappa_{i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}, \boldsymbol{w}_{i}) = h_{i}(T_{i})^{d_{i}} S_{i}(T_{i}), \\
+\end{equation}
+where we suppress the dependence on the parameters on the right hand side for brevity.
 
-[^stanver]: Submodel 2 requires numerical integration, which is performed using the `Stan` function `integrate_1d`. Previous versions of `Stan` report numerical errors when performing this integration, so we require a `Stan`/`rstan` version of `2.26` or higher. At the time of writing this version of `rstan` is not on `CRAN`, but sources and binaries can be obtained from the `stan-dev` GitHub.
+Our priors for the submodel specific parameters are
+\begin{equation}
+\begin{gathered}
+  \gamma \sim \text{Gamma}(9.05, 8.72), \, \,
+  \alpha \sim \text{SkewNormal}(0, 0.5, -2), \\
+  \theta_{1} \sim \text{N}(\hat{E}, 0.5^2), \, \,
+  (\theta_{2}, \ldots, \theta_{B + 1}) \sim \text{SkewNormal}(0, 0.5, -1),
+  \label{eqn:surv-submodel-prior-def}
+\end{gathered}
+\end{equation}
+where $\hat{E}$ is the log of the crude event rate [@brilleman_bayesian_2020], and $\boldsymbol{I}_{p}$ is the $p \times p$ identity matrix.
+Appendix \ref{p2-prior-justification} contains our justification for these priors.
+We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i}, \eta_{1, i}^{b}$, and $\eta_{1, i}^{a}$.
 
-Of note is the relationship between our parallel two stage sampler and the two stage, importance sampling approach of @mauff_joint_2020.
-However the two stage estimation process of @mauff_joint_2020 is only applicable to joint models, i.e. they do not consider uncertainty arising from $\pd_{1}$.
-They also require, for each iteration of the importance sampler, estimates of the marginal likelihood of the survival data $\pd_{2}(\phi_{1 \cap 2})$.
+[^competerisks]: The relationship between this model and the competing risks approach is discussed in Appendix \ref{a-comparison-with-the-competing-risk-approach}
 
-#### Results
+### Estimation details
 
+We consider logarithmic pooling with $\lambda = (\frac{4}{5}, \frac{4}{5}, \frac{4}{5})$ (any smaller value of $\lambda$ results in a prior that is so uninformative that it causes computational problems) and with $\lambda = (1, 1, 1)$ (Product-of-Experts).
+Because the correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ is important, we do not consider linear pooling in this example.
+Logarithmic pooling requires estimates of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+Because these distributions are functions of discrete and continuous parameters standard kernel density estimation, as suggested by @goudie_joining_2019, is inappropriate.
+Instead we fit appropriate parametric mixture distributions using Monte Carlo samples from the priors.
+Samples from $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are obtained using the methodology of @crowther_simulating_2013 as implemented in `simsurv` @brilleman_simsurv_2021.
+We will also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$, which we obtain using the same methodology.
+Further details about these estimates are available in Appendix \ref{estimating-submodel-prior-marginal-distributions}.
 
-To understand the impact and importance of accounting for uncertainty in the event times and longitudinal submodel parameters, we compare the posterior distribution for the survival submodel parameters $\psi_{2}$ in four different settings:
+We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) \propto 1$ and $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
+The stage one subposteriors are sampled using `Stan`, using 5 chains with 1000 warm-up iterations and 5000 post warm-up iterations.
+These samples are used as proposal densities for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in stage two, and we use Stan to sample $\psi_{2}$ for every MH-within-Gibbs step, with 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
+We run 5 chains of 5000 samples for all stage two targets.
+Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper.
 
-1. The chained melded posterior, which accounts for the uncertainty in both $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
-1. Fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to their respective subposterior medians. Note that fixing $\phi_{1 \cap 2}$ to its posterior mean would be nonsensical, as it results in non-integer values for the $\delta_{i}$s.
-1. Fixing $\phi_{1 \cap 2}$ and melding over $\phi_{2 \cap 3}$, which accounts for only the uncertainty in the longitudinal submodel.
-1. Fixing $\phi_{2 \cap 3}$ and melding over $\phi_{1 \cap 2}$, which accounts for only the uncertainty in the event time submodel.
+[^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, disable all adaptive procedures, and manually rescale the target using the `multiplier` syntax to ensure the default (identity) mass matrix is suitable. This seems to work for this example.
 
-Figure \ref{fig:psi_2_comparison} displays the density estimates of the four aforementioned posterior distributions.
-We see that accounting for the uncertainty in the event time submodel is critical, as the two posterior distributions with fixed $\phi_{1 \cap 2}$ are overconfident and biased.
-In this straightforward example accounting for the uncertainty in $\phi_{2 \cap 3}$ appears seems less important.
-The difference between the chained melded posterior and the posterior with $\phi_{2 \cap 3}$ fixed is minimal, however a small difference between the posteriors is visible for $\alpha$.
+It is crucial for the convergence of our multi-stage sampler that the elements of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated individual-at-a-time.
+- The validity of such an updating scheme is not immediately apparent (insofar as whether or not it has the correct stationary distribution, nor that the cancellations of Eqs () and () still occur). Appendix \ref{one-at-a-time} argues that this scheme does target the correct distribution, and that the cancellations still occur.
 
-```{r psi_2_comparison, fig.cap = "Comparison of posterior distributions of $\\psi_{2}$ using chained melding, propagating the subposterior median of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ into stage two, and combinations thereof."}
-knitr::include_graphics("plots/surv-example/psi-2-method-comparison.pdf")
+### Results
+
+To assess the impact of the melding process we compare the posterior for $\psi_{2}$ obtained using the chained melding approach with the posterior obtained by fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+Specifically, we fix $\phi_{1 \cap 2}$ to the median value[^median] for each individual under $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, which we denote $\tilde{\phi}_{1 \cap 2}$.
+We fix $\phi_{2 \cap 3}$ to the subposterior mean of $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$ similarly denoted $\tilde{\phi}_{2 \cap 3}$.
+We also compare the melded posterior to the original marginal prior $\pd_{2}(\psi_{2})$, but we note that this comparison is difficult to interpret, as the melding process alters the prior for $\psi_{2}$.
+Figure \ref{fig:psi_2_comparision_plot} displays the aforementioned densities for $(\theta_{3}, \theta_{17}, \gamma, \alpha) \subset \psi_{2}$.
+For the baseline coefficients ($\theta_{3}, \theta_{17}$) the chained melding posterior differs only slightly in location from the posterior obtained using $\tilde{\phi}_{1 \cap 2}$ and $\tilde{\phi}_{2 \cap 3}$, with a small increase in uncertainty.
+It is interesting that the large uncertainty in $\phi_{1 \cap 2}$ seems
+A more pronounced change is visible in $\alpha$, where the melding process has added a notable degree of uncertainty and heavier left tail to the posterior.
+
+```{r psi_2_comparision_plot, fig.cap = 'Density estimates for a subset of $\\psi_{2}$. The original marginal prior $\\pd_{2}(\\psi_{2})$ is shown as the grey dotted line (note that this is not the marginal prior under the melded model). The figure also contains the subposteriors obtained from chained melding using PoE pooling (red, solid line) and logarithmic pooling (blue, solid line), as well as the posterior obtained using fixed values of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ (black, dashed line).'}
+knitr::include_graphics('plots/mimic-example/psi-2-method-comparison-small.pdf')
 ```
 
+To investigate which part of the melding process causes this change in the posterior of $\alpha$, we consider fixing only one of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to their respective point estimates.
+Figure \ref{fig:alpha_only_comparision_plot} displays the same distributions for $\alpha$ as \ref{fig:psi_2_comparision_plot}, and adds the posteriors obtained using one fixed value ($\tilde{\phi}_{1 \cap 2}$ or $\tilde{\phi}_{2 \cap 3}$) whilst melding the other non-fixed parameter.
+Evident for both choices of pooling is the importance of incorporating the uncertainty in $\phi_{1 \cap 2}$.
+This is expected given the comparatively large uncertainty and multimodal nature of $\phi_{1 \cap 2}$ compared to $\phi_{2 \cap 3}$ (see Figure \ref{fig:pf_fit_and_fluid_fit_plot}).
+We suspect that it is the multimodality in $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ that produces the shift in posterior mode of $\phi_{1 \cap 2}$, with the width of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ affecting the increase in uncertainty.
 
-```{r kaplan_meier_pc, fig.cap = "Survival probabilities for chained melded posterior and the posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ fixed. The black lines are the Kaplan-Meier curves obtained using 500 representative stage two samples of $\\phi_{1 \\cap 2}$ from the chained melded posterior. The intervals are 80\\% posterior intervals, and the central lines are posterior means of average survival probability. The quantities relevant to the chained melded posterior are coloured red, and the fixed posterior blue."}
-knitr::include_graphics("plots/surv-example/kaplan-meier-pc.pdf")
+```{r alpha_only_comparision_plot, fig.cap = 'Median (vertical line), 50\\%, 80\\%, 95\\%, and 99\\% credible intervals (least transparent to most transparent) for $\\alpha$. The marginal prior (grey, top row) and posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ fixed (black, bottom row) are as in Figure \\ref{fig:psi_2_comparision_plot}. For the chained melded posteriors (red and blue, rows 2 -- 7), the tick label on the y-axis denotes the type of pooling used, and which of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ are fixed.'}
+knitr::include_graphics('plots/mimic-example/psi-2-alpha-only-compare.pdf')
 ```
 
-- I don't full believe Figure \ref{fig:kaplan_meier_pc} just yet. There is something going wrong numerically in the posterior predictive computations that I haven't figured out just yet
+The change to the posterior distribution of $\gamma$ in Figure \ref{fig:psi_2_comparision_plot} appears small, however when we consider the corresponding estimates of the survival probability, this difference becomes much more apparent.
+Figure \ref{fig:kap_meier_pc_plot} displays the average survival probability under the melded posterior (using PoE pooling) of $\psi_{2}$ and $\phi_{2 \cap 3}$, and corresponding draws of $\phi_{1 \cap 2}$ converted into empirical survival probabilities using the Kaplan-Meier estimator.
+Also shown is the Kaplan-Meier estimate using $\tilde{\phi}_{1 \cap 2}$, and the average survival probability computed using the posterior of $\psi_{2}$ with fixed $\tilde{\phi}_{1 \cap 2}$ and $\tilde{\phi}_{2 \cap 3}$.
+The survival curves differ markedly, with the 95\% intervals overlapping only for small values of time.
+It is also interesting to see that $\tilde{\phi_{1 \cap 2}}$, despite being a reasonable point estimate of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, is not very likely under the melded posterior.
+Figure \ref{fig:kap_meier_pc_plot} also suggests that the Weibull hazard is insufficiently flexible for this example, however more complex hazards are beyond the scope of this paper[^hazards].
+
+```{r kap_meier_pc_plot, fig.cap = 'Empirical survival curves and average survival probabilities at time $t$. The black lines are draws of $\\phi_{1 \\cap 2}$ from the melded posterior using PoE pooling, converted into empirical survival curves via the Kaplan-Meier estimator. The red line and interval (posterior mean and 95\\% credible interval) denote the model-based average survival probability obtained from the melded posterior using PoE pooling computed from the values of $\\psi_{2}$ and $\\phi_{2 \\cap 3}$. The blue dashed line is the Kaplan-Meier estimate obtained from the subposterior median $\\tilde{\\phi}_{1 \\cap 2}$, and the blue solid line and interval are the corresponding model based estimate obtained using $\\psi_{2}$ and $\\tilde{\\phi}_{2 \\cap 3}$.'}
+knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
+```
+
+[^median]: We choose the median because the mean value of $d_{i}$ is nonsensical. For each individual the samples of $\{(T_{i}, d_{i})\}_{i = 1}^{N}$ sorted by $T_{i}$, and the $\lfloor \frac{N}{2}\rfloor$\textsuperscript{th} tuple $(\tilde{T}_{i}, \tilde{d}_{i})$ is chosen as the median.
+
+[^hazards]: More complex hazards (e.g. the default M-spline hazard in @brilleman_bayesian_2020) require numerically integrating the hazard to obtain the survival probabilities. Such integrations are not trivial, particularly when the hazard is discontinuous, which ours is at the breakpoint.
 
 # Discussion
 
@@ -652,6 +744,11 @@ _some discussion of seq/para_
   By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here: we can use the output from one model to target some larger model, without needing to reimplement said model in a different language or framework.
   It is also an example of estimating an intricate model without ever simultaneously evaluating all components of the model, a useful property for large, complicated models.
 
+  Of note is the relationship between our parallel two stage sampler and the two stage, importance sampling approach of @mauff_joint_2020.
+However the two stage estimation process of @mauff_joint_2020 is only applicable to joint models, i.e. they do not consider uncertainty arising from $\pd_{1}$.
+They also require, for each iteration of the importance sampler, estimates of the marginal likelihood of the survival data $\pd_{2}(\phi_{1 \cap 2})$.
+
+
 ## Disadvantages
 
 - Submodels may conflict with each other
@@ -663,44 +760,38 @@ _some discussion of seq/para_
 
 - Hopefully I'll address this in the next chapter
 
-<!-- -------------------- END OF MAIN BODY OF DOCUMENT -------------------- -->
-\newpage
-
-<!-- The {-} tag here suppresses the section numbering. -->
-# Bibliography {-}
-
 <!-- This makes pandoc-citeproc put the references before the end of document. -->
-<div id="refs"></div>
-
-\newpage
+<!-- <div id="refs"></div> -->
 
 <!-- Now switch to alphabetical numbering for the appendix, and reset the counter. -->
-\renewcommand{\thesection}{\Alph{section}}
-<!-- \setcounter{section}{0} -->
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\setcounter{subsection}{0}
 
-# General case of the chained melded model and pooled prior
+# Appendix {-}
 
-## Chained melded model
+## General case of the chained melded model and pooled prior
+
+### Chained melded model
 
 Denote $\boldsymbol{\phi} = (\phi_{1 \cap 2}, \ldots, \phi_{\Nm - 1 \cap \Nm}), \boldsymbol{\psi} = (\psi_{1}, \ldots, \psi_{\Nm})$, and $\boldsymbol{Y} = (Y_{1}, \ldots, Y_{\Nm})$.
 The $\Nm$ model chained melded model is
 \input{tex-input/multiple-phi/0011-melded-model-general.tex}
 
-## Pooled prior
+### Pooled prior
 
-#### Linear pooling
+##### Linear pooling
 
 The general $\Nm$ model linear pooled prior is
 \input{tex-input/multiple-phi/0080-M-model-linear-pooling.tex}
 where, for $2 \leq \modelindex \leq \Nm - 2$,
 \input{tex-input/multiple-phi/0081-M-model-linear-pooling-marg.tex}
 
-#### Logarithmic pooling
+##### Logarithmic pooling
 
 The general $\Nm$ model logarithmic pooled prior is
 \input{tex-input/multiple-phi/0090-M-model-logarithmic-pooling.tex}
 
-# Log pooling Gaussian densities
+## Log pooling Gaussian densities
 
 We can exactly compute $\pd_{\text{pool}}$ when logarithmically pooling Gaussian densities.
 Noting that, in the one dimensional case, $\text{N}(\phi; \mu, \sigma^2)^{\lambda_{\modelindex}} = \text{N}(\phi; \mu, \frac{\sigma^2}{\lambda_{\modelindex}})$, we use the results of @bromiley_products_2003 and write
@@ -711,7 +802,7 @@ The left hand column of Figure \ref{fig:pooled_densities_plot} illustrates this 
 When $\lambda_{1} = \lambda_{3} = 0 \implies \lambda_{2} = 1$, all correlation in $\pd_{2}$ is present in $\pd_{\text{pool}}$.
 The correlation decreases for increasing values of $\lambda_{1}$ until $\lambda_{1} = \lambda_{3} = 0.5 \implies \lambda_{2} = 0$, where no correlation persists.
 
-# Coherency of the chained melded model
+## Coherency of the chained melded model
 
 - _I think a few of these results are wrong. Maybe this should just be a paragraph?_
     - 3 ii) is definitely wrong.
@@ -732,7 +823,7 @@ We will show that the form proposed in Equation \eqref{eqn:melded-model-full} sa
         - say we had 9 models, and the first three formed \pd_{1}, the second three formed \pd_{2} and the remaining $\pd_{3}$. Would we apply melding here twice? No, we would think about this as chained melding with M = 9 models.
     -->
 
-## Applying Markov melding twice
+### Applying Markov melding twice
 
 The general thing I want to be able to say is
 
@@ -759,13 +850,13 @@ It will be convenient to consider the following, expanded form of Equation \eqre
 and the equivalent expression for $\pd_{\text{meld}}^{1(23)}$, which we derive by careful inspection of the superscripts
 \input{tex-input/noncommutativity/0018-symmetric-expanded-double-melded-model.tex}
 
-## Does melding twice produce the same model as the chained melded model?
+### Does melding twice produce the same model as the chained melded model?
 
 For Equations \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model} to be equal to the model defined in Equation \eqref{eqn:melded-model-full}, the following equalities must hold:
 \input{tex-input/noncommutativity/0040-coinciding-equalities.tex}
 It is clear from Equation \eqref{eqn:coinciding-equalities-one} that one necessary condition is for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to be _a priori_ independent in $\pd_{2}$.
 
-### Melded marginal equality
+#### Melded marginal equality
 
 By inspecting Equation \eqref{eqn:coinciding-equalities-one} we note the additional necessary condition that $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
 To see when this is true, consider the following derivation
@@ -774,7 +865,7 @@ Hence, for $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$ 
 This is _dictatorial pooling_, where one submodel's prior marginal is used as a prior in the melded model.
 An identical argument can be used to show that $\pd_{\text{meld}}^{23}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ requires the equivalent choice of dictatorial pooling for $\phi_{2 \cap 3}$, i.e. $\pd_{\text{pool}}^{23}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
 
-### Pooling equality
+#### Pooling equality
 
 Without any loss of generality, we examine only the $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ equality in Equation \eqref{eqn:coinciding-equalities-two} for further necessary conditions.
 There are three decisions to be made about the method of pooling used on the right hand side (RHS) of this equality:
@@ -818,7 +909,7 @@ There are three decisions to be made about the method of pooling used on the rig
 
 So in general, applying the original melding operator twice does not result in the same model as \eqref{eqn:melded-model-full}, except in cases where $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are a priori independent in $\pd_{2}$ and specific forms of dictatorial pooling are used.
 
-## Is the original operator commutative?
+### Is the original operator commutative?
 
 Commutativity of the original operator would imply that $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$.
 By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model}, we find that the original melding operator is only commutative if
@@ -834,9 +925,9 @@ We have already shown that this is only true when using certain forms of dictato
 Hence, the original operator is commutative under in the same settings in which applying the original melding operator twice results in the chained melded model.
 
 
-# Diagnostics for the owls example
+## Diagnostics for the owls example
 
-## Stage one diagnostics
+### Stage one diagnostics
 
 \input{tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex}
 
@@ -848,7 +939,7 @@ knitr::include_graphics("plots/owls-example/stage-one-diagnostics-capture-recapt
 knitr::include_graphics("plots/owls-example/stage-one-diagnostics-fecundity.png")
 ```
 
-## Stage two diagnostics
+### Stage two diagnostics
 
 \input{tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex}
 
@@ -858,16 +949,16 @@ knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
 
 \newpage
 
-# Diagnostics for the Survival example
+## Diagnostics for the Survival example
 
-## Stage one diagnostics
+### Stage one diagnostics
 
-### Numerical diagnostics
+#### Numerical diagnostics
 
 \input{tex-input/surv-example/0080-submodel-one-numeric-diags.tex}
 \input{tex-input/surv-example/0081-submodel-three-numeric-diags.tex}
 
-### Visual diagnostics
+#### Visual diagnostics
 
 ```{r stage_one_submodel_one_diag, fig.cap = "Stage one trace and rank plots for the parameters in both $\\psi_{1}$ and $\\phi_{1 \\cap 2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
 knitr::include_graphics("plots/surv-example/stage-one-submodel-one-diags.png")
@@ -877,15 +968,15 @@ knitr::include_graphics("plots/surv-example/stage-one-submodel-one-diags.png")
 knitr::include_graphics("plots/surv-example/stage-one-submodel-three-diags.png")
 ```
 
-## Stage two diagnostics
+### Stage two diagnostics
 
-### Numerical diagnostics
+#### Numerical diagnostics
 
 \input{tex-input/surv-example/0090-stage-two-phi-12-diag.tex}
 \input{tex-input/surv-example/0091-stage-two-phi-23-diag.tex}
 \input{tex-input/surv-example/0092-stage-two-psi-2-diag.tex}
 
-### Visual diagnostics
+#### Visual diagnostics
 
 ```{r surv_ex_stage_two_diag_phi_12, fig.cap = "Stage two trace and rank plots for the parameters in $\\boldsymbol{\\phi}_{1 \\cap 2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
 knitr::include_graphics("plots/surv-example/stage-two-phi-12-diags.png")
@@ -898,3 +989,510 @@ knitr::include_graphics("plots/surv-example/stage-two-phi-23-diags.png")
 ```{r surv_ex_stage_two_diag_psi_2, fig.cap = "Stage two trace and rank plots for the parameters in $\\boldsymbol{\\psi}_{2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
 knitr::include_graphics("plots/surv-example/stage-two-psi-2-diags.png")
 ```
+
+## Calculating the cumulative fluid balance from the raw fluid data
+
+In the raw fluid data each patient has $\tilde{l} = 1, \ldots, \tilde{L}_{i}$ observations.
+Each observation $\tilde{x}_{i, \tilde{l}}$ is typically a small fluid administration (e.g. an injection of some medicine in saline solution), or a fluid discharge (almost always urine excretion).
+The observations have corresponding observation times $\tilde{u}_{i, \tilde{l}}$, with $\tilde{\boldsymbol{u}}_{i} = \{\tilde{u}_{i, 1}, \ldots, \tilde{u}_{i, \tilde{L}_{i}}\}$ and $\tilde{\boldsymbol{x}}_{i} = \{\tilde{x}_{i, 1}, \ldots, \tilde{x}_{i, \tilde{L}_{i}}\}$.
+We code the fluid administrations/inputs as positive values, and the excretions/outputs as negative values.
+Each patient has an enormous number of raw fluid observations $(L_{i} \ll \tilde{L}_{i})$ and it is computationally infeasible to consider them all at once.
+Because the time scale of interest is typically a number of days, we aggregate the raw fluid observations into 24-hourly changes in fluid balance.
+From these 24-hourly changes we calculate the cumulative fluid balance.
+
+Mathematically, we define an ordered integer-vector of boundary values
+\begin{equation}
+  \boldsymbol{b}_{i} = (\lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor,  \lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor + 1, \ldots, \lceil \max\{\tilde{\boldsymbol{u}}_{i}\} \rceil),
+\end{equation}
+noting that $\dim(\boldsymbol{b}_{i}) = L_{i} + 1$.
+The raw fluid observations are then divided up into $L_{i}$ subsets of $\{\tilde{\boldsymbol{x}}_{i}, \tilde{\boldsymbol{u}}_{i}\}$ based on which boundary values the observation falls in between:
+\begin{equation}
+  B_{i, l} = \left\{
+    \{\tilde{\boldsymbol{x}}_{i}, \tilde{\boldsymbol{u}}_{i}\}
+    \mid
+    b_{i, l} \leq \tilde{\boldsymbol{u}}_{i} < b_{i, l + 1}
+  \right\},
+\end{equation}
+for $l = 1, \ldots, L_{i}$.
+Denote $N^{B}_{i, l} = \lvert B_{i, l} \rvert \mathop{/} 2$ (dividing by two as $B_{i, l}$ contains both the observation and the observation time).
+The $l$\textsuperscript{th} 24-hourly fluid change $\Delta_{i, l}$ and corresponding observation time $u_{i, l}$ can then be computed as
+\begin{equation}
+  \Delta_{i, l} = \sum_{s = 1}^{N^{B}_{i, l}} \tilde{x}_{i, s}, \,\, \text{s.t.} \,\, \tilde{x}_{i, s} \in B_{i, l}, \qquad
+  u_{i, l} = \frac{1}{N^{B}_{i, l}} \sum_{s = 1}^{N^{B}_{i, l}} \tilde{u}_{i, s}, \,\, \text{s.t.} \,\, \tilde{u}_{i, s} \in B_{i, l}.
+\end{equation}
+Finally, the 24-hourly cumulative fluid balance data are computed by $x_{i, l} = \sum_{s = 1}^{l} \Delta_{i, s}$, and we assume they too are observed at $u_{i, l}$.
+
+## Priors and justification for the fluid submodel
+
+We assume a weakly informative prior for the error term
+\begin{equation}
+  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x}),  \,\, \sigma_{x} \sim \text{N}_{+}(0, 5^2).
+\end{equation}
+
+The parameters for the gamma prior for $\eta^{b}_{1, i}$ and $\eta^{a}_{1, i}$ are obtained by assuming that the 2.5-, 50-, and 97.5- percentiles are at 0.5, 5, and 20 [@belgorodski_rriskdistributions_2017].
+A slope of $0.5$ (i.e. the change in cumulative fluid balance per day) is unlikely but possible due to missing data; a slope of $20$ is also unlikely but possible as extremely unwell patients can have very high respiratory rates and thus require large fluid inputs.
+Thus
+\begin{equation}
+  \eta^{b}_{1, i} \sim \text{Gamma}(1.53, 0.24), \,\, \eta^{a}_{1, i} \sim \text{Gamma}(1.53, 0.24).
+\end{equation}
+
+The prior for the breakpoint $\kappa_{i}$ is derived as follows.
+Define $u_{i, (1)} = \min(\boldsymbol{u}_{i})$ and $u_{i, (n)} = \max(\boldsymbol{u}_{i})$, with $r_{i} = u_{i, (n)} - u_{i, (1)}$.
+We reparameterise the breakpoint by noting that $\kappa_{i} = \kappa^{\text{raw}}_{i}r_{i} + u_{i, (1)}$, where $\kappa^{\text{raw}} \in [0, 1]$.
+We then set $\kappa^{\text{raw}}_{i} \sim \text{Beta}(5, 5)$ to regularise the breakpoint towards the middle of each individual's stay in ICU.
+This is crucial to ensure the submodel is identifiable when there is little evidence of a breakpoint in the data.
+Note that this results in the following analytic expression for $\pd_{2}(\phi_{2 \cap 3})$
+\begin{equation}
+  \pd_{3}(\phi_{2 \cap 3}) = \prod_{i = 1}^{N} \pd(\eta^{b}_{1, i}) \pd(\eta^{a}_{1, i}) \pd(\kappa_{i}), \,\, \text{with} \,\,\,
+  \pd(\kappa_{i}) = \pd_{\kappa^{\text{raw}}_{i}}\left(\frac{\kappa_{i} - u_{i, (1)}}{r_{i}}\right) \frac{1}{r_{i}}
+\end{equation}
+by the change of variables formula.
+
+Specifying a prior for $\eta_{0, i}$, the cumulative fluid balance at $\kappa_{i}$, is difficult because it depends on the length of stay.
+Instead, we reparameterise so that $\eta_{0, i}$ is a function of the y-intercept $\eta_{0, i}^{\text{raw}}$.
+\begin{equation}
+  \eta_{0, i} =
+    (\eta_{0, i}^{\text{raw}} + \eta^{b}_{1, i} \kappa_{i}) \boldsymbol{1}_{\{0 < \kappa_{i}\}} +
+    (\eta_{0, i}^{\text{raw}} + \eta^{a}_{1, i} \kappa_{i}) \boldsymbol{1}_{\{0 \geq \kappa_{i}\}}
+\end{equation}
+We place a $\text{LogNormal}(1.61, 0.47^2)$ prior on $\eta_{0, i}^{\text{raw}}$.
+These values are obtained assuming that, a priori, the $2.5\%, 50\%$, and $99\%$ percentiles of $\eta_{0, i}^{\text{raw}}$ are $0.5, 5$, and $15$ respectively [@belgorodski_rriskdistributions_2017].
+This is a broad prior that reflects the numerous possible admission routes into the ICU.
+We expect those admitted from the wards to have little pre-admission fluid data.
+Those admitted from the operating theatre occasionally have their in-theatre fluid input recorded after admission into the ICU, with no easy way to distinguish these records in the data.
+
+## A comparison with the competing risk approach
+
+An alternative approach is to consider a competing risks model for $\pd_{2}$, where each individual experiences either the respiratory failure event or the competing, non-independent event of death or discharge [see Chapter 8 of @kalbfleisch_statistical_2002 for an introduction].
+However, issues arise due to the difference in supports between $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2})$; aligning the supports requires conditioning on $C_{i}$ (the length of stay) in $\pd_{2}$.
+Conditional on $C_{i}$, the death or discharge event can only happen at a known, fixed time, which violates the competing risk assumption (that each event can occur at any moment in time the individual is exposed to both risks).
+In light of this, we feel that it is more correct to consider the time of death or discharge as a censoring time.
+Standard survival analyses arguments show us that these approaches are equivalent subject to certain assumptions.
+However, one key these arguments make is that the survival times and indicators $(T_{i}, d_{i})$ must be known/fixed quantities.
+This assumption is not valid in our example, and below we show why this invalidates the usual equivalence between the competing risk and censoring approaches.
+
+Suppose that each individual $i$ experiences one of $d_{i} = 1, 2$ competing risks.
+We observe $\{T_{i}, d_{i}\}$, where $d_{i} = 1$ indicates that individual $i$ experienced respiratory failure at time $T_{i}$.
+If $d_{i} = 2$ then individual $i$ expired or was discharged at time $T_{i}$, noting that this event must occur at time $C_{i}$.
+Each cause-specific hazard has parameters $\theta_{d_{i}}$ and we denote the hazard $h_{i, d_{i}}(t \mid \theta_{d_{i}}, \boldsymbol{w}_{i})$.
+Denote $\boldsymbol{\theta} = (\theta_{1}, \theta_{2})$ and assume only one such event can occur at a time so that
+\begin{gather}
+  h_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) = \sum_{d_{i} \in \{1, 2\}} h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}), \\
+  \begin{aligned}
+  H_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
+    &= \int_{0}^{T_{i}} \sum_{d_{i} \in \{1, 2\}} h_{i, d_{i}}(u \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \text{d}u \\
+    &= \sum_{d_{i} \in \{1, 2\}} \int_{0}^{T_{i}} h_{i, d_{i}}(u \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \text{d}u \\
+    &= \sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}),
+  \end{aligned} \\
+  S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
+    = \exp\left\{-H_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})\right\}
+    = \exp\left\{-\sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i})\right\}.
+\end{gather}
+As per Equation (8.8) in @kalbfleisch_statistical_2002 the likelihood function for a specific individual is
+\begin{align*}
+  \pd(T_{i}, d_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
+    &= h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \\
+    &= h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \exp\left\{-\sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i})\right\}.
+\end{align*}
+
+It is now necessary to assume
+
+- that there are no shared elements in $\theta_{1}$ and $\theta_{2}$ and they are a priori independent,
+- that $\theta_{2}$ is not of interest, i.e. we wish to integrate/marginalise $\theta_{2}$ out of the likelihood.
+
+The model (given covariates $\boldsymbol{w}_{i}$) is
+
+\begin{equation}
+  \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) =
+    \pd(T_{i}, d_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})\pd(\boldsymbol{\theta}).
+\end{equation}
+
+We are interested in the following marginal
+
+\begin{equation}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
+  = \int \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) \text{d}\theta_{2}
+  = \int h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \pd(\theta_{2}) \text{d}\theta_{2}.
+\end{equation}
+If $d_{i} = 1$
+\begin{equation}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
+  = h_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2},
+  \label{eqn:competing-risks-deriv-one}
+\end{equation}
+and if $d_{i} = 2$
+\begin{equation}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
+  = S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int h_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2}.
+  \label{eqn:competing-risks-deriv-two}
+\end{equation}
+Standard survival analyses consider $T_{i}$ as data.
+Under this assumption the integrals in \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} are constants that do not depend on the parameters of interest, and can be ignored when maximising the likelihood for $\theta_{1}$.
+The remaining components of \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} comprise the likelihood that would be obtained by considering all non $d_{i} = 1$ events as censored.
+However, in our case $T_{i}$ is a parameter, and hence the integrals are non-ignorable functions of $T_{i}$.
+This implies that the censoring model and the competing risks model are not equivalent, which we see in practice when comparing the posterior distributions for $\theta_{1}$ under both models.
+
+## Analytic form for the survival probability
+
+The hazard at arbitrary time $t$ is
+
+\begin{gather*}
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp\left\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial t} m_{i}(t)\right\} \\
+  m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t < k_{i}\}} + \eta^{a}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t \geq k_{i}\}} \\
+  \frac{\partial}{\partial t} m_{i}(t) = \eta^{b}_{1, i}\boldsymbol{1}_{\{t < k_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{t \geq k_{i}\}}.
+\end{gather*}
+
+Then, for $t > k_{i}$, the cumulative hazard is
+
+\begin{align*}
+  \int_{0}^{t} h_{i}(u) \text{d}u
+  &= \int_{0}^{t}
+    \gamma u^{\gamma - 1}
+    \exp\left\{
+      \boldsymbol{x}_{i}\theta +
+      \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < k_{i}\}} +
+      \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq k_{i}\}}
+    \right\}
+    \text{d}u \\
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+    \int_{0}^{t}
+      u^{\gamma - 1}
+      \exp\left\{
+        \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < k_{i}\}} +
+        \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq k_{i}\}}
+      \right\}
+    \text{d}u \\
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \int_{0}^{k_{i}}
+        u^{\gamma - 1}
+        \exp\left\{
+          \alpha \eta^{b}_{1, i}
+        \right\}
+      \text{d}u
+      +
+      \int_{k_{i}}^{t}
+        u^{\gamma - 1}
+        \exp\left\{
+          \alpha \eta^{a}_{1, i}
+        \right\}
+      \text{d}u
+    \right] \\
+  &= \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \exp\left\{
+        \alpha \eta^{b}_{1, i}
+      \right\}
+      k_{i}^{\gamma}
+      +
+      \exp\left\{
+        \alpha \eta^{a}_{1, i}
+      \right\}
+      (t^{\gamma} - k_{i}^{\gamma})
+    \right]
+\end{align*}
+
+and for $t < k_{i}$
+
+\begin{align*}
+  \int_{0}^{t} h_{i}(u) \text{d}u
+  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \int_{0}^{t}
+        u^{\gamma - 1}
+        \exp\left\{
+          \alpha \eta^{b}_{1, i}
+        \right\}
+      \text{d}u
+    \right] \\
+  &= \exp\{\boldsymbol{x}_{i}\theta\}
+    \left[
+      \exp\left\{
+        \alpha \eta^{b}_{1, i}
+      \right\}
+      t_{i}^{\gamma}
+    \right] \\
+  &= t_{i}^{\gamma} \exp\{\boldsymbol{x}_{i}\theta + \alpha \eta^{b}_{1, i}\}.
+\end{align*}
+The survival probabilities are defined with appropriately for $t > k_{i}$ and $t < k_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
+
+## Survival submodel prior justification {#p2-prior-justification}
+
+Our prior for $(\gamma, \alpha, \boldsymbol{\theta})$ must result in a plausible distribution for $\pd_{2, i}(T_{i} \mid d_{i} = 1)$, and a reasonable balance between $d_{i} = 1$ and $d_{i} = 0$ events.
+The primary concern is unintentionally specifying a prior for which the bulk of $\pd_{2, i}(T_{i} \mid d_{i} = 1)$ is very close to zero.
+In addition, certain extreme configurations of $(\gamma, \alpha, \boldsymbol{\theta})$ cause issues for the methodology of @crowther_simulating_2013, particularly the numerical root finding and numerical integration steps.
+We would like to rule out such extreme configurations a priori.
+Ideally we would encode this information a joint prior for $(\gamma, \alpha, \boldsymbol{\theta})$, but specifying the appropriate correlation structure for these parameters is prohibitively challenging.
+Instead we focus on specifying appropriate marginals for each of $\gamma, \alpha$, and $\boldsymbol{\theta}$, and create visual prior predictive checks [@gabry_visualization_2019; @gelman_bayesian_2020] to ensure the induced prior for $(T_{i}, d_{i})$ is acceptable.
+
+Before justifying our chosen marginal priors is, we note that the $\exp\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\}$ term implies that the priors for $\theta$ and $\alpha$ are on the log-scale.
+Hence the magnitude of these parameters must be small, otherwise all event times would be very near zero or at infinity.
+The non-symmetric effect of the transformation from the log scale also implies that symmetric priors are not obviously sensible.
+From these observations we deduce that $\theta$ and $\alpha$ must not be too large in magnitude, however if they are negative then they can be slightly larger.
+Hence, we specify the skew-normal priors detailed in Equation \eqref{eqn:surv-submodel-prior-def}, noting that the skewness parameter for $\alpha$ is smaller, because $\frac{\partial}{\partial T_{i}} m_{i}(T_{i})$ is strictly positive and typically between 0.5 and 20, whilst $\boldsymbol{w}_{i}$ is standardised to be approximately standard normal.
+Lastly, if $\gamma$ is too far away from $1$ (in either direction), then the event times are very small either because the hazard increases rapidly ($\gamma \gg 1$), or because almost all of the cumulative hazard is in the neighbourhood of 0 ($\gamma \ll 1$).
+We specify a gamma distribution for $\gamma$ with the $1$\textsuperscript{th}-, $50$\textsuperscript{th}-, and $99$\textsuperscript{th}-percentiles of $\pd_{2}(\gamma)$ are at $0.2, 1$, and $2$, allowing for a wide range of hazard shapes, but removing many of the extremes.
+
+
+## Estimating submodel prior marginal distributions
+
+### P/F submodel
+
+We approximate $\pd_{1}(\phi_{1 \cap 2})$ using a mixture of discrete and continuous distributions, with a discrete spike at $C_{i}$ for the censored events and a beta distribution for the (rescaled) event times.
+Monte Carlo samples of $T_{i}$ and $d_{i}$ are obtained from $\pd_{1, i}(T_{i}, d_{i})$ by drawing $\beta_{0, i}$ and $\boldsymbol{\zeta}_{i}$ from their respective prior distributions and then solving \eqref{eqn:event_time_model_def}.
+Denoting the estimated mixture weight $\widehat{\pi}_{i} \in [0, 1]$, the density estimate is
+\begin{equation}
+  \widehat{\pd}_{1, i}(T_{i}, d_{i}) =
+    \widehat{\pi}_{i} \, \text{Beta}\left(\frac{T_{i}}{C_{i}}; \widehat{a}, \widehat{b}\right) \frac{1}{C_{i}} \boldsymbol{1}_{\{d_{i} = 1\}} +
+    (1 - \widehat{\pi}_{i}) \boldsymbol{1}_{\{d_{i} = 2, T_{i} = C_{i}\}}
+  \label{eqn:pf-event-time-prior-dist}
+\end{equation}
+where $\widehat{\pi}_{i}, \widehat{a}_{i}$ and $\widehat{b}_{i}$ are maximum likelihood estimates obtained using the prior samples.
+Examples of $\widehat{\pd}_{1, i}(T_{i}, d_{i})$ for a subset of individuals are displayed in Figure \ref{fig:pf_prior_fit}.
+
+```{r pf_prior_fit, fig.cap = "Fitted distribution (curve) and Monte Carlo samples drawn from $\\pd_{1}(\\phi_{1 \\cap 2})$ (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar and point) has been set to $1 - \\widehat{\\pi}_{i}$"}
+knitr::include_graphics("plots/mimic-example/pf-prior-plot-small.pdf")
+```
+
+### Survival submodel
+
+Our estimate of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ relies on the fact that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \prod_{i = 1}^{N}\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$.
+As such we estimate $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ for each individual and take the product of these estimates.
+Drawing samples from $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ is challenging: we use the approach proposed by @crowther_simulating_2013 as implemented in @brilleman_simsurv_2021.
+Inspecting the samples reveals correlation between $(T_{i}, d_{i})$ and $(\kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ that we would like to capture in our estimate.
+To do so, we fit a mixture of multivariate normal distributions to transformations of the continuous parameters with support on $\mathbb{R}$,
+\begin{equation}
+  \tilde{T}_{i} = \text{Logit}\left(\frac{T_{i}}{C_{i}}\right), \quad
+  \tilde{\kappa}_{i} = \text{Logit}\left(\frac{\kappa_{i} - u_{i, (1)}}{u_{i, (n)} - u_{i, (1)}}\right), \quad
+  \tilde{\eta}^{b}_{1, i} = \log(\eta^{b}_{1, i}), \quad
+  \tilde{\eta}^{a}_{1, i} = \log(\eta^{a}_{1, i}).
+\end{equation}
+The resulting density estimate, with estimated mixture weight $\widehat{\theta}_{i} \in [0, 1]$, is
+\begin{align*}
+  \widehat{\pd}_{2}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i}) =
+    \Big[&(\widehat{\theta}_{i})
+    \text{N}\left(\left[\tilde{T}_{i}, \tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i} \right) \
+    \boldsymbol{1}_{\{d_{i} = 1\}}
+    + \\
+    &(1 - \widehat{\theta}_{i})
+    \text{N}\left(\left[\tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{0, i}, \widehat{\Sigma}_{0, i} \right) \
+    \boldsymbol{1}_{\{d_{i} = 0, T_{i} = C_{i}\}} \Big]
+    J_{i},
+\end{align*}
+where $\widehat{\theta}_{i}, \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i}, \widehat{\mu}_{0, i}$, and $\widehat{\Sigma}_{0, i}$ are maximum likelihood estimates, and the Jacobian correction $J_{i}$ is
+\begin{equation}
+  J_{i} = \left[
+    \left(
+      \frac{1}{C_{i} - T_{i}} +
+      \frac{1}{T_{i}}
+    \right)^{d_{i}}
+    \left(
+      \frac{1}{u_{i, (n)} - \kappa_{i}} +
+      \frac{1}{\kappa_{i} - u_{i, (1)}}
+    \right)
+    \left(
+      \frac{1}{\eta^{b}_{1, i}}
+    \right)
+    \left(
+      \frac{1}{\eta^{a}_{1, i}}
+    \right)
+  \right].
+\end{equation}
+
+We asses the fit of this estimate by drawing samples from $\widehat{\pd}_{2, i}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ and comparing them to the Monte Carlo samples drawn using `simsurv`.
+Our visual assessment is displayed in Figure \ref{fig:surv_prior_plot_fit} for individual $i = 19$.
+The normal approximation seems to fit the samples well, with the shape of $\pd_{2, i}(T_{i} \mid d_{i} = 1)$ closely matching that of the Monte Carlo samples, and with a similar mix of $d_{i} = 0$ and $d_{i} = 1$ samples.
+
+We also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$ for experiments discussed in Section \ref{results}.
+This is obtained using the samples generated under the survival submodel prior and the methodology of Section \ref{pf-submodel}.
+The raw samples and fit are displayed in Figure \ref{fig:surv_prior_phi_12_marginal_plot_fit}.
+
+```{r surv_prior_phi_12_marginal_plot_fit, fig.cap = "Fitted distribution (curve) and Monte Carlo samples drawn from $\\pd_{2}(\\phi_{1 \\cap 2})$ (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar and point) has been set to $1 - \\widehat{\\theta}_{i}$"}
+knitr::include_graphics("plots/mimic-example/submodel-2-phi-12-marginal-fit-plot-small.pdf")
+```
+
+```{r surv_prior_plot_fit, fig.cap = 'Monte Carlo (MC) samples from $\\pd_{2, i}(\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3})$ obtained using \\texttt{simsurv} and samples from the fitted normal approximation (NA) for $i = 19$. The panels on the off diagonal elements contain a 2D kernel density estimate for $d_{i} = 1$ and the samples for $d_{i} = 0$. Diagonal and lower-triangular panels are on their original scales, whilst the upper-triangular panels are on the log scale.'}
+knitr::include_graphics("plots/mimic-example/p3-prior-pairs/pairs-19.png")
+```
+
+## Cohort selection criteria
+
+This appendix details the cohort selection criteria and our rationale for them.
+In the text we speak of the $i$\textsuperscript{th} individual.
+This is because in our final data set (the data that results from applying the following criteria) we are dealing with unique individuals, however some individuals in MIMIC have multiple ICU stays.
+In this appendix $i$ represents a single stay in ICU.
+
+1. Each ICU stay must have at least 12 PF observations ($z_{i, j}$ with $J_{i} \geq 12$), with the first 6 being greater than 350.
+    - This is to ensure we have enough data to fit a B-spline with 7 internal knots. The restriction on the first 6 observations is to avoid selecting those who have already started to experience respiratory failure prior to ICU admission.
+1. The time between any 2 consecutive PF observations cannot exceed 2 days.
+    - This is because some data are aggregated into a single ICU stay when they perhaps should be two or more stays.
+1. The fluid observations must be after ICU admission (some observations are entered as 'Pre-admission intake') and cannot be associated with fluid administered in the operating room (OR). Note that this does not mean all OR fluid administrations are removed, as some are mis-labelled.
+1. There must be sufficient temporal overlap between the fluid data and the PF data. Specifically,
+  \begin{equation}
+    \frac{
+      \max\left\{0, \min\left[\max(\boldsymbol{t_{i}}), \max(\boldsymbol{u_{i}})\right] - \max\left[\min(\boldsymbol{t_{i}}), \min(\boldsymbol{u_{i}})\right]\right\}
+    } {
+      \max\left[\max(\boldsymbol{t_{i}}), \max(\boldsymbol{u_{i}})\right] - \min\left[\min(\boldsymbol{t_{i}}), \min(\boldsymbol{u_{i}})\right]
+    }
+    > 0.9
+    \label{eqn:overlap-def}
+  \end{equation}
+    - The numerator of \eqref{eqn:overlap-def} is strictly positive, and the denominator ensures that the quantity is bounded between 0 and 1.
+    - We cannot investigate the relationship between the rate of fluid intake and respiratory failure if the latter occurs without sufficient fluid data surrounding the event.
+
+## Baseline covariate information
+
+The baseline covariate vector $\boldsymbol{w}_{i}$ contains the median of the measurements taken in the first 24 hours of the ICU stay, which are then stardardised, of the following covariates: Anion gap, Bicarbonate, Creatinine, Chloride, Glucose, Hematocrit, Hemoglobin, Platelet, Partial thromboplastin time, International normalized ratio, Prothrombin time, Sodium, blood Urea nitrogen, White blood cell count, Age at ICU admission, and Sex.
+
+## Updating $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in stage two individual-at-a-time {#one-at-a-time}
+
+The parallel sampler described in Section \ref{parallel-sampler} is a MH-within-Gibbs scheme, with each iteration sampling from the  conditionals of the melded model
+\begin{equation}
+\begin{gathered}
+  \pd_{\text{meld}}(\phi_{1 \cap 2}, \psi_{1} \mid \boldsymbol{Y}, \psi_{2}, \phi_{2 \cap 3}, \psi_{3}), \\
+  \pd_{\text{meld}}(\phi_{2 \cap 3}, \psi_{3} \mid \boldsymbol{Y}, \phi_{1 \cap 2}, \psi_{1}, \psi_{2}), \\
+  \pd_{\text{meld}}(\psi_{2} \mid \boldsymbol{Y}, \phi_{1 \cap 2}, \psi_{1}, \phi_{2 \cap 3}, \psi_{3}).
+\end{gathered}
+\end{equation}
+We would like to update the first two conditionals 'individual-at-a-time'.
+For simplicity we will assume the pooled prior is formed using product-of-experts pooling, and focus on the first conditional $\pd_{\text{meld}}(\phi_{1 \cap 2}, \psi_{1} \mid \boldsymbol{Y}, \psi_{2}, \phi_{2 \cap 3}, \psi_{3})$.
+Similar arguments apply to the second conditional and other pooling types.
+Recall that
+\begin{equation}
+\begin{aligned}
+\phi_{1 \cap 2} &=
+  (\phi_{1 \cap 2, 1}, \ldots, \phi_{1 \cap 2, N})  \\
+  &= (\phi_{1 \cap 2, 1}(\theta_{1, 1}), \ldots, \phi_{1 \cap 2, N}(\theta_{1, N})) \\
+  &= (\{T_{1}, d_{1}\}, \ldots, \{T_{N}, d_{N}\}),
+\end{aligned}
+\end{equation}
+we would like to update $\phi_{1 \cap 2}$ by updating $(T_{i}, d_{i})$ for one individual at a time, for a total of $N$ 'sub-steps'.
+
+### Sub-step 1
+
+Suppose we are at step $t - 1$ of the Markov chain, and we are proposing values for step $t$.
+Without any loss of generality we assume that we are updating individual $i = 1$ in sub-step 1 -- in practice we update the individuals in a random order for each iteration of the MH-within-Gibbs scheme.
+We are also going to update $\psi_{1}$ in sub-step 1.
+Our target is
+\begin{equation}
+  \pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1}, \{\theta_{1, i}\}_{i = 2}^{N})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}) \mid Y_{2}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3}).
+\end{equation}
+It is convenient to rewrite this as
+\begin{equation}
+  \frac {
+    \pd_{1}(\theta_{1, 1}, \psi_{1}, \{\theta_{1, i}\}_{i = 2}^{N}, \mid Y_{1})
+  } {
+    \pd_{1}(\{\theta_{1, i}\}_{i = 2}^{N} \mid Y_{1})
+  }
+  \frac {
+    \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3} \mid Y_{2})
+  } {
+    \pd_{2}(\{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3} \mid Y_{2})
+  }.
+  \label{eqn:sub-step-one-target}
+\end{equation}
+
+Suppose there are $K$ stage one samples from $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$, and each sample has a corresponding $\phi_{1 \cap 2}$.
+We propose $\psi_{1}^{*}$ and $\theta_{1, 1}^{*}$ (hence $\phi_{1 \cap 2, 1}^{*})$ by sampling a random integer from $\{1, \ldots, K\}$, retrieving the corresponding values of $\psi_{1}$ and $\theta_{1}$, and ignoring $(\theta_{1, 2}, \ldots, \theta_{1, N})$.
+The marginal we are actually proposing from is
+\begin{equation}
+  \pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1})
+  = \int \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1}) \text{d} (\{\theta_{1, i}\}_{i = 2}^{N})
+\end{equation}
+This integral is analytically intractable, however we know[^assumption] that $\pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1}) \propto \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$ where the constant of proportionality does not depend on $(\theta_{1, 1}, \psi_{1})$.
+
+[^assumption]: TODO: This might actually be an assumption? I seem to think that it is true and assume it to be true in my notes. Now I am not sure this is true. Argh. I think this is true if we also condition on $\psi_{1}$, because then all the subject specific parameters are conditionally independent? No, this doesn't help, we're still assuming that the marginal is proportional to the joint.
+
+Under this proposal, noting that the denominator terms in \eqref{eqn:sub-step-one-target} do not depend on the proposed parameters, the acceptance probability for this sub-step is
+\begin{equation}
+\begin{aligned}
+\alpha&\left(\{\theta_{1, 1}^{*}, \psi_{1}^{*}\}, \{\theta_{1, 1}, \psi_{1}\} \right) \\
+&=
+\frac {
+  \pd_{1}(\{\theta_{1, 1}^{*}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1}^{*} \mid Y_{1})
+  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+} {
+  \pd_{1}(\{\theta_{1, 1}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1} \mid Y_{1})
+  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+}
+\frac{
+  \pd_{1}(\{\theta_{1, 1}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1} \mid Y_{1})
+} {
+  \pd_{1}(\{\theta_{1, 1}^{*}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1}^{*} \mid Y_{1})
+} \\
+&= \frac {
+  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+} {
+  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+}
+\end{aligned}
+\end{equation}
+
+### Sub-step 2 to $N$
+
+At sub-step $n$, for $1 < n \leq N$ with $\{\theta_{1, i}\}_{i = N}^{N} = \varnothing$, we have updated $\psi_{1}$ to $\psi_{1}^{[t]}$ and $(\{\theta_{1, i}\}_{i = 1}^{n - 1})$ to $(\{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1})$.
+Thus the target is
+\begin{multline}
+  \pd_{1} \left(\theta_{1, n} \mid Y_{1}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}\right)
+  \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}) \mid Y_{2}, \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N}\right) \\
+  = \frac{
+    \pd_{1} \left(\theta_{1, n}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{1} \right)
+  } {
+    \pd_{1} \left(\psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}\mid Y_{1}\right)
+  }
+  \frac {
+    \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N} \mid Y_{2}\right)
+  } {
+    \pd_{2} \left(\psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N} \mid Y_{2}\right)
+  }
+  \label{eqn:two-to-N-target}
+\end{multline}
+We propose $\theta_{1, n}^{*}$ by drawing a random sample from $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$ and ignoring all the other components.
+The proposal distribution is $\pd_{1}(\theta_{1, n}, \mid Y_{1})$ and we again must assume that it is proportional to $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$.
+It is useful to note for a fixed value of $\psi_{1}$
+\begin{equation}
+  \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1}) =
+  \prod_{i = 1}^{N}\pd_{1}(\theta_{1, i} \mid \psi_{1}, Y_{1}) \pd_{1}(\psi_{1} \mid Y_{1})
+  \propto \pd_{1}(\theta_{1, n} \mid \psi_{1}, Y_{1}),
+\end{equation}
+so the equivalent assumption is $\pd_{1}(\theta_{1, n}, \mid Y_{1}) \propto \pd_{1}(\theta_{1, n} \mid \psi_{1}, Y_{1})$, which seems unlikely?
+
+Ignoring these issues for the moment.
+The acceptance probability, again noting that the denominators in \eqref{eqn:two-to-N-target} are constant, is
+\begin{equation}
+\begin{aligned}
+\alpha\left(\{\theta_{1, n}^{*}\}, \{\theta_{1, n}\} \right) =
+&\frac {
+  \pd_{1} \left(\theta_{1, n}^{*}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{1} \right)
+} {
+  \pd_{1} \left(\theta_{1, n}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{1} \right)
+} \\
+& \times \frac {
+  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}^{*}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
+} {
+  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
+} \\
+& \times \frac{
+  \pd_{1}(\{\theta_{1, n}\}, \{\theta_{1, i}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}, \psi_{1} \mid Y_{1})
+} {
+  \pd_{1}(\{\theta_{1, n}^{*}\}, \{\theta_{1, i}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}, \psi_{1} \mid Y_{1})
+}.
+\end{aligned}
+\end{equation}
+Now assume that $(\theta_{1, i} \indep \theta_{1, i^{'}}) \mid (\psi_{1}, Y_{1})$ for $i \neq i^{'}$ (I'm not sure this is true, but this at least seems feasible).
+Ignoring the $\pd_{2}$ term for a moment, the remainder of the acceptance probability simplifies to
+\begin{equation}
+= \frac {
+  \pd_{1}(\theta_{1, n}^{*} \mid \psi_{1}^{[t]}, Y_{1})
+} {
+  \pd_{1}(\theta_{1, n} \mid \psi_{1}^{[t]}, Y_{1})
+}
+\frac {
+  \pd_{1}(\theta_{1, n} \mid \psi_{1}, Y_{1})
+} {
+  \pd_{1}(\theta_{1, n}^{*} \mid \psi_{1}, Y_{1})
+}.
+\end{equation}
+We now have the interesting question of whether the terms in the target cancel with the terms in the proposal (due to the conditioning on $\psi_{1}^{[t]}$)?
+Possibly, they do represent the same conditional distribution, though perhaps at different values?
