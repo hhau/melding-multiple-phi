@@ -2,11 +2,16 @@
 % I always seem to need tikz for something
 \usepackage{tikz}
 \usetikzlibrary{positioning, shapes, intersections, through, backgrounds, fit, decorations.pathmorphing, angles, quotes}
-\usepackage{setspace}
-\onehalfspacing
-
 \usepackage{lineno}
 % \linenumbers
+
+
+\makeatletter
+\@ifclassloaded{imsart}{}{
+\usepackage{setspace}
+\onehalfspacing
+}
+\makeatother
 
 \usepackage{relsize}
 \usepackage{placeins}

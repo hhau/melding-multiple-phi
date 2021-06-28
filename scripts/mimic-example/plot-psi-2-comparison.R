@@ -193,7 +193,8 @@ psmall <- ggplot(
       "melding-poe" = "PoE pooling",
       "melding-log" = "Log pooling",
       "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
-    )
+    ),
+    guide = guide_legend(reverse = TRUE)
   ) +
   scale_linetype_manual(
     values = c(
@@ -207,7 +208,8 @@ psmall <- ggplot(
       "melding-poe" = "PoE pooling",
       "melding-log" = "Log pooling",
       "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
-    )
+    ),
+    guide = guide_legend(reverse = TRUE)
   ) +
   theme(axis.title = element_blank())
 
@@ -290,7 +292,7 @@ p_alpha <- ggplot(
     values = c(
       "prior" = 'grey',
       "melding-poe" = highlight_col,
-      "melding-log" = greens[2],
+      "melding-log" = blues[2],
       "a_point" = 'black'
     ),
     labels = list(

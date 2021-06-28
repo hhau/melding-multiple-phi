@@ -161,7 +161,8 @@ plot_list <- lapply(1 : n_icu_stays, function(icustay_index) {
         filter(event_indicator == 0) %>%
         distinct(),
       mapping = aes(x = event_time, y = (1 - weight)),
-      colour = highlight_col
+      colour = highlight_col,
+      size = 0.15
     ) +
     xlab(bquote("T"[.(icustay_index)])) +
     ylab(bquote("p"[2 * ',' ~ .(icustay_index)]("T"[.(icustay_index)]))) +
