@@ -15,6 +15,7 @@
 #package/
 other-code
 renv/
+ba-template/
 
 # the tex file for the rmd - useful for me, don't check into the repo
 multiple-phi.tex
