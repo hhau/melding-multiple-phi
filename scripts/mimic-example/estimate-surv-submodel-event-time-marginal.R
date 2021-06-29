@@ -6,6 +6,7 @@ source('scripts/common/logger-setup.R')
 source('scripts/common/setup-argparse.R')
 source("scripts/common/plot-settings.R")
 source('scripts/common/mcmc-util.R')
+source('scripts/mimic-example/GLOBALS.R')
 
 parser$add_argument("--surv-prior-samples-raw")
 parser$add_argument("--pf-data-list")
@@ -178,10 +179,8 @@ ggsave_base(
   width = 20
 )
 
-interesting_plot_ids <- c(6, 13, 15)
-
 p2 <- wrap_plots(
-  plot_list[interesting_plot_ids],
+  plot_list[PLOT_IDS],
   ncol = 3
 )
 

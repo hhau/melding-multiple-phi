@@ -1,4 +1,4 @@
-FLUID_WINDOW_WIDTH_DAYS <- 1
+FLUID_WINDOW_WIDTH_DAYS <- (1 / 3)
 FLUID_TIME_ORIGIN <- 0
 
 N_INTERNAL_KNOTS <- 7
@@ -9,3 +9,6 @@ GLOBAL_ARDS_THRESHOLD <- 300
 ## global MCMC settings
 N_CHAIN <- 5
 N_POST_WARMUP_MCMC <- 5e3
+
+## interesting individuals to plot
+PLOT_IDS <- c(6, 15, 17, 29)

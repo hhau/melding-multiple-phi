@@ -127,7 +127,7 @@ stan_data <- list(
   ctr_means = ctr_means,
   ctr_sds = ctr_sds,
   plot_matrix = plot_matrix,
-  spline_coef_prior_sd = 0.1,
+  spline_coef_prior_sd = 0.5,
   noise_df = 5
 )
 

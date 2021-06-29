@@ -108,18 +108,6 @@ event_indicator_names <- dimnames(log_full_phi_12)[[3]] %>%
 
 ```
 
-# Strange comparison plot
-
-- When comparing PoE and Log pooling, with different parameters fixed our not, the results are quite strange (the following plot is for $\alpha$ only):
-
-```{r psi_2_compare_alpha_only, out.width = '100%', out.height = '200%', cache = FALSE}
-knitr::include_graphics('../plots/mimic-example/psi-2-alpha-only-compare.pdf')
-```
-
-- We will see in a moment that these strange results are because the convergence of almost all of the multi stage samplers is poor.
-- I am also not sure about the point estimate row at the moment, because getting a multivariate equivalent of the median is a nontrival task.
-- Whilst the prior row is correct for the original submodel, and the point estimate row, is not the prior for $\alpha$ in any of the melding rows, so it seems a little confusing to juxtapose them?
-
 # Reference, fitted values plot
 
 - This plot is included so we can see why the event times or fluid model parameters are what they are
@@ -127,7 +115,6 @@ knitr::include_graphics('../plots/mimic-example/psi-2-alpha-only-compare.pdf')
 ```{r fit_plot, cache.extra = paste0(tools::md5sum('../plots/mimic-example/combined-pf-fluid-fit-plot.png'), collapse = '')}
 knitr::include_graphics('../plots/mimic-example/combined-pf-fluid-fit-plot.png')
 ```
-
 
 # Stage 1
 

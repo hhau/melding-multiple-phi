@@ -304,7 +304,7 @@ For both pooling methods, as the weight $\lambda_{1}$ associated with models $\p
 Note the lack of correlation in $\pd_{\text{pool}}$ under linear pooling (right column of Figure \ref{fig:pooled_densities_plot}) due to Equation \eqref{eqn:silly-linear-overall}.
 A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ and $\lambda_{1} = 0.375$ cases, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
 The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$, and does not result in a priori independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
-Appendix \ref{log-pooling-gaussian-densities} analytically shows that $\lambda_{2}$ controls the quantity of correlation present in $\pd_{\text{pool}}$ in this setting.
+Appendix&nbsp;\ref{log-pooling-gaussian-densities} analytically shows that $\lambda_{2}$ controls the quantity of correlation present in $\pd_{\text{pool}}$ in this setting.
 
 ```{r pooled_densities_plot, fig.cap = "Contour plots of $\\pd_{\\text{pool}}(\\boldsymbol{\\phi})$ (red) under logarithmic and linear pooling (left and right column respectively). The values of $\\lambda_{1}$ are indicated in the plot titles, and the constituent marginal densities are shown in blue."}
 knitr::include_graphics("plots/pooling-tests/version-two.pdf")
@@ -520,7 +520,7 @@ All forms of the melded posterior, including the normal approximation, are indis
 The lack of difference between the melded posteriors that use different pooled priors indicates that the prior has almost no effect on the posterior.
 This also suggests that the normal approximations are good summaries of the subposteriors.
 
-Trace plots, rank plots, and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process are presented in Appendix \ref{diagnostics-for-the-owls-example}.
+Trace plots, rank plots, and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process are presented in Appendix&nbsp;\ref{diagnostics-for-the-owls-example}.
 
 ## Uncertain time to respiratory failure
 
@@ -542,10 +542,12 @@ These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, w
 We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in \mathbb{R}_{+} \cup \{0\}$ so that the submodel can be written as
 \begin{equation}
   z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
+  \label{eqn:pf-model-def}
 \end{equation}
 We employ a weakly informative prior for the intercept, and a heavy tailed ($t_{5}$) distribution for the error term[^pfoutliers] with a weakly informative half-normal prior for unknown scale parameter
 \begin{equation}
   \beta_{0, i} \sim \text{N}(0, 1^2), \,\, \varepsilon_{i, j} \sim t_{5}(0, \omega_{i}), \,\,  \omega_{i} \sim \text{N}_{+}(0, 1^2).
+  \label{eqn:pf-model-priors-simple}
 \end{equation}
 For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.1^2)$, and for $k = 2, \ldots, 10$ we employ a random-walk prior $\zeta_{i, k} \sim \text{N}(\zeta_{i, k - 1}, 0.1^2)$.
 
@@ -571,11 +573,11 @@ It is also convenient to define $\theta_{1} = (\theta_{1, 1}, \ldots, \theta_{1,
 Care is also required when considering the prior marginal $\pd_{1}(\phi_{1 \cap 2})$.
 We note that $\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})$, and that $\pd_{1, i}(T_{i}, d_{i})$ conditions on each individual's length of stay (in specifying the location of the knots), as well as the range, mean, and standard deviation of the P/F data (by standardising $\tilde{z}_{i, j}$).
 The analytic form of $\pd_{1, i}(T_{i}, d_{i})$ is not available and must be estimated, which we discuss in Section \ref{estimating-submodel-prior-marginal-distributions}.
-To completely align with our chained melding notation we also define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\{\omega_{i}\}_{i = 2}^{N})$.
+To completely align with our chained melding notation we also define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\psi_{1, 1}, \ldots, \psi_{1, N}) = (\{\omega_{i}\}_{i = 1}^{N})$.
 
-Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 13$, and $15$.
+Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 15, 17$, and $29$.
 The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
-It is interesting to see the relatively wide, multimodal distribution for $\{T_{13}, d_{13}\}$ (and for some other individuals not shown here).
+It is interesting to see the relatively wide, multimodal distribution for $\{T_{29}, d_{29}\}$ (and for some other individuals not shown here).
 
 ### Cumulative fluid model (piecewise linear) $\pd_{3}$
 
@@ -588,16 +590,16 @@ We assume a piecewise linear model, with intercept $\eta_{0, i}$, slope $\eta_{1
   x_{i, l} = \eta_{0, i} + \eta^{b}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} < \kappa_{i}\}} + \eta^{a}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} \geq \kappa_{i}\}} + \epsilon_{i, l} \\
    \label{eqn:piecewise-fluid-model}
 \end{equation}
-Prior distributions and justification are available in Appendix \ref{priors-and-justification-for-the-fluid-submodel}.
+Prior distributions and justification are available in Appendix&nbsp;\ref{priors-and-justification-for-the-fluid-submodel}.
 
-To align with our melding notation we define $m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}$, with $\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)$, $Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})$, and $\psi_{3} = (\{\eta_{0, i}\}_{i = 1}^{N}, \sigma^{2}_{x})$.
+To align with our melding notation we define $m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}$, with $\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)$, $Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})$, and $\psi_{3} = (\{\eta_{0, i}, \sigma^{2}_{x, i}\}_{i = 1}^{N})$.
 
-Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for individuals $i = 6, 13$, and $15$.
+Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for individuals $i = 6, 15, 17$, and $29$.
 There is relatively little noise in these data, which results in tight subposterior distributions for $\eta_{1, i}^{b}$ and $\eta_{1, i}^{a}$.
 
-[^fluidobs]: Details about the derivation of these values from the raw fluid data are contained in Appendix \ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
+[^fluidobs]: Details about the derivation of these values from the raw fluid data are contained in Appendix&nbsp;\ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
 
-```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 6, 13$, and $15$.'}
+```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 6, 15, 17$, and $29$.'}
 knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pdf')
 ```
 
@@ -614,7 +616,7 @@ Hence, the hazard is
   \frac{\partial}{\partial T_{i}} m_{i}(T_{i}) = \eta^{b}_{1, i}\boldsymbol{1}_{\{T_{i} < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{T_{i} \geq \kappa_{i}\}},
 \end{gather}
 
-The survival probability $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$ has an analytic form, which we derive in Appendix \ref{analytic-form-for-the-survival-probability}
+The survival probability $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$ has an analytic form, which we derive in Appendix&nbsp;\ref{analytic-form-for-the-survival-probability}
 The likelihood for the submodel is
 \begin{equation}
   \pd(T_{i}, d_{i} \mid \gamma, \boldsymbol{\theta}, \alpha, \kappa_{i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}, \boldsymbol{w}_{i}) = h_{i}(T_{i})^{d_{i}} S_{i}(T_{i}), \\
@@ -632,10 +634,10 @@ Our priors for the submodel specific parameters are
 \end{gathered}
 \end{equation}
 where $\hat{E}$ is the log of the crude event rate [@brilleman_bayesian_2020], and $\boldsymbol{I}_{p}$ is the $p \times p$ identity matrix.
-Appendix \ref{p2-prior-justification} contains our justification for these priors.
+Appendix&nbsp;\ref{p2-prior-justification} contains our justification for these priors.
 We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i}, \eta_{1, i}^{b}$, and $\eta_{1, i}^{a}$.
 
-[^competerisks]: The relationship between this model and the competing risks approach is discussed in Appendix \ref{a-comparison-with-the-competing-risk-approach}
+[^competerisks]: The relationship between this model and the competing risks approach is discussed in Appendix&nbsp;\ref{a-comparison-with-the-competing-risk-approach}.
 
 ### Estimation details
 
@@ -646,7 +648,7 @@ Because these distributions are functions of discrete and continuous parameters 
 Instead we fit appropriate parametric mixture distributions using Monte Carlo samples from the priors.
 Samples from $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are obtained using the methodology of @crowther_simulating_2013 as implemented in `simsurv` @brilleman_simsurv_2021.
 We will also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$, which we obtain using the same methodology.
-Further details about these estimates are available in Appendix \ref{estimating-submodel-prior-marginal-distributions}.
+Further details about these estimates are available in Appendix&nbsp;\ref{estimating-submodel-prior-marginal-distributions}.
 
 We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) \propto 1$ and $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
@@ -657,8 +659,8 @@ Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed
 
 [^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, disable all adaptive procedures, and manually rescale the target using the `multiplier` syntax to ensure the default (identity) mass matrix is suitable. This seems to work for this example.
 
-It is crucial for the convergence of our multi-stage sampler that the elements of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated individual-at-a-time.
-- The validity of such an updating scheme is not immediately apparent (insofar as whether or not it has the correct stationary distribution, nor that the cancellations of Eqs () and () still occur). Appendix \ref{one-at-a-time} argues that this scheme does target the correct distribution, and that the cancellations still occur.
+It is crucial for the convergence of our multi-stage sampler that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_.
+Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 
 ### Results
 
@@ -1026,7 +1028,7 @@ Finally, the 24-hourly cumulative fluid balance data are computed by $x_{i, l} =
 
 We assume a weakly informative prior for the error term
 \begin{equation}
-  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x}),  \,\, \sigma_{x} \sim \text{N}_{+}(0, 5^2).
+  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x, i}),  \,\, \sigma_{x, i} \sim \text{N}_{+}(0, 5^2).
 \end{equation}
 
 The parameters for the gamma prior for $\eta^{b}_{1, i}$ and $\eta^{a}_{1, i}$ are obtained by assuming that the 2.5-, 50-, and 97.5- percentiles are at 0.5, 5, and 20 [@belgorodski_rriskdistributions_2017].
@@ -1366,25 +1368,32 @@ Recall that
   &= (\{T_{1}, d_{1}\}, \ldots, \{T_{N}, d_{N}\}),
 \end{aligned}
 \end{equation}
-we would like to update $\phi_{1 \cap 2}$ by updating $(T_{i}, d_{i})$ for one individual at a time, for a total of $N$ 'sub-steps'.
+and $\psi_{1} = (\psi_{1, 1}, \ldots, \psi_{1, N}) = (\{\omega_{i}\}_{i = 1}^{N})$.
+We would like to update $\phi_{1 \cap 2}$ and $\psi_{1}$ by updating $(T_{i}, d_{i}, \omega_{i})$ for one individual at a time, for a total of $N$ 'sub-steps'.
 
 ### Sub-step 1
 
 Suppose we are at step $t - 1$ of the Markov chain, and we are proposing values for step $t$.
 Without any loss of generality we assume that we are updating individual $i = 1$ in sub-step 1 -- in practice we update the individuals in a random order for each iteration of the MH-within-Gibbs scheme.
-We are also going to update $\psi_{1}$ in sub-step 1.
+
 Our target is
 \begin{equation}
-  \pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1}, \{\theta_{1, i}\}_{i = 2}^{N})
+  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = 2}^{N})
   \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}) \mid Y_{2}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3}).
+  \label{eqn:sub-step-target}
 \end{equation}
-It is convenient to rewrite this as
+The model, detailed in \eqref{eqn:pf-model-def} and \eqref{eqn:pf-model-priors-simple}, factorises such that
 \begin{equation}
-  \frac {
-    \pd_{1}(\theta_{1, 1}, \psi_{1}, \{\theta_{1, i}\}_{i = 2}^{N}, \mid Y_{1})
-  } {
-    \pd_{1}(\{\theta_{1, i}\}_{i = 2}^{N} \mid Y_{1})
-  }
+  \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1}) = \prod_{i = 1}^{N} \pd_{1}(\theta_{1, i}, \psi_{1, i} \mid Y_{1}),
+\end{equation}
+which implies[^fluidproperty] $(\theta_{1, i}, \psi_{1, i}\indep \theta_{1, i^{'}}, \psi_{1, i^{'}}) \mid Y_{1}$ for $i \neq i^{'}$, hence
+\begin{equation}
+  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = 2}^{N}) =
+  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1}).
+\end{equation}
+It will be convenient to rewrite \eqref{eqn:sub-step-target} as
+\begin{equation}
+  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1})
   \frac {
     \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3} \mid Y_{2})
   } {
@@ -1393,80 +1402,65 @@ It is convenient to rewrite this as
   \label{eqn:sub-step-one-target}
 \end{equation}
 
+[^fluidproperty]: This property is also true of the $\pd_{3}$.
+
 Suppose there are $K$ stage one samples from $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$, and each sample has a corresponding $\phi_{1 \cap 2}$.
-We propose $\psi_{1}^{*}$ and $\theta_{1, 1}^{*}$ (hence $\phi_{1 \cap 2, 1}^{*})$ by sampling a random integer from $\{1, \ldots, K\}$, retrieving the corresponding values of $\psi_{1}$ and $\theta_{1}$, and ignoring $(\theta_{1, 2}, \ldots, \theta_{1, N})$.
-The marginal we are actually proposing from is
-\begin{equation}
-  \pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1})
-  = \int \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1}) \text{d} (\{\theta_{1, i}\}_{i = 2}^{N})
-\end{equation}
-This integral is analytically intractable, however we know[^assumption] that $\pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1}) \propto \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$ where the constant of proportionality does not depend on $(\theta_{1, 1}, \psi_{1})$.
-
-[^assumption]: TODO: This might actually be an assumption? I seem to think that it is true and assume it to be true in my notes. Now I am not sure this is true. Argh. I think this is true if we also condition on $\psi_{1}$, because then all the subject specific parameters are conditionally independent? No, this doesn't help, we're still assuming that the marginal is proportional to the joint.
-
-Under this proposal, noting that the denominator terms in \eqref{eqn:sub-step-one-target} do not depend on the proposed parameters, the acceptance probability for this sub-step is
+We propose $\psi_{1, 1}^{*}$ and $\theta_{1, 1}^{*}$ (hence $\phi_{1 \cap 2, 1}^{*})$ by sampling a random integer $k$ from $\{1, \ldots, K\}$, retrieving the corresponding values of $\psi_{1}$ and $\theta_{1}$, and ignoring $(\theta_{1, 2}, \ldots, \theta_{1, N}, \psi_{1, 2}, \ldots, \psi_{1, N})$.
+This is equivalent to proposing from $\pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1})$
+Under this proposal, noting that the denominator term in \eqref{eqn:sub-step-one-target} does not depend on the proposed parameters, the acceptance probability for this sub-step is
 \begin{equation}
 \begin{aligned}
 \alpha&\left(\{\theta_{1, 1}^{*}, \psi_{1}^{*}\}, \{\theta_{1, 1}, \psi_{1}\} \right) \\
 &=
 \frac {
-  \pd_{1}(\{\theta_{1, 1}^{*}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1}^{*} \mid Y_{1})
-  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+  \pd_{1}(\theta_{1, 1}^{*}, \psi_{1, 1}^{*} \mid Y_{1})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 } {
-  \pd_{1}(\{\theta_{1, 1}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1} \mid Y_{1})
-  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 }
 \frac{
-  \pd_{1}(\{\theta_{1, 1}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1} \mid Y_{1})
+  \pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1})
 } {
-  \pd_{1}(\{\theta_{1, 1}^{*}\}, \{\theta_{1, i}\}_{i = 2}^{N}, \psi_{1}^{*} \mid Y_{1})
+  \pd_{1}(\theta_{1, 1}^{*}, \psi_{1}^{*} \mid Y_{1})
 } \\
 &= \frac {
-  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 } {
-  \pd_{2}(\{\phi_{1 \cap 2, 1}(\theta_{1, 1})\}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
-}
+  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+},
 \end{aligned}
 \end{equation}
+which does not depend on $\pd_{1}$.
+We store the value of $k$ associated with the proposal in order to resample the stage one values of $\psi_{1, 1}$ to reflect the information in the other submodels.
 
-### Sub-step 2 to $N$
 
-At sub-step $n$, for $1 < n \leq N$ with $\{\theta_{1, i}\}_{i = N}^{N} = \varnothing$, we have updated $\psi_{1}$ to $\psi_{1}^{[t]}$ and $(\{\theta_{1, i}\}_{i = 1}^{n - 1})$ to $(\{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1})$.
+### Sub-step $n$
+
+At sub-step $n$, for $1 < n \leq N$ with $\{\theta_{1, i}\}_{i = N}^{N} = \varnothing$, we have updated $(\{\theta_{1, i}, \psi_{1, i}\}_{i = 1}^{n - 1})$ to $(\{\theta_{1, i}^{[t]}, \psi_{1, i}^{[t]}\}_{i = 1}^{n - 1})$.
 Thus the target is
-\begin{multline}
-  \pd_{1} \left(\theta_{1, n} \mid Y_{1}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}\right)
-  \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}) \mid Y_{2}, \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N}\right) \\
-  = \frac{
-    \pd_{1} \left(\theta_{1, n}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{1} \right)
-  } {
-    \pd_{1} \left(\psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}\mid Y_{1}\right)
-  }
+\begin{align}
+  \! \begin{multlined}[t]
+  \pd_{1}& \left(\theta_{1, n}, \psi_{1, n} \mid Y_{1}, \{\theta_{1, i}^{[t]}, \psi_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = n + 1}^{N}\right) \\
+  &\times \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}) \mid Y_{2}, \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N}\right)
+  \end{multlined} \\
+  = & \pd_{1} \left(\theta_{1, n}, \psi_{1, n}, \mid Y_{1} \right)
   \frac {
     \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N} \mid Y_{2}\right)
   } {
     \pd_{2} \left(\psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N} \mid Y_{2}\right)
   }
   \label{eqn:two-to-N-target}
-\end{multline}
-We propose $\theta_{1, n}^{*}$ by drawing a random sample from $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$ and ignoring all the other components.
-The proposal distribution is $\pd_{1}(\theta_{1, n}, \mid Y_{1})$ and we again must assume that it is proportional to $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$.
-It is useful to note for a fixed value of $\psi_{1}$
-\begin{equation}
-  \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1}) =
-  \prod_{i = 1}^{N}\pd_{1}(\theta_{1, i} \mid \psi_{1}, Y_{1}) \pd_{1}(\psi_{1} \mid Y_{1})
-  \propto \pd_{1}(\theta_{1, n} \mid \psi_{1}, Y_{1}),
-\end{equation}
-so the equivalent assumption is $\pd_{1}(\theta_{1, n}, \mid Y_{1}) \propto \pd_{1}(\theta_{1, n} \mid \psi_{1}, Y_{1})$, which seems unlikely?
-
-Ignoring these issues for the moment.
-The acceptance probability, again noting that the denominators in \eqref{eqn:two-to-N-target} are constant, is
+\end{align}
+We propose $\theta_{1, n}^{*}, \psi_{1, n}^{*}$ in the same manner as the previous section.
+The corresponding acceptance probability is
 \begin{equation}
 \begin{aligned}
-\alpha\left(\{\theta_{1, n}^{*}\}, \{\theta_{1, n}\} \right) =
-&\frac {
-  \pd_{1} \left(\theta_{1, n}^{*}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{1} \right)
+\alpha\left(&\{\theta_{1, n}^{*}, \psi_{1, n}^{*}\}, \{\theta_{1, n}, \psi_{1, n}\} \right)  \\
+= &\frac {
+  \pd_{1} \left(\theta_{1, n}^{*}, \psi_{1, n}^{*} \mid Y_{1} \right)
 } {
-  \pd_{1} \left(\theta_{1, n}, \psi_{1}^{[t]}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{1} \right)
+  \pd_{1} \left(\theta_{1, n}, \psi_{1, n} \mid Y_{1} \right)
 } \\
 & \times \frac {
   \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}^{*}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
@@ -1474,25 +1468,14 @@ The acceptance probability, again noting that the denominators in \eqref{eqn:two
   \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
 } \\
 & \times \frac{
-  \pd_{1}(\{\theta_{1, n}\}, \{\theta_{1, i}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}, \psi_{1} \mid Y_{1})
+  \pd_{1}(\theta_{1, n}, \psi_{1, n} \mid Y_{1})
 } {
-  \pd_{1}(\{\theta_{1, n}^{*}\}, \{\theta_{1, i}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N}, \psi_{1} \mid Y_{1})
+  \pd_{1}(\theta_{1, n}^{*}, \psi_{1, n}^{*} \mid Y_{1})
+} \\
+= &\frac {
+  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}^{*}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
+} {
+  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
 }.
 \end{aligned}
 \end{equation}
-Now assume that $(\theta_{1, i} \indep \theta_{1, i^{'}}) \mid (\psi_{1}, Y_{1})$ for $i \neq i^{'}$ (I'm not sure this is true, but this at least seems feasible).
-Ignoring the $\pd_{2}$ term for a moment, the remainder of the acceptance probability simplifies to
-\begin{equation}
-= \frac {
-  \pd_{1}(\theta_{1, n}^{*} \mid \psi_{1}^{[t]}, Y_{1})
-} {
-  \pd_{1}(\theta_{1, n} \mid \psi_{1}^{[t]}, Y_{1})
-}
-\frac {
-  \pd_{1}(\theta_{1, n} \mid \psi_{1}, Y_{1})
-} {
-  \pd_{1}(\theta_{1, n}^{*} \mid \psi_{1}, Y_{1})
-}.
-\end{equation}
-We now have the interesting question of whether the terms in the target cancel with the terms in the proposal (due to the conditioning on $\psi_{1}^{[t]}$)?
-Possibly, they do represent the same conditional distribution, though perhaps at different values?
