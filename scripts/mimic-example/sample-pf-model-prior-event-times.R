@@ -12,6 +12,7 @@ library(patchwork)
 source("scripts/common/mcmc-util.R")
 source("scripts/common/setup-argparse.R")
 source("scripts/common/plot-settings.R")
+source("scripts/mimic-example/GLOBALS.R")
 
 parser$add_argument("--pf-data-list-format")
 parser$add_argument("--pf-prior-optim-stan-model")
@@ -280,16 +281,15 @@ ggsave_base(
   width = 20
 )
 
-interesting_plot_ids <- c(6, 13, 15)
-
 p2 <- wrap_plots(
-  plot_list[interesting_plot_ids],
-  ncol = 3
+  plot_list[PLOT_IDS],
+  ncol = 2,
+  nrow = 2
 )
 
 ggsave_fullpage(
   filename = str_replace(args$output_pf_prior_plot, '.png', '-small.pdf'),
-  adjust_height = -15,
+  adjust_height = -13,
   plot = p2,
 )
 

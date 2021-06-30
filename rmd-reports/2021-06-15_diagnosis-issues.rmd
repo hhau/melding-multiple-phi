@@ -73,10 +73,11 @@ local_monitor <- function(x) {
     print = FALSE,
     digits_summary = 2
   ) %>%
-  as.data.frame() %>%
-  tibble::rownames_to_column() %>%
-  as_tibble() %>%
-  relocate(mean, sd, n_eff, Rhat, Bulk_ESS, Tail_ESS, valid, .before = se_mean)
+    as.data.frame() %>%
+    tibble::rownames_to_column() %>%
+    as_tibble() %>%
+    relocate(mean, sd, n_eff, Rhat, Bulk_ESS, Tail_ESS, valid, .before = se_mean) %>% 
+    arrange(desc(Rhat))
 }
 
 local_styling <- function(x) {

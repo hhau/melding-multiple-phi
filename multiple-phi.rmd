@@ -581,7 +581,7 @@ It is interesting to see the relatively wide, multimodal distribution for $\{T_{
 
 ### Cumulative fluid model (piecewise linear) $\pd_{3}$
 
-We model the 24-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
+We model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
 The cumulative data are derived from the raw fluid balance observations[^fluidobs].
 We denote the complete vector of observations by $\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})$ and times by $\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})$.
 
@@ -999,8 +999,8 @@ Each observation $\tilde{x}_{i, \tilde{l}}$ is typically a small fluid administr
 The observations have corresponding observation times $\tilde{u}_{i, \tilde{l}}$, with $\tilde{\boldsymbol{u}}_{i} = \{\tilde{u}_{i, 1}, \ldots, \tilde{u}_{i, \tilde{L}_{i}}\}$ and $\tilde{\boldsymbol{x}}_{i} = \{\tilde{x}_{i, 1}, \ldots, \tilde{x}_{i, \tilde{L}_{i}}\}$.
 We code the fluid administrations/inputs as positive values, and the excretions/outputs as negative values.
 Each patient has an enormous number of raw fluid observations $(L_{i} \ll \tilde{L}_{i})$ and it is computationally infeasible to consider them all at once.
-Because the time scale of interest is typically a number of days, we aggregate the raw fluid observations into 24-hourly changes in fluid balance.
-From these 24-hourly changes we calculate the cumulative fluid balance.
+We aggregate the raw fluid observations into 8-hourly changes in fluid balance.
+From these 8-hourly changes we calculate the cumulative fluid balance.
 
 Mathematically, we define an ordered integer-vector of boundary values
 \begin{equation}
@@ -1017,12 +1017,12 @@ The raw fluid observations are then divided up into $L_{i}$ subsets of $\{\tilde
 \end{equation}
 for $l = 1, \ldots, L_{i}$.
 Denote $N^{B}_{i, l} = \lvert B_{i, l} \rvert \mathop{/} 2$ (dividing by two as $B_{i, l}$ contains both the observation and the observation time).
-The $l$\textsuperscript{th} 24-hourly fluid change $\Delta_{i, l}$ and corresponding observation time $u_{i, l}$ can then be computed as
+The $l$\textsuperscript{th} 8-hourly fluid change $\Delta_{i, l}$ and corresponding observation time $u_{i, l}$ can then be computed as
 \begin{equation}
   \Delta_{i, l} = \sum_{s = 1}^{N^{B}_{i, l}} \tilde{x}_{i, s}, \,\, \text{s.t.} \,\, \tilde{x}_{i, s} \in B_{i, l}, \qquad
   u_{i, l} = \frac{1}{N^{B}_{i, l}} \sum_{s = 1}^{N^{B}_{i, l}} \tilde{u}_{i, s}, \,\, \text{s.t.} \,\, \tilde{u}_{i, s} \in B_{i, l}.
 \end{equation}
-Finally, the 24-hourly cumulative fluid balance data are computed by $x_{i, l} = \sum_{s = 1}^{l} \Delta_{i, s}$, and we assume they too are observed at $u_{i, l}$.
+Finally, the 8-hourly cumulative fluid balance data are computed by $x_{i, l} = \sum_{s = 1}^{l} \Delta_{i, s}$, and we assume they too are observed at $u_{i, l}$.
 
 ## Priors and justification for the fluid submodel
 
@@ -1440,10 +1440,9 @@ We store the value of $k$ associated with the proposal in order to resample the 
 At sub-step $n$, for $1 < n \leq N$ with $\{\theta_{1, i}\}_{i = N}^{N} = \varnothing$, we have updated $(\{\theta_{1, i}, \psi_{1, i}\}_{i = 1}^{n - 1})$ to $(\{\theta_{1, i}^{[t]}, \psi_{1, i}^{[t]}\}_{i = 1}^{n - 1})$.
 Thus the target is
 \begin{align}
-  \! \begin{multlined}[t]
-  \pd_{1}& \left(\theta_{1, n}, \psi_{1, n} \mid Y_{1}, \{\theta_{1, i}^{[t]}, \psi_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = n + 1}^{N}\right) \\
-  &\times \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}) \mid Y_{2}, \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N}\right)
-  \end{multlined} \\
+  \pd_{1} & \left(\theta_{1, n}, \psi_{1, n} \mid Y_{1}, \{\theta_{1, i}^{[t]}, \psi_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = n + 1}^{N}\right) \\
+  & \times \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}) \mid Y_{2}, \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N}\right)
+  \nonumber \\
   = & \pd_{1} \left(\theta_{1, n}, \psi_{1, n}, \mid Y_{1} \right)
   \frac {
     \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N} \mid Y_{2}\right)
@@ -1456,7 +1455,7 @@ We propose $\theta_{1, n}^{*}, \psi_{1, n}^{*}$ in the same manner as the previo
 The corresponding acceptance probability is
 \begin{equation}
 \begin{aligned}
-\alpha\left(&\{\theta_{1, n}^{*}, \psi_{1, n}^{*}\}, \{\theta_{1, n}, \psi_{1, n}\} \right)  \\
+\alpha (\{\theta_{1, n}^{*}, \psi_{1, n}^{*}\}, & \{\theta_{1, n}, \psi_{1, n}\} )  \\
 = &\frac {
   \pd_{1} \left(\theta_{1, n}^{*}, \psi_{1, n}^{*} \mid Y_{1} \right)
 } {

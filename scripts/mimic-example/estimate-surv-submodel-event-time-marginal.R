@@ -181,12 +181,13 @@ ggsave_base(
 
 p2 <- wrap_plots(
   plot_list[PLOT_IDS],
-  ncol = 3
+  ncol = 2,
+  nrow = 2
 )
 
 ggsave_fullpage(
   filename = str_replace(args$output_surv_event_time_only_prior_plot, '.png', '-small.pdf'),
-  adjust_height = -15,
+  adjust_height = -13,
   plot = p2,
 )
 
