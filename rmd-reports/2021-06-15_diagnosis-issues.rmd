@@ -1,5 +1,5 @@
 ---
-title: "Strange results and some diagnostic issues"
+title: "MIMIC example diagnostics"
 author: "Andrew Manderson"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 fontfamily: tgpagella
@@ -107,6 +107,7 @@ event_time_names <- dimnames(log_full_phi_12)[[3]] %>%
 event_indicator_names <- dimnames(log_full_phi_12)[[3]] %>%
   grep(pattern = 'indicator', x = ., value = TRUE)
 
+n_icu_stays <- length(breakpoint_names)
 ```
 
 # Reference, fitted values plot
@@ -125,6 +126,52 @@ stage_one_phi_23_samples <- readRDS('../rds/mimic-example/submodel-3-fluid-sampl
 ```
 
 ## Submodel 1 - PF
+
+### $\psi_{1}$
+
+#### $\omega_{i}$
+
+```{r stage_one_psi_1_omega, cache.extra = paste0(tools::md5sum('../rds/mimic-example/submodel-1-pf-samples-array.rds'), collapse = '')}
+stage_one_psi_1_samples <- readRDS('../rds/mimic-example/submodel-1-pf-samples-array.rds')
+omega_names <- names(stage_one_psi_1_samples[1, 1, ]) %>%
+  grep(pattern = 'y_sigma', x = ., value = TRUE)
+
+mcmc_trace(stage_one_psi_1_samples[, , omega_names])
+stage_one_psi_1_samples[, , omega_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+#### $\beta_{0, i}$
+
+```{r stage_one_psi_1_beta_zero, cache.extra = paste0(tools::md5sum('../rds/mimic-example/submodel-1-pf-samples-array.rds'), collapse = '')}
+stage_one_psi_1_samples <- readRDS('../rds/mimic-example/submodel-1-pf-samples-array.rds')
+beta_zero_names <- names(stage_one_psi_1_samples[1, 1, ]) %>%
+  grep(pattern = 'beta_zero', x = ., value = TRUE)
+
+mcmc_trace(stage_one_psi_1_samples[, , beta_zero_names])
+stage_one_psi_1_samples[, , beta_zero_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+#### $\boldsymbol{\zeta}_{i}$
+
+There are too many of these to look at, so each time we re-run this file we'll look at a different individual.
+
+```{r stage_one_psi_1_zeta, cache.extra = paste0(tools::md5sum('../rds/mimic-example/submodel-1-pf-samples-array.rds'), collapse = '')}
+stage_one_psi_1_samples <- readRDS('../rds/mimic-example/submodel-1-pf-samples-array.rds')
+zeta_rand_i_names <- sprintf(
+  'spline_coef[%d,%d]',
+  sample(1 : n_icu_stays, 1),
+  1 : 10
+)
+
+mcmc_trace(stage_one_psi_1_samples[, , zeta_rand_i_names])
+stage_one_psi_1_samples[, , zeta_rand_i_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
 
 ### $\phi_{1 \cap 2}$
 
@@ -147,6 +194,34 @@ stage_one_phi_12_samples[, , event_indicator_names] %>%
 ```
 
 ## Submodel 3 - Fluids
+
+### $\psi_{3}$
+
+#### $\sigma_{x, i}$
+
+```{r stage_one_psi_3_sigma_x, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/submodel-1-event-times-samples-array.rds')), collapse = '')}
+stage_one_psi_3_samples <- readRDS('../rds/mimic-example/submodel-3-fluid-samples-array.rds')
+sigma_x_names <- names(stage_one_psi_3_samples[1, 1, ]) %>%
+  grep(pattern = 'y_sigma', x = ., value = TRUE)
+
+mcmc_trace(stage_one_psi_3_samples[, , sigma_x_names])
+stage_one_psi_3_samples[, , sigma_x_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+#### $\eta_{0, i}$
+
+```{r stage_one_psi_3_eta_zero, cache.extra = paste0(tools::md5sum(c('../rds/mimic-example/submodel-1-event-times-samples-array.rds')), collapse = '')}
+stage_one_psi_3_samples <- readRDS('../rds/mimic-example/submodel-3-fluid-samples-array.rds')
+eta_zero_names <- names(stage_one_psi_3_samples[1, 1, ]) %>%
+  grep(pattern = 'eta_zero', x = ., value = TRUE)
+
+mcmc_trace(stage_one_psi_3_samples[, , eta_zero_names])
+stage_one_psi_3_samples[, , eta_zero_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
 
 ### $\phi_{2 \cap 3}$
 

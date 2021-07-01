@@ -289,7 +289,7 @@ p2 <- wrap_plots(
 
 ggsave_fullpage(
   filename = str_replace(args$output_pf_prior_plot, '.png', '-small.pdf'),
-  adjust_height = -13,
+  adjust_height = -10,
   plot = p2,
 )
 

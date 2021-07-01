@@ -1,0 +1,258 @@
+---
+title: "Owls example diagnostics"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+link-citations: true
+hyperrefoptions:
+  - backref
+  - colorlinks=true
+output:
+  html_document:
+    code_folding: hide
+---
+
+<script src="js/hideAll.js"></script>
+
+\newcommand{\pd}{\text{p}}
+
+<!--
+Rscript -e 'rmarkdown::render("rmd-reports/2021-06-30_owls-diagnostics.rmd")'
+-->
+
+```{r setup, include = FALSE, cache = FALSE, message = FALSE, warning = FALSE, comment = NA}
+options(width = 9999)
+knitr::opts_chunk$set(
+  echo = FALSE,
+  cache = TRUE,
+  fig.align = 'center',
+  fig.width = 12,
+  fig.height = 7,
+  out.extra = 'class="plot"'
+)
+```
+
+```{css, echo = FALSE}
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF;
+  width: 100px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: left;
+  font-family: sans-serif;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #dfe4f2;
+    color: #004c93;
+}
+
+pre.plot {
+  background-color: white !important;
+}
+```
+
+```{r defs_includes, message = FALSE, warning = FALSE, comment = NA, cache = FALSE}
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(rstan))
+suppressPackageStartupMessages(library(kableExtra))
+
+local_monitor <- function(x) {
+  rstan::monitor(
+    sims = x,
+    warmup = 1,
+    probs = c(0.01, 0.025, 0.10, 0.5, 0.9, 0.975, 0.99),
+    print = FALSE,
+    digits_summary = 2
+  ) %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column() %>%
+    as_tibble() %>%
+    relocate(mean, sd, n_eff, Rhat, Bulk_ESS, Tail_ESS, valid, .before = se_mean) %>% 
+    arrange(desc(Rhat))
+}
+
+local_styling <- function(x) {
+  kbl(x) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  scroll_box(width = '100%', height = '300px')
+}
+
+source("../scripts/common/plot-settings.R")
+
+# psi_{1} names
+alpha_14_names <- c('v[3]', 'v[5]')
+alpha_5_names <- sprintf('bp[%d]', 1 : 25)
+
+# phi_{12} names
+phi_12_names <- c('v[1]', 'v[2]')
+
+# psi_{2} names
+psi_2_names <- c(
+  'v[6]',
+  sprintf('N1[%d]', 1 : 26),
+  sprintf('NadSurv[%d]', 1 : 26),
+  sprintf('Nadimm[%d]', 1 : 26)
+)
+```
+
+The owls example diagnostics were originally in the appendix, but now live in this document to minimise the length of the supplement.
+
+# Stage 1
+
+```{r stage_one_reads, cache.extra = paste0(tools::md5sum(c('.../rds/owls-example/capture-recapture-subposterior-samples.rds', '../rds/owls-example/fecundity-subposterior-samples.rds')), collapse = '')}
+stage_one_p1_samples <- readRDS('../rds/owls-example/capture-recapture-subposterior-samples.rds')
+stage_one_p3_samples <- readRDS('../rds/owls-example/fecundity-subposterior-samples.rds')
+```
+
+## Submodel 1 - Capture recapture
+
+### $\psi_{1}$
+
+#### $\alpha_{1}, \alpha_{4}$
+
+```{r stage_one_psi_1_alpha_14, cache.extra = paste0(tools::md5sum('../rds/owls-example/capture-recapture-subposterior-samples.rds'), collapse = '')}
+mcmc_trace(stage_one_p1_samples[, , alpha_14_names])
+stage_one_p1_samples[, , alpha_14_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+#### $\alpha_{5, t}$
+
+```{r stage_one_psi_1_alpha_5, cache.extra = paste0(tools::md5sum('../rds/owls-example/capture-recapture-subposterior-samples.rds'), collapse = '')}
+mcmc_trace(stage_one_p1_samples[, , alpha_5_names])
+stage_one_p1_samples[, , alpha_5_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+### $\phi_{1 \cap 2}$
+
+#### $\alpha_{0}, \alpha_{2}$
+
+```{r stage_one_phi_12, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/capture-recapture-subposterior-samples.rds')), collapse = '')}
+mcmc_trace(stage_one_p1_samples[, , phi_12_names])
+stage_one_p1_samples[, , phi_12_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+## Submodel 3 - Fecundity
+
+### $\phi_{2 \cap 3}$
+
+#### $\rho$
+
+```{r stage_one_phi_23, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/fecundity-subposterior-samples.rds')), collapse = '')}
+mcmc_trace(stage_one_p3_samples)
+stage_one_p3_samples %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+# Stage 2
+
+## PoE
+
+```{r stage_two_poe_reads, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-posterior-samples.rds')), collapse = '')}
+stage_two_poe_samples <- readRDS('../rds/owls-example/melded-posterior-samples.rds')
+```
+
+### $\phi_{1 \cap 2}$
+
+#### $\alpha_{0}, \alpha_{2}$
+
+```{r stage_two_poe_phi_12, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-posterior-samples.rds')), collapse = '')}
+mcmc_trace(stage_two_poe_samples[, , phi_12_names])
+stage_two_poe_samples[, , phi_12_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+### $\phi_{2 \cap 3}$
+
+#### $\rho$
+
+```{r stage_two_poe_phi_23, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-posterior-samples.rds')), collapse = '')}
+mcmc_trace(stage_two_poe_samples[, , 'fec'])
+stage_two_poe_samples[, , 'fec'] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+#### $\psi_{2}$
+
+```{r stage_two_poe_psi_2, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-posterior-samples.rds')), collapse = '')}
+mcmc_trace(stage_two_poe_samples[, , psi_2_names])
+stage_two_poe_samples[, , psi_2_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+## Log
+
+```{r stage_two_log_reads, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-phi-samples-log-pooling.rds')), collapse = '')}
+stage_two_log_samples <- readRDS('../rds/owls-example/melded-phi-samples-log-pooling.rds')
+```
+
+### $\phi_{1 \cap 2}$
+
+#### $\alpha_{0}, \alpha_{2}$
+
+```{r stage_two_log_phi_12, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-phi-samples-log-pooling.rds')), collapse = '')}
+mcmc_trace(stage_two_log_samples[, , phi_12_names])
+stage_two_log_samples[, , phi_12_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+### $\phi_{2 \cap 3}$
+
+#### $\rho$
+
+```{r stage_two_log_phi_23, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-phi-samples-log-pooling.rds')), collapse = '')}
+mcmc_trace(stage_two_log_samples[, , 'fec'])
+stage_two_log_samples[, , 'fec'] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+
+## Linear
+
+```{r stage_two_lin_reads, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-phi-samples-lin-pooling.rds')), collapse = '')}
+stage_two_lin_samples <- readRDS('../rds/owls-example/melded-phi-samples-lin-pooling.rds')
+```
+
+### $\phi_{1 \cap 2}$
+
+#### $\alpha_{0}, \alpha_{2}$
+
+```{r stage_two_lin_phi_12, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-phi-samples-lin-pooling.rds')), collapse = '')}
+mcmc_trace(stage_two_lin_samples[, , phi_12_names])
+stage_two_lin_samples[, , phi_12_names] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+### $\phi_{2 \cap 3}$
+
+#### $\rho$
+
+```{r stage_two_lin_phi_23, cache.extra = paste0(tools::md5sum(c('../rds/owls-example/melded-phi-samples-lin-pooling.rds')), collapse = '')}
+mcmc_trace(stage_two_lin_samples[, , 'fec'])
+stage_two_lin_samples[, , 'fec'] %>%
+  local_monitor() %>%
+  local_styling()
+```
+
+There are no $\psi_{2}$ diagnostics for log/linear pooling, as we simply reweight the PoE samples to do log/linear pooling in this example, so the mixing is entirely determined by the mixing of $\boldsymbol{\phi}$.

@@ -179,7 +179,7 @@ Markov melding joins the submodels via the Markov combination of the marginally 
 
 ### Pooled prior
 
-Goudie _et al._&nbsp;proposed forming $\pd_{\text{pool}}(\phi)$ using one of several forms of linear or logarithmic prior pooling [@ohagan_uncertain_2006]
+Goudie _et al._&nbsp;proposed forming $\pd_{\text{pool}}(\phi)$ using linear or logarithmic prior pooling [@ohagan_uncertain_2006]
 \input{tex-input/orig-markov-melding/0020-orig-pooling.tex}
 where $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$ are nonnegative weights, which are chosen subjectively to ensure $\pd_{\text{pool}}(\phi)$ appropriately represents prior knowledge about the common quantity.
 Two special cases of pooling are of particular interest.
@@ -252,7 +252,9 @@ where $\lambda_{\modelindex} = (\lambda_{\modelindex, 1}, \lambda_{\modelindex, 
 We discuss the choice of $\lambda$ in the following section.
 In step two we form the pooled prior as the product of the intermediaries
 \input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
-Clearly, this assumes a priori independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present in any particular marginal $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$.
+with
+\input{tex-input/multiple-phi/00551-linear-normalising-constant.tex}
+Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present in any particular marginal $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$.
 
 ### Logarithmic pooling
 
@@ -260,9 +262,9 @@ Extending logarithmic pooling for chained Markov melding is straightforward.
 We define the logarithmically pooled prior to be
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
 for nonnegative weight vector $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$.
-Note that \eqref{eqn:pooled-prior-overall} does not imply independence between the elements of $\boldsymbol{\phi}$:
+Note that \eqref{eqn:pooled-prior-overall} does not imply independence between the elements of $\boldsymbol{\phi}$ because
 \input{tex-input/multiple-phi/0051-pooled-prior-log-alt-def.tex}
-One advantage of logarithmic pooling is that does not necessarily imply a priori independence between the components of $\boldsymbol{\phi}$.
+which is one advantage of logarithmic pooling.
 When $\lambda_{1} = \lambda_{2} = \ldots = \lambda_{\Nm} = 1$ we obtain the special case of product-of-experts (PoE) pooling [@hinton_training_2002].
 
 ### Dictatorial pooling
@@ -497,6 +499,7 @@ A modified version of the count data submodel is used to demonstrate the normal 
 
 Code and data for all examples are available at [https://github.com/hhau/melding-multiple-phi](https://github.com/hhau/melding-multiple-phi).
 __TODO:__ Swap this for a Zenodo DOI
+Trace plots and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process are also available in the online repository.
 
 ### Results
 
@@ -520,8 +523,6 @@ All forms of the melded posterior, including the normal approximation, are indis
 The lack of difference between the melded posteriors that use different pooled priors indicates that the prior has almost no effect on the posterior.
 This also suggests that the normal approximations are good summaries of the subposteriors.
 
-Trace plots, rank plots, and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process are presented in Appendix&nbsp;\ref{diagnostics-for-the-owls-example}.
-
 ## Uncertain time to respiratory failure
 
 We now return to the example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
@@ -537,7 +538,7 @@ To improve computational performance, we standardise the P/F data for each indiv
 Similarly we rescale the threshold for respiratory failure: $\tau_{i} = \frac{300 - \overline{z}_{i}}{\hat{s}_{i}}$.
 
 We choose to model the P/F ratio using a B-spline of degree 3, with 2 boundary knots and 7 internal knots, and do not include an intercept column in the spline basis.
-The internal knots are evenly spaced between the two boundary knots at $\min(\boldsymbol{t_{i}})$ and $\max(\boldsymbol{t_{i}})$.
+The internal knots are evenly spaced between the two boundary knots at $\min(\boldsymbol{t}_{i})$ and $\max(\boldsymbol{t}_{i})$.
 These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, with coefficients $\zeta_{i, k}$ where $\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})$.
 We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in \mathbb{R}_{+} \cup \{0\}$ so that the submodel can be written as
 \begin{equation}
@@ -558,12 +559,13 @@ If a solution to the following optimisation problem exists, then we conclude tha
   T_{i} = \min_{t} \left\{
     \tau_{i} = \beta_{0, i} + B_{i}(t)\boldsymbol{\zeta}_{i}
     \mid
-    t \in [\max(0, \min(\boldsymbol{t_{i}})), \max(\boldsymbol{t_{i}})]
+    t \in [\max(0, \min(\boldsymbol{t}_{i})), \max(\boldsymbol{t}_{i})]
   \right\},
   \label{eqn:event_time_model_def}
 \end{equation}
 We use a standard multiple root finder [@soetaert_rootsolve_2020] to obtain a solution.
 If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 0$.
+The relationship between $T_{i}$ and other model coefficients is displayed in the left hand panel of Figure \ref{fig:submodel-schematics}.
 
 We would like to link this submodel with the other submodels via $(\{T_{i}, d_{i}\}_{i = 1}^{N})$.
 However, we require a careful definition of the link parameter $\phi_{1 \cap 2}$ as it is a deterministic function of $(\beta_{0, i}, \boldsymbol{\zeta}_{i})$.
@@ -579,6 +581,17 @@ Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted sub
 The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
 It is interesting to see the relatively wide, multimodal distribution for $\{T_{29}, d_{29}\}$ (and for some other individuals not shown here).
 
+\begin{figure}
+  \begin{minipage}{.499\textwidth}
+    \input{tex-input/mimic-example/0090-pf-schematic.tex}
+  \end{minipage}%
+  \begin{minipage}{.499\textwidth}
+    \input{tex-input/mimic-example/0091-fluid-schematic.tex}
+  \end{minipage}
+  \caption{Parameters and form for the P/F ratio submodel (left) and cumulative fluid submodel (right).}
+  \label{fig:submodel-schematics}
+\end{figure}
+
 ### Cumulative fluid model (piecewise linear) $\pd_{3}$
 
 We model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
@@ -591,6 +604,7 @@ We assume a piecewise linear model, with intercept $\eta_{0, i}$, slope $\eta_{1
    \label{eqn:piecewise-fluid-model}
 \end{equation}
 Prior distributions and justification are available in Appendix&nbsp;\ref{priors-and-justification-for-the-fluid-submodel}.
+Figure \ref{fig:submodel-schematics} displays the parameters and their relationship to the fitted regression line.
 
 To align with our melding notation we define $m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}$, with $\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)$, $Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})$, and $\psi_{3} = (\{\eta_{0, i}, \sigma^{2}_{x, i}\}_{i = 1}^{N})$.
 
@@ -652,9 +666,9 @@ Further details about these estimates are available in Appendix&nbsp;\ref{estima
 
 We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) \propto 1$ and $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
-The stage one subposteriors are sampled using `Stan`, using 5 chains with 1000 warm-up iterations and 5000 post warm-up iterations.
+The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
 These samples are used as proposal densities for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in stage two, and we use Stan to sample $\psi_{2}$ for every MH-within-Gibbs step, with 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
-We run 5 chains of 5000 samples for all stage two targets.
+We run 5 chains of $10^{4}$ iterations for all stage two targets.
 Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper.
 
 [^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, disable all adaptive procedures, and manually rescale the target using the `multiplier` syntax to ensure the default (identity) mass matrix is suitable. This seems to work for this example.
@@ -925,72 +939,6 @@ Assume that $g^{12}$ and $g^{1(23)}$ are both linear or logarithmic pooling func
 For Equation \eqref{eqn:pooling-equality} to be true, $\pd_{2}(\phi_{1 \cap 2}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2})$, which is the same result we require in Equation \eqref{eqn:orig-melding-commutative-equalities-2}.
 We have already shown that this is only true when using certain forms of dictatorial pooling.
 Hence, the original operator is commutative under in the same settings in which applying the original melding operator twice results in the chained melded model.
-
-
-## Diagnostics for the owls example
-
-### Stage one diagnostics
-
-\input{tex-input/owls-example/appendix-info/0010-stage-one-diagnostics.tex}
-
-```{r stage_one_mcmc_trace_capture_recapture, fig.cap = "Stage one trace plot of $\\phi_{1 \\cap 2}$ in the capture recapture submodel."}
-knitr::include_graphics("plots/owls-example/stage-one-diagnostics-capture-recapture.png")
-```
-
-```{r stage_one_mcmc_trace_fecundity, fig.cap = "Stage one trace plot of $\\phi_{2 \\cap 3}$ in the fecundity submodel."}
-knitr::include_graphics("plots/owls-example/stage-one-diagnostics-fecundity.png")
-```
-
-### Stage two diagnostics
-
-\input{tex-input/owls-example/appendix-info/0020-stage-two-diagnostics.tex}
-
-```{r stage_two_mcmc_diags, fig.cap = "Stage two trace and rank plots of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$."}
-knitr::include_graphics("plots/owls-example/stage-two-diagnostics.png")
-```
-
-\newpage
-
-## Diagnostics for the Survival example
-
-### Stage one diagnostics
-
-#### Numerical diagnostics
-
-\input{tex-input/surv-example/0080-submodel-one-numeric-diags.tex}
-\input{tex-input/surv-example/0081-submodel-three-numeric-diags.tex}
-
-#### Visual diagnostics
-
-```{r stage_one_submodel_one_diag, fig.cap = "Stage one trace and rank plots for the parameters in both $\\psi_{1}$ and $\\phi_{1 \\cap 2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
-knitr::include_graphics("plots/surv-example/stage-one-submodel-one-diags.png")
-```
-
-```{r stage_one_submodel_three_diag, fig.cap = "Stage one trace and rank plots for the parameters in both $\\psi_{3}$ and $\\phi_{2 \\cap 3}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
-knitr::include_graphics("plots/surv-example/stage-one-submodel-three-diags.png")
-```
-
-### Stage two diagnostics
-
-#### Numerical diagnostics
-
-\input{tex-input/surv-example/0090-stage-two-phi-12-diag.tex}
-\input{tex-input/surv-example/0091-stage-two-phi-23-diag.tex}
-\input{tex-input/surv-example/0092-stage-two-psi-2-diag.tex}
-
-#### Visual diagnostics
-
-```{r surv_ex_stage_two_diag_phi_12, fig.cap = "Stage two trace and rank plots for the parameters in $\\boldsymbol{\\phi}_{1 \\cap 2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
-knitr::include_graphics("plots/surv-example/stage-two-phi-12-diags.png")
-```
-
-```{r surv_ex_stage_two_diag_phi_23, fig.cap = "Stage two trace and rank plots for the parameters in $\\boldsymbol{\\phi}_{2 \\cap 3}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
-knitr::include_graphics("plots/surv-example/stage-two-phi-23-diags.png")
-```
-
-```{r surv_ex_stage_two_diag_psi_2, fig.cap = "Stage two trace and rank plots for the parameters in $\\boldsymbol{\\psi}_{2}$ with the worst $\\widehat{R}$ and $N_{\\text{eff}}$"}
-knitr::include_graphics("plots/surv-example/stage-two-psi-2-diags.png")
-```
 
 ## Calculating the cumulative fluid balance from the raw fluid data
 
@@ -1309,7 +1257,7 @@ We also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$ for experiments discus
 This is obtained using the samples generated under the survival submodel prior and the methodology of Section \ref{pf-submodel}.
 The raw samples and fit are displayed in Figure \ref{fig:surv_prior_phi_12_marginal_plot_fit}.
 
-```{r surv_prior_phi_12_marginal_plot_fit, fig.cap = "Fitted distribution (curve) and Monte Carlo samples drawn from $\\pd_{2}(\\phi_{1 \\cap 2})$ (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar and point) has been set to $1 - \\widehat{\\theta}_{i}$"}
+```{r surv_prior_phi_12_marginal_plot_fit, fig.cap = "Fitted distribution (curve) and Monte Carlo samples drawn from $\\pd_{2}(\\phi_{1 \\cap 2})$ (histogram) for a subset of the individuals in the cohort. The height of the atom at $C_{i}$ (red bar and point) has been set to $1 - \\widehat{\\pi}_{i}$"}
 knitr::include_graphics("plots/mimic-example/submodel-2-phi-12-marginal-fit-plot-small.pdf")
 ```
 
@@ -1332,9 +1280,9 @@ In this appendix $i$ represents a single stay in ICU.
 1. There must be sufficient temporal overlap between the fluid data and the PF data. Specifically,
   \begin{equation}
     \frac{
-      \max\left\{0, \min\left[\max(\boldsymbol{t_{i}}), \max(\boldsymbol{u_{i}})\right] - \max\left[\min(\boldsymbol{t_{i}}), \min(\boldsymbol{u_{i}})\right]\right\}
+      \max\left\{0, \min\left[\max(\boldsymbol{t}_{i}), \max(\tilde{\boldsymbol{u}}_{i})\right] - \max\left[\min(\boldsymbol{t}_{i}), \min(\tilde{\boldsymbol{u}}_{i})\right]\right\}
     } {
-      \max\left[\max(\boldsymbol{t_{i}}), \max(\boldsymbol{u_{i}})\right] - \min\left[\min(\boldsymbol{t_{i}}), \min(\boldsymbol{u_{i}})\right]
+      \max\left[\max(\boldsymbol{t}_{i}), \max(\tilde{\boldsymbol{u}}_{i})\right] - \min\left[\min(\boldsymbol{t}_{i}), \min(\tilde{\boldsymbol{u}}_{i})\right]
     }
     > 0.9
     \label{eqn:overlap-def}

@@ -1,0 +1,40 @@
+---
+title: "tikzplot tests"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+link-citations: true
+hyperrefoptions:
+  - backref
+  - colorlinks=true
+output:
+  pdf_document:
+    includes:
+      in_header:
+        ../tex-input/pre.tex
+    fig_caption: true
+    number_sections: true
+    keep_tex: true
+---
+
+<!--
+Rscript -e 'rmarkdown::render("rmd-reports/2021-07-01_tikzplot-tests.rmd")'
+-->
+\begin{figure}
+  \begin{minipage}{.49\textwidth}
+    \input{../tex-input/mimic-example/0090-pf-schematic.tex}
+  \end{minipage}
+  \begin{minipage}{.49\textwidth}
+    \input{../tex-input/mimic-example/0091-fluid-schematic.tex}
+  \end{minipage}
+  \caption{Parameters and form for the P/F ratio submodel (left) and cumulative fluid submodel (right).}
+  \label{fig:test_lab}
+\end{figure}
+
+
+\ref{fig:test_lab}
