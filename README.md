@@ -11,3 +11,7 @@
 
 The MCMC diagnostic plots and tables referred to in the text can be found [here for the little owls example]() and [here for the MIMIC respiratory failure example]().
 You will need to download the `.html` files and open them in a browser to view the diagnostics.
+
+# Other things
+
+- The logistic regression model discussed in the discussion is here, [and]() the correspondence from the MIMIC team is [here]().

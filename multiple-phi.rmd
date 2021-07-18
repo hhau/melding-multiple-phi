@@ -588,7 +588,7 @@ It is interesting to see the relatively wide, multimodal distribution for $\{T_{
   \begin{minipage}{.499\textwidth}
     \input{tex-input/mimic-example/0091-fluid-schematic.tex}
   \end{minipage}
-  \caption{Parameters and form for the P/F ratio submodel (left) and cumulative fluid submodel (right).}
+  \caption{Parameters and form for the P/F ratio submodel ($\pd_{1}$, left) and cumulative fluid submodel ($\pd_{3}$, right).}
   \label{fig:submodel-schematics}
 \end{figure}
 
@@ -718,63 +718,40 @@ knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
 
 # Discussion
 
-We have introduced the chained melded model, and illustrated the process by which multiple sources of information are combined to obtained the chained melded posterior.
-Our examples demonstrate that practitioners are combining multiple sources of information in this 'chained' way, and that ignoring the uncertainty in any submodel component can produce biased, over-confident inference.
-- Rehash what exactly we got out of the examples -- simple cases, framework makes it conceptually easier?
+This paper introduces the chained melded model.
+In doing so we have made explicit the notion of submodels related in a chain-like way,  which we illustrate with our examples.
+Our examples also demonstrate the importance of quantifying the uncertainty when joining submodels; not doing so can produce biased, over-confident inference.
 
-One contribution of this work is to make explicit the often informal process of summarising and/or approximating submodels for use in subsequent analyses.
-The two most common, we believe, approximation strategies are
-    1. Approximating the subposterior of the common quantity with a normal distribution, which is reused as a prior in stage two.
-    2. Taking only a point estimate of the subposterior, and treating it as data in stage two.
+One contribution of our work is to make explicit the informal process of summarising and/or approximating submodels for use in subsequent analyses.
+The two most common approximation strategies seem to be (i) approximating the subposterior of the common quantity with a normal distribution, which is used as a prior in subsequent models and (ii) taking only a point estimate of the subposterior, and treating it as a known value in further models.
 These strategies may, but not always, produce acceptable approximations to the chained melded model.
-It is interesting to note that many 'preprocessing' steps in an analysis pipeline can be thought of as 'summary by point estimate', where data are denoised or otherwise cleaned via models for future use.
-Such strategies are implementations of 'multi-phase' inference [@lin_trio_2014], and present additional statistical issues not discussed here.
+Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach being the most sophisticated.
 
-- Discussion of estimation methods
-- refines other components of submodels, where as using a parametric approximation to subposterior as a prior in latter models does not
+The melding methodology is very general and permits any form of uncertainty in the link parameters.
+In Section \ref{uncertain-time-to-respiratory-failure} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
+We note that some specific forms of uncertainty have been considered in previous work.
+These include @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation data to account for measurement error in the event time.
 
-- This is a discussion point related to the survival example. It might go here, it might go in the actual  discussion.
-The uncertainty surrounding the event time is not unique to this example.
-Incorporating uncertainty in the event time into joint models is challenging, and no general framework exists for doing so.
-Setting specific methodologies include: @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation to account for measurement error in the event time.
+The example in Section \ref{uncertain-time-to-respiratory-failure} has two more interesting aspects to discuss.
 
-_some discussion of seq/para_
+Firstly, the P/F ratio data used in the first submodel is obtained by finding all blood gas measurements from arterial blood samples.
+Approximately $20\%$ of the venous/arterial labels are missing.
+In these instances a logistic regression model, fit by the MIMIC team, is used to predict the missing label based on other covariates.
+No information is available about this model, however it is theoretically possible to refit the model in a Bayesian framework and use the chained melded model to incorporate the uncertainty in the predicted sample label.
 
-- One distinction we explore is between the sequential integration of information and considering all submodels in parallel, i.e. what should one do if an additional submodel becomes available in the future?
-    - What assumptions must be satisfied for the process to be 'exchangeable' w.r.t the order in which data become available?
-- We describe the independence criteria necessary for the sequential process to yield the same posterior as the chained melded model, and note that in general they do not yield the same posterior.
-    - How should one set $\pd_{1}(\phi_{1 \cap 2})$ when one does not yet know what $\pd_{2}, \pd_{3},  \ldots$ are? Or set $\pd_{\text{pool}}$ when only $\pd_{1}, \pd_{2}$ are known, but there an unknown number of additional models to consider?
-    - issue is with prior specification in the absence of other models, which is then too concentrated / in appropriate when other, related models are added is similar to the issue discussed in Section 4.4.3 of @jacob_better_2017-1.
-- This is related to the idea that an inference process can/should be externally Bayesian, where by combining the data first then updating all the priors, should give the same result as independently updating the priors then combining the resulting posteriors.
-    - Such a concept is not immediately applicable here, as it asks the process to satisfy strange criteria such as $\pd_{1}(\phi_{1 \cap 2} \mid Y_{3})\pd_{2}(\phi_{1 \cap 2} \mid Y_{3}) = \pd_{\text{meld}}^{12}(\phi_{1 \cap 2} \mid Y_{3})$ among others?
+Secondly, the application of our multi-stage sampler to this example is similar to the two-stage approach used for joint longitudinal and time-to-event models [@mauff_joint_2020].
+In the two-stage approach, the longitudinal model is fit using MCMC in stage one, and the samples being reused in stage two when considering the time-to-event data.
+This can significantly reduce the computational effort required to fit the joint model.
+However, unlike our multi-stage sampler, the two-stage approach does not target the full posterior distribution, which can lead to biased estimates.
 
-- _other related work we haven't found a home for just yet_
-  - @niculescu-mizil_inductive_2012, some interesting discussion of the prior in a similar methodological setup (transfer learning and Bayesian networks)
+Several interesting extensions to our methodology are possible.
 
-- other pooling thoughts
-  - Re: linear pooling / pooling more generally. It is possible to induce correlation between independent marginal distributions via copulas [@nelsen_introduction_2006] and other techniques [@lin_recent_2014], but these methods are less intuitive than capturing dependence in the pooling process.
+1. That the linear pooling process of Section \ref{pooled-prior} results in a prior with no dependence between the components of $\boldsymbol{\phi}$ is unsatisfying. It should be possible to introduce dependence between components using multivariate or vine copulas [@kurowicka_dependence_2011; @nelsen_introduction_2006] or other techniques [@lin_recent_2014].
+1. Our methodology assumes that the practitioner is aware of all the submodels they would like to combine when specifying the chained melded model. If an additional submodel becomes available after the chained model has been fit, the practitioner has no option other than respecifying the chained melded model and re-running the multi-stage sampler. Is is possible to adjust the chained melded model such that subsequent submodels, perhaps only at either end of the chain, can be incorporated without respecifying the model[^bettertogether]?
+1. A key property of the multi-stage sampler is that previously considered submodels do not need to be reevaluated. However, if the dimension of $\boldsymbol{\phi}$ is large, or if the subposteriors differ in location or scale, then sampler can be brittle and at best the mixing will be poor. It may be possible to design a Sequential Monte Carlo algorithm that occasionally reevaluates all previous submodels. This would improve the robustness of the sampler at some computational cost.
 
-- _sampler discussion_ I guess this could be worked into one of the other discussion points / conflict.
-  Our sampling process gives back identical results to that of the original IPM.
-  It does so whilst combining a number of different Bayesian inference methods and implementations.
-  By no means is this the only combination of tools that could be used, it is merely illustrative of the idea developed here: we can use the output from one model to target some larger model, without needing to reimplement said model in a different language or framework.
-  It is also an example of estimating an intricate model without ever simultaneously evaluating all components of the model, a useful property for large, complicated models.
+[^bettertogether]: A similar issue is discussed in Section 4.4.3 of @jacob_better_2017-1.
 
-  Of note is the relationship between our parallel two stage sampler and the two stage, importance sampling approach of @mauff_joint_2020.
-However the two stage estimation process of @mauff_joint_2020 is only applicable to joint models, i.e. they do not consider uncertainty arising from $\pd_{1}$.
-They also require, for each iteration of the importance sampler, estimates of the marginal likelihood of the survival data $\pd_{2}(\phi_{1 \cap 2})$.
-
-
-## Disadvantages
-
-- Submodels may conflict with each other
-    - Though we wouldn't have detected this if we could directly evaluate the joint.
-- submodels may be practically unidentifiable
-- Not all intermediary distributions/outputs are meaningful, depends on what we choose to sample at what stage.
-
-## Conflict
-
-- Hopefully I'll address this in the next chapter
 
 <!-- This makes pandoc-citeproc put the references before the end of document. -->
 <!-- <div id="refs"></div> -->
@@ -1350,7 +1327,7 @@ It will be convenient to rewrite \eqref{eqn:sub-step-target} as
   \label{eqn:sub-step-one-target}
 \end{equation}
 
-[^fluidproperty]: This property is also true of the $\pd_{3}$.
+[^fluidproperty]: This property is also true of $\pd_{3}$.
 
 Suppose there are $K$ stage one samples from $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$, and each sample has a corresponding $\phi_{1 \cap 2}$.
 We propose $\psi_{1, 1}^{*}$ and $\theta_{1, 1}^{*}$ (hence $\phi_{1 \cap 2, 1}^{*})$ by sampling a random integer $k$ from $\{1, \ldots, K\}$, retrieving the corresponding values of $\psi_{1}$ and $\theta_{1}$, and ignoring $(\theta_{1, 2}, \ldots, \theta_{1, N}, \psi_{1, 2}, \ldots, \psi_{1, N})$.

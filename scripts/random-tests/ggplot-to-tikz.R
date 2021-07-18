@@ -109,9 +109,9 @@ fluid_plot_line_tbl <- tibble(
   x = seq(from = 0, to = max(list_of_dfs$spline_df$x), length.out = 300)
 )
 
-kappa <- 15
-eta_before <- 3.5
-eta_after <- 1.5
+kappa <- 7
+eta_before <- 2.5
+eta_after <- 0.5
 eta_zero_raw <- 0.2
 fluid_vals <- array(dim = nrow(fluid_plot_line_tbl))
 
@@ -127,11 +127,21 @@ for (ii in seq_len(nrow(fluid_plot_line_tbl))) {
 
 fluid_plot_line_tbl$y <- fluid_vals
 
-ggplot(fluid_plot_line_tbl, aes(x = x , y = y)) +
+tikz(
+  file = 'tex-input/mimic-example/0091-fluid-schematic.tex',
+  width = display_settings$half_page_plot_width / 2.54,
+  height = (display_settings$half_page_plot_height / (2.54 * 2))
+)
+
+p2 <- ggplot(fluid_plot_line_tbl, aes(x = x , y = y)) +
   geom_line() +
+  geom_point(mapping = aes(x = kappa, y = eta_zero_raw + eta_before * kappa)) +
   xlab(r"{$t$}") +
   ylab("Fluid") +
   theme(
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank()
   )
+
+print(p2)
+dev.off()
