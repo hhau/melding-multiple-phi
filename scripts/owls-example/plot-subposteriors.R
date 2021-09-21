@@ -6,6 +6,7 @@ library(tidybayes)
 library(scales)
 library(RColorBrewer)
 library(magrittr)
+library(patchwork)
 
 original_model_samples <- readRDS("rds/owls-example/original-ipm-samples.rds")
 capture_recapture_submodel_samples <- readRDS("rds/owls-example/capture-recapture-subposterior-samples.rds")
@@ -255,4 +256,12 @@ ggsave_fullpage(
   filename = "plots/owls-example/subposteriors-melding-only.pdf",
   plot = p_melding_only,
   adjust_height = -15
+)
+
+p_patchwork <- (p_2 / p_melding_only) + plot_layout(heights = c(7 / 12, 5 / 12))
+
+ggsave_fullpage(
+  filename = "plots/owls-example/subposteriors-both-patchwork.pdf",
+  plot = p_patchwork,
+  adjust_height = -7
 )

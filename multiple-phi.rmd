@@ -222,39 +222,23 @@ We form the chained melded model by taking the Markov combination of the margina
 
 ## Pooled prior
 
-Specifying \eqref{eqn:melded-model-full} requires forming an appropriate joint prior for $\boldsymbol{\phi}$.
-Like in Markov melding, we choose the pooling function $g$ to appropriately represent prior knowledge about the common quantities.
-This is not trivial given the many possibilities of pooling functions and pooling weights, which we detail in the following sections.
-Hence, it is important to assess the ensuing pooled prior is indeed an appropriate summary of prior knowledge, and we recommend producing prior predictive visualisations of the pooled prior as part of a Bayesian workflow [@gabry_visualization_2019; @gelman_bayesian_2020].
-
-We have chosen to define $\pd_{\text{pool}}(\boldsymbol{\phi})$ as a general function of all prior marginals
+Specifying \eqref{eqn:melded-model-full} requires a joint prior for $\boldsymbol{\phi}$.
+As in Markov melding we form the joint prior by pooling the marginal priors, selecting a pooling function $g$ that appropriately represents prior knowledge about the common quantities.
+We define $\pd_{\text{pool}}(\boldsymbol{\phi})$ as a generic function of all prior marginals
 \input{tex-input/pooled-prior-discussion/0030-pooled-prior-general-def.tex}
-This is because we do not assume any of the components of $\boldsymbol{\phi}$ are are a priori independent.
-If the elements of $\boldsymbol{\phi}$ are independent, then we can form $\pd_{\text{pool}}(\boldsymbol{\phi})$ as the product of $\Nm - 1$ standard pooling functions $h_{\modelindex}$ defined in Section \ref{pooled-prior}
+because we do not assume independence between the components of $\boldsymbol{\phi}$.
+If they are independent, then we can form $\pd_{\text{pool}}(\boldsymbol{\phi})$ as the product of $\Nm - 1$ standard pooling functions $h_{\modelindex}$ defined in Section \ref{pooled-prior}
 \input{tex-input/pooled-prior-discussion/0010-bad-alternative-one.tex}
-
-A useful notion in between \eqref{eqn:pooled-prior-general-def} and \eqref{eqn:bad-alternative-one} is that if $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) = \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1})$ then we can define
+An intermediary notion, between complete dependence \eqref{eqn:pooled-prior-general-def} and independence \eqref{eqn:bad-alternative-one}, is that if $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) = \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1})$ then we can define
 \input{tex-input/pooled-prior-discussion/0031-pooled-prior-split-def.tex}
 without any additional assumptions.
-That is, if any two consecutive components of $\boldsymbol{\phi}$ are independent under the submodel containing both of them, we can divide the pooled prior specification problem into two pooling functions.
-Because each pooling function considers fewer marginals it is easier to choose pooling weights and assess the suitability of the pooled prior via prior predictive checks.
+That is, if any two consecutive components of $\boldsymbol{\phi}$ are independent in the submodel containing both of them, we can divide the pooled prior specification problem into two pooling functions.
+The smaller number of arguments to $g_{1}$ and $g_{2}$ make it is easier to choose appropriate forms for those functions
 
+Selecting an appropriate pooling function is not trivial given the many choices of functional form and pooling weights (which we discuss momentarily).
+It is important that prior predictive visualisations of the pooled prior are produced [@gabry_visualization_2019; @gelman_bayesian_2020] to ensure that it suitably represents the available information.
 A complication encountered in the chained melding setting is that standard linear and logarithmic pooling, as defined in Equations \eqref{eqn:orig-pooling-linear} and \eqref{eqn:orig-pooling-logarithmic}, are not immediately applicable when the submodels marginal distributions consider different parameters.
-The interpretation Equation \eqref{eqn:orig-pooling-linear} is particularly unclear.
 We now propose extensions to logarithmic, linear, and dictatorial pooling for use in the case of chained melding.
-
-### Linear pooling
-
-Our generalisation of linear pooling to handle marginals of different variables involves two steps.
-The first step forms intermediary pooling densities via standard linear pooling, using appropriate marginals of the relevant quantity
-\input{tex-input/multiple-phi/0080-M-model-linear-pooling.tex}
-where $\lambda_{\modelindex} = (\lambda_{\modelindex, 1}, \lambda_{\modelindex, 2})$ are nonnegative pooling weights.
-We discuss the choice of $\lambda$ in the following section.
-In step two we form the pooled prior as the product of the intermediaries
-\input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
-with
-\input{tex-input/multiple-phi/00551-linear-normalising-constant.tex}
-Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present in any particular marginal $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$.
 
 ### Logarithmic pooling
 
@@ -266,6 +250,20 @@ Note that \eqref{eqn:pooled-prior-overall} does not imply independence between t
 \input{tex-input/multiple-phi/0051-pooled-prior-log-alt-def.tex}
 which is one advantage of logarithmic pooling.
 When $\lambda_{1} = \lambda_{2} = \ldots = \lambda_{\Nm} = 1$ we obtain the special case of product-of-experts (PoE) pooling [@hinton_training_2002].
+
+### Linear pooling
+
+Our generalisation of linear pooling to handle marginals of different variables is a two step procedure.
+The first step forms intermediary pooling densities via standard linear pooling, using appropriate marginals of the relevant quantity
+\input{tex-input/multiple-phi/0080-M-model-linear-pooling.tex}
+where $\lambda_{\modelindex} = (\lambda_{\modelindex, 1}, \lambda_{\modelindex, 2})$ are nonnegative pooling weights.
+We discuss the choice of $\lambda$ in the following section.
+In step two we form the pooled prior as the product of the intermediaries
+\input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
+with
+\input{tex-input/multiple-phi/00551-linear-normalising-constant.tex}
+Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present in any particular marginal $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$.
+We discuss extensions to linear pooling that enable prior dependence between the elements of $\boldsymbol{\phi}$ in Section \ref{discussion}.
 
 ### Dictatorial pooling
 
@@ -280,37 +278,42 @@ The first considers $\pd_{\modelindex}(\phi_{\modelindex})$ as the authoritative
 This results in
 \input{tex-input/pooled-prior-discussion/0040-dictatorial-one-submodel.tex}
 where $g_{1}$ and $g_{2}$ are linear or logarithmic pooling functions as desired.
-In our second proposal we require the prior for each element in $\boldsymbol{\phi}$ to be associated with only one submodel.
-This is equivalent to logarithmic pooling with the following choice of pooling weights
-\input{tex-input/pooled-prior-discussion/0041-dictatorial-def-all.tex}
-<!-- % takes up too much space, but slightly annoying to describe in words.-->
-We set all of the non-zero elements of $\lambda_{\text{dict}}$ to $1$ when using dictatorial pooling.
 
-We will later require the specific forms of dictatorial pooling with $\Nm = 3$ and all non-zero elements of $\lambda = 1$, which are
+In our second proposal we require the prior for each element in $\boldsymbol{\phi}$ to be associated with only one submodel.
+When this condition is combined with one choice of $\pd_{\modelindex}$ or $\pd_{\modelindex + 1}$ for $\phi_{\modelindex \cap \modelindex + 1}$, no other choices are required.
+For example, if $\Nm = 5$ and we dictate that $\pd_{3}$ is the authoritative prior for $\phi_{2 \cap 3}$ (and consequently $\phi_{3 \cap 4}$), this immediately implies
+\input{tex-input/pooled-prior-discussion/0042-dictatorial-def-two.tex}
+In general, this form of dictatorial pooling is equivalent to logarithmic pooling with the following choice of pooling weights
+\input{tex-input/pooled-prior-discussion/0041-dictatorial-def-all.tex} <!-- % takes up too much space, but slightly annoying to describe in words.-->
+with the non-zero elements of $\lambda_{\text{dict}}$ set to $1$.
+
+<!-- We will later require the specific forms of dictatorial pooling with $\Nm = 3$ and all non-zero elements of $\lambda = 1$, which are
 \input{tex-input/multiple-phi/0057-dictatorial-pooling.tex}
+ -->
 
 ### Pooling weights
 
-Choosing values for the pooling weights ($\lambda$) is an important step in specifying the pooled prior.
+Choosing values for the pooling weights is an important step in specifying the pooled prior.
+Because appropriate values for the weights depend on the submodels being pooled and the information available a priori, universal recommendations are impossible, so we illustrate the impact of different choices in a straightforward example.
 Figure \ref{fig:pooled_densities_plot} illustrates how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}(\boldsymbol{\phi})$ when pooling normal distributions.
 Specifically, we consider $\Nm = 3$ submodels and pool
 \input{tex-input/multiple-phi/0061-marginal-gaussian-example.tex}
-where $\text{N}(\phi; \mu, \sigma^{2})$ is the normal density function with mean $\mu$ and standard deviation $\sigma$.
+where $\text{N}(\phi; \mu, \sigma^{2})$ is the normal density function with mean $\mu$ and variance $\sigma^{2}$ (or covariance matrix where appropriate).
 The two dimensional density function $\pd_{2}$ has an additional parameter $\rho$, which controls the intra-submodel marginal correlation.
 We set $\mu_{1} = -2.5, \mu_{2} = \left[\mu_{2, 1} \,\, \mu_{2, 2}\right]' = \left[0 \,\, 0\right]', \mu_{3} = 2.5, \sigma_{1}^{2} = \sigma_{2}^{2} = \sigma_{3}^{2} = 1$ and $\rho = 0.8$.
 In the logarithmic case we set $\lambda_{1} = \lambda_{3}$ and parameterise $\lambda_{2} = 1 - 2\lambda_{1}$, so that $\lambda_{1} + \lambda_{2} + \lambda_{3} = 1$ whilst limiting ourselves to varying only $\lambda_{1}$.
 Similarly, in the linear case we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
 We consider 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
 
-For both pooling methods, as the weight $\lambda_{1}$ associated with models $\pd_{1}$ and $\pd_{3}$ increases, the contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase.
-Note the lack of correlation in $\pd_{\text{pool}}$ under linear pooling (right column of Figure \ref{fig:pooled_densities_plot}) due to Equation \eqref{eqn:silly-linear-overall}.
-A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ and $\lambda_{1} = 0.375$ cases, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
-The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$, and does not result in a priori independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
-Appendix&nbsp;\ref{log-pooling-gaussian-densities} analytically shows that $\lambda_{2}$ controls the quantity of correlation present in $\pd_{\text{pool}}$ in this setting.
-
 ```{r pooled_densities_plot, fig.cap = "Contour plots of $\\pd_{\\text{pool}}(\\boldsymbol{\\phi})$ (red) under logarithmic and linear pooling (left and right column respectively). The values of $\\lambda_{1}$ are indicated in the plot titles, and the constituent marginal densities are shown in blue."}
 knitr::include_graphics("plots/pooling-tests/version-two.pdf")
 ```
+
+For both pooling methods, as the weight $\lambda_{1}$ associated with models $\pd_{1}$ and $\pd_{3}$ increases, the relative contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase.
+Note the lack of correlation in $\pd_{\text{pool}}$ under linear pooling (right column of Figure \ref{fig:pooled_densities_plot}) due to Equation \eqref{eqn:silly-linear-overall}.
+A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ and $\lambda_{1} = 0.375$ cases, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
+The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$, and does not result in a priori independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+Appendix&nbsp;\ref{log-pooling-gaussian-densities} shows analytically that $\lambda_{2}$ controls the quantity of correlation present in $\pd_{\text{pool}}$ in this setting.
 
 # Posterior estimation
 
@@ -331,7 +334,7 @@ Generic methodology for efficiently sampling arbitrary numbers of submodels in p
 The sequential sampler assumes that the pooled prior decomposes such that
 \input{tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
 This is necessary to avoid sampling all elements of $\boldsymbol{\phi}$ in the first stage.
-All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as we can assume all but $\pd_{3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are improper, flat distributions.
+All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as we can assume all but $\pd_{\text{pool}, 3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are improper, flat distributions.
 However, including some portion of the pooled prior in each stage of the sampler can improve performance, and eliminate computational instabilities when submodel likelihoods contain little information.
 
 #### Stage one
@@ -408,12 +411,13 @@ In addition, assume that
 The latter two assumptions imply that the melded posterior of interest is proportional to
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
 
-Suppose we can approximate $\pd_{1}$ and $\pd_{3}$ using normal distributions, e.g approximate the subposterior $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ by a normal density with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$ denoting the approximation $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$.
-In general, all $\widehat{\pd}(\cdot \mid \widehat{\mu}, \widehat{\Sigma})$ terms are normal approximations, each with distinct means and covariances.
-The approximate melded posterior is thus
+Denote the normal approximation of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ as $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$, which is a normal distribution with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$.
+The corresponding normal approximation of the prior $\pd_{1}(\phi_{1 \cap 2})$ is $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0})$.
+The equivalent approximations for the subposterior and prior of $\pd_{3}$ are $\widehat{\pd}_{3}(\phi_{2 \cap 3} \mid \widehat{\mu}_{3}, \widehat{\Sigma}_{3})$ and $\widehat{\pd}_{3}(\phi_{2 \cap 3} \mid \widehat{\mu}_{3, 0}, \widehat{\Sigma}_{3, 0})$ respectively.
+Substituting in these approximations yields the approximate melded posterior
 \input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
-where the terms in the denominator of Equation \eqref{eqn:normal-approximation-approximate-target} are approximations to the respective submodel prior marginal distributions.
-The product of independent normal densities is an unnormalised multivariate normal density with independent components, so we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
+This expression can be simplified.
+Noting that he product of independent normal densities is an unnormalised multivariate normal density with independent components, we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
 \input{tex-input/multiple-normal-approximation/0030-normal-approx-nu-de-form.tex}
 Finally, the ratio of normal densities is also an unnormalised normal density, and hence Equation \eqref{eqn:normal-approx-nu-de-form} simplifies to
 \input{tex-input/multiple-normal-approximation/0040-final-normal-approx.tex}
@@ -430,8 +434,8 @@ variant from @finke_efficient_2019 with the highest marginal likelihood.
 
 ### Submodels
 
-Before we detail the specifics of each submodel, we need to introduce some notation.
-Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur annually at times $t \in \{1, \ldots, T\}$, where $T = 25$ here.
+Before we detail the specifics of each submodel, we must introduce some notation.
+Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur annually at times $t \in \{1, \ldots, T\}$, with $T = 25$.
 The sex- and age-specific probability of an owl surviving from time $t$ to $t + 1$ is $\delta_{a, s, t}$, and the sex-specific probability of a previously captured owl being recaptured at time $t + 1$ is $\pi_{s, t + 1}$ so long as the owl is alive at time $t + 1$.
 Owls are assumed to develop from juveniles into adults after 1 year.
 
@@ -439,28 +443,28 @@ Owls are assumed to develop from juveniles into adults after 1 year.
 
 Capture-recapture data pertain to owls that are released at time $t$ (having been captured and tagged).
 These individuals are then recaptured at time $u = t + 1, \dots, T$, or not recaptured before the conclusion of the study, in which case $u = T + 1$.
-Define $M_{a, s, t, u}$ as the number of owls of sex $s$, and age-group $a$ last observed at time $t$, recaptured at time $u$.
+Define $M_{a, s, t, u}$ as the number of owls of sex $s$ and age-group $a$ last observed at time $t$, recaptured at time $u$.
 We aggregate these observations into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows, corresponding to released times, and $T + 1$ columns, corresponding to recapture times.
 Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls released at time $t$, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
-We assume the recapture times for owls released at time $t$ follow a sex- and age-specific multinomial likelihood
+The recapture times for owls released at time $t$ follow a sex- and age-specific multinomial likelihood
 \input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
 with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
 \input{tex-input/owls-example/0011-multinomial-probabilities.tex}
 
 #### Fecundity: $\pd_{3}$
 
-The fecundity submodel considers the number of breeding females at time $t$, $N_{t}$, and the number of chicks produced that survive and leave the nest $n_{t}$.
+The fecundity submodel considers the number of breeding females at time $t$ denoted $N_{t}$, and the number of chicks produced that survive and leave the nest denoted $n_{t}$.
 A Poisson model is employed to estimate fecundity (reproductive rate) $\rho$
 \input{tex-input/owls-example/0030-fecundity-submodel.tex}
 
 #### Count data model: $\pd_{2}$
 
-To estimate population abundance, a two level model is used: the first models the observed (counted) number of females at each point in time, with a second, latent process modelling the total number of females in population.
+To estimate population abundance, a two level model is used: the first level models the observed (counted) number of females at each point in time, with a second, latent process modelling the total number of females in population.
 Denote the total number of juvenile and adult females in the population at time $t$ as $\boldsymbol{x}_{t} = \left[x_{J, t}, x_{A, t}\right]$.
 If $\text{sur}_{t}$ adult females survive from time $t - 1$ to time $t$, and $\text{imm}_{t}$ adult females immigrate over the same time period, then the latent, population level model is
 \input{tex-input/owls-example/0020-count-data-submodel.tex}
 where $\eta_{t}$ is the immigration rate.
-We assume the initial population sizes $x_{J, 1}$ and $x_{A, 1}$ are both a priori independently uniformly distributed over $\{0, 1, \ldots, 50\}$.
+The initial population sizes $x_{J, 1}$ and $x_{A, 1}$ have independent discrete uniform priors on $\{0, 1, \ldots, 50\}$.
 The observation model is
 \input{tex-input/owls-example/0021-observation-process.tex}
 
@@ -470,7 +474,7 @@ The observation model is
 The specific parameterisation of @finke_efficient_2019 we employ is
 \input{tex-input/owls-example/0040-parameterisation-info.tex}
 thus the quantities in common between the submodels are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
-Our definition of $\phi_{1 \cap 2}$ does not include $\alpha_{1}$ as it is male specific and does not exist in $\pd_{2}$.
+Not that the definition of $\phi_{1 \cap 2}$ does not include $\alpha_{1}$ as it is male specific and does not exist in $\pd_{2}$.
 
 To align the notation of this example with our chained melding notation we define, for all permitted values of $a, s$ and $t$, $Y_{1} = (\boldsymbol{M}_{a, s})$, $\psi_{1} = (\alpha_{1}, \alpha_{4}, \alpha_{5, t})$; $Y_{2} = (y_{t})$, $\psi_{2} = (\boldsymbol{x}_{t}, \alpha_{6}, \text{sur}_{t}, \text{imm}_{t})$; and $Y_{3} = (N_{t}, n_{t})$, $\psi_{3} = \varnothing$.
 
@@ -503,25 +507,18 @@ Trace plots and numerical convergence measures [@vehtari_rank-normalization_2020
 
 ### Results
 
-```{r phi_subpost, fig.cap = "Credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{0}, \\alpha_{2})$ and $\\phi_{2 \\cap 3} = \\rho$ from the posterior of the original integrated population model $\\pd_{\\text{ipm}}$; the chained melded posteriors using product-of-experts pooling, logarithmic pooling, and linear pooling denoted $\\pd_{\\text{meld}}$, $\\pd_{\\text{meld, log}}$ and $\\pd_{\\text{meld, lin}}$; the melded posterior using the normal approximation $\\widehat{\\pd}_{\\text{meld}}$; and the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 99\\% wide."}
-knitr::include_graphics("plots/owls-example/subposteriors.pdf")
+```{r phi_subpost, fig.cap = "Top row: credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{0}, \\alpha_{2})$ and $\\phi_{2 \\cap 3} = \\rho$ from the posterior of the original integrated population model $\\pd_{\\text{ipm}}$; the chained melded posteriors using product-of-experts pooling, logarithmic pooling, and linear pooling denoted $\\pd_{\\text{meld}}$, $\\pd_{\\text{meld, log}}$ and $\\pd_{\\text{meld, lin}}$; the melded posterior using the normal approximation $\\widehat{\\pd}_{\\text{meld}}$; and the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 99\\% wide. Bottom row: otherwise identical to the top row but with the individual subposteriors removed."}
+knitr::include_graphics("plots/owls-example/subposteriors-both-patchwork.pdf")
 ```
 
-<!-- ```{r phi_qq_compare, fig.cap = "Quantile-Quantile plot of ($\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3}$) for the IPM posterior (y-axis) and melded posterior (x-axis). The empirical quantiles are displayed as a solid red line, and the optimal quantile is shown as a dashed black line. The melded posterior quantiles obtained using the normal approximation are plotted as a dot-dash blue line."}
-knitr::include_graphics("plots/owls-example/orig-meld-qq-compare.pdf")
-``` -->
-
-```{r phi_subpost_melding_only, fig.cap = 'Figure \\ref{fig:phi_subpost} without the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Different choices of pooling methods and pooling weights produce different posterior estimates for $\\alpha_{0}$ and $\\alpha_{2}$, but do not affect $\\rho$.'}
-knitr::include_graphics('plots/owls-example/subposteriors-melding-only.pdf')
-```
-
-
-We empirically validate our methodology and sampler by comparing the melded posterior samples to a large sample -- 6 chains of $2 \times 10^5$ iterations each -- from the original IPM posterior.
+We empirically validate our methodology and sampler by comparing the melded posterior samples to a large sample -- 6 chains, each containing $1 \times 10^5$ post-warmup iterations -- from the original IPM posterior.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the common quantities from the individual submodels, the melded models, and the original IPM.
 We see that the count data alone ($\pd_{2}$) contain minimal information about $\alpha_{0}, \alpha_{2}$ and $\rho$; incorporating the data from the other submodels is essential for precise estimates.
-All forms of the melded posterior, including the normal approximation, are indistinguishable from the original IPM.
-The lack of difference between the melded posteriors that use different pooled priors indicates that the prior has almost no effect on the posterior.
-This also suggests that the normal approximations are good summaries of the subposteriors.
+
+The melded posterior estimates are generally similar to the original IPM estimate,
+PoE pooling produces the posterior most different from the original IPM, as it yields a prior for $(\alpha_{0}, \alpha_{2})$ that is more concentrated around zero than the other pooling methods.
+The lack of large differences between the melded posteriors that use different pooled priors indicates that the prior has almost no effect on the posterior.
+The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bottom row of Figure \ref{fig:phi_subpost}) to the melding approaches suggests that the normal approximations are good summaries of the subposteriors.
 
 ## Uncertain time to respiratory failure
 
@@ -554,7 +551,7 @@ For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.1^2)$,
 
 [^pfoutliers]: P/F data contain many outliers for, amongst many possible reasons, arterial/venous blood sample mis-labelling; incorrectly recorded oxygenation support information; and differences between sample collection time, lab result time, and the observation time recorded as in the EHR.
 
-If a solution to the following optimisation problem exists, then we conclude that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$.
+If a solution to the optimisation problem exists
 \begin{equation}
   T_{i} = \min_{t} \left\{
     \tau_{i} = \beta_{0, i} + B_{i}(t)\boldsymbol{\zeta}_{i}
@@ -563,23 +560,24 @@ If a solution to the following optimisation problem exists, then we conclude tha
   \right\},
   \label{eqn:event_time_model_def}
 \end{equation}
-We use a standard multiple root finder [@soetaert_rootsolve_2020] to obtain a solution.
+then we conclude that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$.
+We attempt to solve Equation \ref{eqn:event_time_model_def} using a standard multiple root finder [@soetaert_rootsolve_2020].
 If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 0$.
 The relationship between $T_{i}$ and other model coefficients is displayed in the left hand panel of Figure \ref{fig:submodel-schematics}.
 
 We would like to link this submodel with the other submodels via $(\{T_{i}, d_{i}\}_{i = 1}^{N})$.
 However, we require a careful definition of the link parameter $\phi_{1 \cap 2}$ as it is a deterministic function of $(\beta_{0, i}, \boldsymbol{\zeta}_{i})$.
-Keeping with the notation of @goudie_joining_2019, we define $\theta_{1, i} = (\beta_{0, i}, \boldsymbol{\zeta}_{i})$, with $\phi_{1 \cap 2, i} = f(\theta_{1, i}) = (T_{i}, d_{i})$, where $f$ is the solution to \eqref{eqn:event_time_model_def}, and $\phi_{1 \cap 2} = \phi_{1 \cap 2}(\theta_{1}) = (f(\theta_{1, i}), \ldots, f(\theta_{1, N}))$.
+Keeping with the notation of @goudie_joining_2019, we define $\theta_{1, i} = (\beta_{0, i}, \boldsymbol{\zeta}_{i})$, with $\phi_{1 \cap 2, i} = f(\theta_{1, i}) = (T_{i}, d_{i})$, where $f$ is the output from attempting to solve Equation \eqref{eqn:event_time_model_def}, and $\phi_{1 \cap 2} = \phi_{1 \cap 2}(\theta_{1}) = (f(\theta_{1, i}), \ldots, f(\theta_{1, N}))$.
 It is also convenient to define $\theta_{1} = (\theta_{1, 1}, \ldots, \theta_{1, N})$.
 
 Care is also required when considering the prior marginal $\pd_{1}(\phi_{1 \cap 2})$.
 We note that $\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})$, and that $\pd_{1, i}(T_{i}, d_{i})$ conditions on each individual's length of stay (in specifying the location of the knots), as well as the range, mean, and standard deviation of the P/F data (by standardising $\tilde{z}_{i, j}$).
-The analytic form of $\pd_{1, i}(T_{i}, d_{i})$ is not available and must be estimated, which we discuss in Section \ref{estimating-submodel-prior-marginal-distributions}.
+The analytic form of $\pd_{1, i}(T_{i}, d_{i})$ is not available and must be estimated, which we discuss in Appendix \ref{estimating-submodel-prior-marginal-distributions}.
 To completely align with our chained melding notation we also define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\psi_{1, 1}, \ldots, \psi_{1, N}) = (\{\omega_{i}\}_{i = 1}^{N})$.
 
-Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 15, 17$, and $29$.
+The left column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 15, 17$, and $29$.
 The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
-It is interesting to see the relatively wide, multimodal distribution for $\{T_{29}, d_{29}\}$ (and for some other individuals not shown here).
+It is interesting to see the relatively wide, multimodal distribution for $(T_{29}, d_{29})$ (there is a second mode at $(T_{29} = C_{29}, d_{29} = 0)$ and for other individuals not shown here).
 
 \begin{figure}
   \begin{minipage}{.499\textwidth}
@@ -595,7 +593,7 @@ It is interesting to see the relatively wide, multimodal distribution for $\{T_{
 ### Cumulative fluid model (piecewise linear) $\pd_{3}$
 
 We model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
-The cumulative data are derived from the raw fluid balance observations[^fluidobs].
+The cumulative data are derived from the raw fluid input/output observations, which we detail in Appendix&nbsp;\ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
 We denote the complete vector of observations by $\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})$ and times by $\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})$.
 
 We assume a piecewise linear model, with intercept $\eta_{0, i}$, slope $\eta_{1, i}^{b}$ before the breakpoint at time $\kappa_{i}$, and slope $\eta_{1, i}^{a}$ after the breakpoint.
@@ -608,10 +606,8 @@ Figure \ref{fig:submodel-schematics} displays the parameters and their relations
 
 To align with our melding notation we define $m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}$, with $\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)$, $Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})$, and $\psi_{3} = (\{\eta_{0, i}, \sigma^{2}_{x, i}\}_{i = 1}^{N})$.
 
-Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for individuals $i = 6, 15, 17$, and $29$.
+The right column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for individuals $i = 6, 15, 17$, and $29$.
 There is relatively little noise in these data, which results in tight subposterior distributions for $\eta_{1, i}^{b}$ and $\eta_{1, i}^{a}$.
-
-[^fluidobs]: Details about the derivation of these values from the raw fluid data are contained in Appendix&nbsp;\ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
 
 ```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 6, 15, 17$, and $29$.'}
 knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pdf')
@@ -619,7 +615,7 @@ knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pd
 
 ### Survival submodel $\pd_{2}$
 
-Individuals experience respiratory failure ($d_{i} = 1$) at time $T_{i}$, or are censored[^competerisks] $(d_{i} = 2, T_{i} = C_{i})$.
+Individuals experience respiratory failure ($d_{i} = 1$) at time $T_{i}$, or are censored[^competerisks] $(d_{i} = 0, T_{i} = C_{i})$.
 We assume a Weibull hazard with shape parameter $\gamma$ for the event times.
 All individuals have $b = 1, \ldots, B$ baseline (time invariant) covariates $w_{i, b}$ with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, B})$(i.e. including an intercept term), and coefficient $\theta \in \mathbb{R}^{B + 1}$.
 The hazard is assumed to be influenced by these covariates and the rate of increase $\frac{\partial}{\partial t} m_{i}(t)$ in the cumulative fluid balance.
@@ -629,8 +625,7 @@ Hence, the hazard is
   h_{i}(T_{i}) = \gamma T_{i}^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\right\} \\
   \frac{\partial}{\partial T_{i}} m_{i}(T_{i}) = \eta^{b}_{1, i}\boldsymbol{1}_{\{T_{i} < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{T_{i} \geq \kappa_{i}\}},
 \end{gather}
-
-The survival probability $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$ has an analytic form, which we derive in Appendix&nbsp;\ref{analytic-form-for-the-survival-probability}
+The survival probability $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$ has an analytic form, which we derive in Appendix&nbsp;\ref{analytic-form-for-the-survival-probability}.
 The likelihood for the submodel is
 \begin{equation}
   \pd(T_{i}, d_{i} \mid \gamma, \boldsymbol{\theta}, \alpha, \kappa_{i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}, \boldsymbol{w}_{i}) = h_{i}(T_{i})^{d_{i}} S_{i}(T_{i}), \\
@@ -671,7 +666,7 @@ These samples are used as proposal densities for $\phi_{1 \cap 2}$ and $\phi_{2 
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
 Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper.
 
-[^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, disable all adaptive procedures, and manually rescale the target using the `multiplier` syntax to ensure the default (identity) mass matrix is suitable. This seems to work for this example.
+[^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, disable all adaptive procedures, and manually rescale the target using the `multiplier` syntax to ensure the default (identity) mass matrix is suitable.
 
 It is crucial for the convergence of our multi-stage sampler that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_.
 Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
@@ -705,7 +700,7 @@ The change to the posterior distribution of $\gamma$ in Figure \ref{fig:psi_2_co
 Figure \ref{fig:kap_meier_pc_plot} displays the average survival probability under the melded posterior (using PoE pooling) of $\psi_{2}$ and $\phi_{2 \cap 3}$, and corresponding draws of $\phi_{1 \cap 2}$ converted into empirical survival probabilities using the Kaplan-Meier estimator.
 Also shown is the Kaplan-Meier estimate using $\tilde{\phi}_{1 \cap 2}$, and the average survival probability computed using the posterior of $\psi_{2}$ with fixed $\tilde{\phi}_{1 \cap 2}$ and $\tilde{\phi}_{2 \cap 3}$.
 The survival curves differ markedly, with the 95\% intervals overlapping only for small values of time.
-It is also interesting to see that $\tilde{\phi_{1 \cap 2}}$, despite being a reasonable point estimate of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, is not very likely under the melded posterior.
+It is also interesting to see that $\tilde{\phi}_{1 \cap 2}$, despite being a reasonable point estimate of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, is not very likely under the melded posterior.
 Figure \ref{fig:kap_meier_pc_plot} also suggests that the Weibull hazard is insufficiently flexible for this example, however more complex hazards are beyond the scope of this paper[^hazards].
 
 ```{r kap_meier_pc_plot, fig.cap = 'Empirical survival curves and average survival probabilities at time $t$. The black lines are draws of $\\phi_{1 \\cap 2}$ from the melded posterior using PoE pooling, converted into empirical survival curves via the Kaplan-Meier estimator. The red line and interval (posterior mean and 95\\% credible interval) denote the model-based average survival probability obtained from the melded posterior using PoE pooling computed from the values of $\\psi_{2}$ and $\\phi_{2 \\cap 3}$. The blue dashed line is the Kaplan-Meier estimate obtained from the subposterior median $\\tilde{\\phi}_{1 \\cap 2}$, and the blue solid line and interval are the corresponding model based estimate obtained using $\\psi_{2}$ and $\\tilde{\\phi}_{2 \\cap 3}$.'}
@@ -788,7 +783,7 @@ The general $\Nm$ model logarithmic pooled prior is
 
 We can exactly compute $\pd_{\text{pool}}$ when logarithmically pooling Gaussian densities.
 Noting that, in the one dimensional case, $\text{N}(\phi; \mu, \sigma^2)^{\lambda_{\modelindex}} = \text{N}(\phi; \mu, \frac{\sigma^2}{\lambda_{\modelindex}})$, we use the results of @bromiley_products_2003 and write
-\input{tex-input/multiple-phi/0070-log-pooling-gaussian.tex}
+multiple-phi/0070-log-pooling-gaussian.tex}
 hence $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \text{N}(\left[\phi_{1 \cap 2} \,\, \phi_{2 \cap 3}\right]^{\top}\hspace{-0.5em};\, \mu_{\text{log}}, \, \Sigma_{\text{log}})$.
 The choice of $\lambda_{2}$ is critical; by controlling the contribution of $\pd_{2}$ to $\pd_{\text{pool}}$, $\lambda_{2}$ controls the degree of correlation present in the latter.
 The left hand column of Figure \ref{fig:pooled_densities_plot} illustrates this phenomena.

@@ -1,23 +1,24 @@
-\begin{gather}
+\begin{equation}
+  \begin{aligned}
     x_{J, t} \mid \boldsymbol{x}_{t - 1}, \rho, \delta_{J, F, t - 1}
-    \,\, \sim \,\,
+    \,\, &\sim \,\,
     \text{Poisson}\left(
       \left[x_{J, t - 1} + x_{A, t - 1}\right]
       \, \frac{\rho}{2} \,
       \delta_{J, F, t - 1}
-    \right),
-    \quad
-    x_{A, t} = \text{sur}_{t} + \text{imm}_{t}, \\
+    \right), \\
     \text{sur}_{t} \mid \boldsymbol{x}_{t - 1}, \delta_{A, F, t - 1}
-    \,\, \sim \,\,
+    \,\, &\sim \,\,
     \text{Binomial}\left(
       x_{J, t - 1} + x_{A, t - 1},
       \delta_{A, F, t - 1}
     \right), \\
     \text{imm}_{t} \mid \boldsymbol{x}_{t - 1}, \eta_{t}
-    \,\, \sim\,\,
+    \,\, &\sim\,\,
     \text{Poisson}\left(
       \left[x_{J, t - 1} + x_{A, t - 1}\right] \eta_{t}\right
-    ),
+    ), \\
+    x_{A, t} &= \text{sur}_{t} + \text{imm}_{t},
+    \end{aligned}
   \label{eqn:count-data-submodel}
-\end{gather}
+\end{equation}

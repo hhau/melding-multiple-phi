@@ -1,15 +1,15 @@
-\begin{equation}
-  \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y}) =
+\begin{align}
+  \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y}) &=
     \pd_{\text{pool}}(\boldsymbol{\phi})
     \prod_{\modelindex = 1}^{\Nm}
-      \pd_{\text{repl}, \modelindex}(\psi_{\modelindex}, Y_{\modelindex} \mid \boldsymbol{\phi})
-    =
+      \pd_{\text{repl}, \modelindex}(\psi_{\modelindex}, Y_{\modelindex} \mid \boldsymbol{\phi}) \\
+    &=
     \pd_{\text{pool}}(\boldsymbol{\phi})
     \prod_{\modelindex =1}^{\Nm}
     \frac {
       \pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})
     } {
       \pd_{\modelindex}(\phi_{\modelindex})
-    }
+    }.
   \label{eqn:melded-model-full}
-\end{equation}
+\end{align}
