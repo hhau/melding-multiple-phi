@@ -4,6 +4,7 @@ library(tibble)
 
 source('scripts/common/plot-settings.R')
 source('scripts/common/setup-argparse.R')
+source('scripts/mimic-example/GLOBALS.R')
 
 parser$add_argument("--cumulative-fluid-data")
 parser$add_argument("--fluid-plot-mu-tbl")
@@ -52,7 +53,9 @@ interval_tbl <- bind_rows(fluid_plot_tbl, pf_plot_tbl)
 p1 <- ggplot(interval_tbl) +
   geom_point(
     data = cumulative_fluid_data,
-    mapping = aes(x = time_since_icu_adm, y = cumulative_value)
+    mapping = aes(x = time_since_icu_adm, y = cumulative_value),
+    shape = 3,
+    alpha = 0.75
   ) +
   geom_point(
     data = pf_data,
@@ -92,26 +95,26 @@ ggsave(
   height = 48
 )
 
-interesting_plot_ids <- c(6, 13, 15)
-
 p2 <- ggplot(
     interval_tbl %>%
-      filter(plot_id %in% interesting_plot_ids)
+      filter(plot_id %in% PLOT_IDS)
   ) +
   geom_point(
     data = pf_data %>%
-      filter(plot_id %in% interesting_plot_ids),
+      filter(plot_id %in% PLOT_IDS),
     mapping = aes(x = time_since_icu_adm, y = value)
   ) +
   geom_point(
     data = cumulative_fluid_data %>%
-      filter(plot_id %in% interesting_plot_ids),
-    mapping = aes(x = time_since_icu_adm, y = cumulative_value)
+      filter(plot_id %in% PLOT_IDS),
+    mapping = aes(x = time_since_icu_adm, y = cumulative_value),
+    shape = 3,
+    alpha = 0.75
   ) +
   geom_rug(
     data = event_time_tbl %>%
       filter(
-        plot_id %in% interesting_plot_ids,
+        plot_id %in% PLOT_IDS,
         .variable == "event_time"
       ),
     aes(x = .value),

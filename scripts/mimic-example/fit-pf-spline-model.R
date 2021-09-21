@@ -28,7 +28,7 @@ model_fit <- sampling(
 )
 
 long_samples <- model_fit %>%
-  gather_draws(y_sigma, beta_zero[i], spline_coef[i, b])
+  gather_draws(y_sigma[i], beta_zero[i], spline_coef[i, b])
 
 array_samples <- model_fit %>%
   as.array(pars = c('y_sigma', 'beta_zero', 'spline_coef'))

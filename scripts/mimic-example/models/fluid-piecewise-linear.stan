@@ -18,7 +18,7 @@ parameters {
   vector <lower = 0, upper = 1> [n_icu_stays] breakpoint_raw;
   vector <lower = 0> [2] eta_slope [n_icu_stays];
   vector <lower = 0> [n_icu_stays] eta_zero_raw;
-  real <lower = 0> y_sigma;
+  real <lower = 0> y_sigma [n_icu_stays];
 }
 
 transformed parameters {
@@ -48,12 +48,15 @@ transformed parameters {
 }
 
 model {
-  target += normal_lpdf(y_vec | mu, y_sigma);
   target += lognormal_lpdf(eta_zero_raw | 1.61, 0.47);
   target += beta_lpdf(breakpoint_raw | 5.0, 5.0);
   target += normal_lpdf(y_sigma | 0.0, 5.0);
 
   for (ii in 1 : n_icu_stays) {
+    int obs_lower = subset_vector[ii];
+    int obs_upper = subset_vector[ii + 1];
+
+    target += normal_lpdf(y_vec[obs_lower : (obs_upper - 1)] | mu[obs_lower : (obs_upper - 1)], y_sigma[ii]);
     target += gamma_lpdf(eta_slope[ii] | 1.53, 0.24);
   }
 }

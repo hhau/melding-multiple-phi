@@ -1,60 +1,40 @@
 \begin{gather}
+  \Omega_{1} = \left(
+    \begin{bmatrix}
+      \lambda_{1}^{-1} & 0 \\
+      0 & \lambda_{3}^{-1}
+    \end{bmatrix}
+    \begin{bmatrix}
+      \sigma_{1}^{2} & 0 \\
+      0 & \sigma_{3}^{2}
+    \end{bmatrix}
+  \right)^{-1},
+  \;\;
+  \Omega_{2} = \left(
+    \begin{bmatrix}
+      \lambda_{2}^{-1} & 0 \\
+      0 & \lambda_{2}^{-1}
+    \end{bmatrix}
+    \begin{bmatrix}
+      \sigma_{2}^{2} & \rho\sigma_{2}^{2} \\
+      \rho\sigma_{2}^{2} & \sigma_{2}^{2}
+    \end{bmatrix}
+  \right)^{-1} \label{eqn:log-pooling-gaussian-one} \\
   \Sigma_{\text{log}} = 
-  \left(
-    \left(
-      \begin{bmatrix}
-        \lambda_{2}^{-1} & 0 \\
-        0 & \lambda_{2}^{-1}
-      \end{bmatrix}
-      \begin{bmatrix}
-        \sigma_{2}^{2} & \rho\sigma_{2}^{2} \\
-        \rho\sigma_{2}^{2} & \sigma_{2}^{2}
-      \end{bmatrix}
-    \right)^{-1}
-    +
-    \left(
-        \begin{bmatrix}
-          \lambda_{1}^{-1} & 0 \\
-          0 & \lambda_{3}^{-1}
-        \end{bmatrix}
-        \begin{bmatrix}
-          \sigma_{1}^{2} & 0 \\
-          0 & \sigma_{3}^{2}
-        \end{bmatrix}
-    \right)^{-1} 
-  \right)^{-1}
-  \label{eqn:log-pooling-gaussian-one} \\
+  \left(\Omega_{1} + \Omega_{2}\right)^{-1}, \quad
   \mu_{\text{log}} = 
   \Sigma_{\text{log}} 
   \left(
-    \left(
-      \begin{bmatrix}
-        \lambda_{2}^{-1} & 0 \\
-        0 & \lambda_{2}^{-1}
-      \end{bmatrix}
-      \begin{bmatrix}
-        \sigma_{2}^{2} & \rho\sigma_{2}^{2} \\
-        \rho\sigma_{2}^{2} & \sigma_{2}^{2}
-      \end{bmatrix}
-    \right)^{-1}
+    \Omega_{1}
     \begin{bmatrix}
-    \mu_{2, 1} \\
-    \mu_{2, 1}
+      \mu_{1} \\
+      \mu_{3}
     \end{bmatrix}
     +
-    \left(
-        \begin{bmatrix}
-          \lambda_{1}^{-1} & 0 \\
-          0 & \lambda_{3}^{-1}
-        \end{bmatrix}
-        \begin{bmatrix}
-          \sigma_{1}^{2} & 0 \\
-          0 & \sigma_{3}^{2}
-        \end{bmatrix}
-    \right)^{-1}
+    \Omega_{2}
     \begin{bmatrix}
-    \mu_{1} \\
-    \mu_{3}
+      \mu_{2, 1} \\
+      \mu_{2, 1}
     \end{bmatrix}
   \right),
   \label{eqn:log-pooling-gaussian-two}

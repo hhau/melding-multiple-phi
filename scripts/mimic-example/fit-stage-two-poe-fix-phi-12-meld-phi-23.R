@@ -37,8 +37,8 @@ n_iter_submodel_three <- dim(submodel_three_samples)[1]
 n_chain_submodel_three <- dim(submodel_three_samples)[2]
 
 stage_two_indices_names_psi_3 <- c(
-  "submodel_three_iter_index",
-  "submodel_three_chain_index"
+  sprintf("submodel_three_iter_index_indiv_%d", 1 : n_icu_stays),
+  sprintf("submodel_three_chain_index_indiv_%d", 1 : n_icu_stays)
 )
 
 # process into Stan data for all chains
@@ -201,7 +201,10 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
 
   psi_3_iter_index_init <- sample.int(n = n_iter_submodel_three, size = 1)
   psi_3_chain_index_init <- sample.int(n = n_chain_submodel_three, size = 1)
-  psi_3_indices[1, 1, ] <- c(psi_3_iter_index_init, psi_3_chain_index_init)
+  psi_3_indices[1, 1, ] <- c(
+    rep(psi_3_iter_index_init, times = n_icu_stays),
+    rep(psi_3_chain_index_init, times = n_icu_stays)
+  )
 
   phi_23_samples[1, 1, ] <- submodel_three_samples[
     psi_3_iter_index_init,
@@ -324,15 +327,15 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       log_alpha_23_step_indiv <- log_prob_phi_23_step_indiv_prop - log_prob_phi_23_step_indiv_curr
 
       if (runif(1) < exp(log_alpha_23_step_indiv)) {
-        if (kk == 1) {
-          psi_3_indices[ii, 1, ] <- c(phi_23_iter_index_prop, phi_23_chain_index_prop)
-        }
+        psi_3_indices[ii, 1, c(indiv_index, indiv_index + n_icu_stays)] <- c(
+          phi_23_iter_index_prop,
+          phi_23_chain_index_prop
+        )
 
         phi_23_samples[ii, 1, phi_23_indiv_names] <- unlist(phi_23_indiv_prop_list)
       } else {
-        if (kk == 1) {
-          psi_3_indices[ii, 1, ] <- psi_3_indices[ii - 1, 1, ]
-        }
+        psi_3_indices[ii, 1, c(indiv_index, indiv_index + n_icu_stays)] <-
+          psi_3_indices[ii - 1, 1, c(indiv_index, indiv_index + n_icu_stays)]
 
         phi_23_samples[ii, 1, phi_23_indiv_names] <-  phi_23_samples[ii - 1, 1, phi_23_indiv_names]
       }

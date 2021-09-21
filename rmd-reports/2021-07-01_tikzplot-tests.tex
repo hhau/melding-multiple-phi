@@ -1,0 +1,193 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode,backref,colorlinks=true}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  10pt,
+  a4paper,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[]{tgpagella}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={tikzplot tests},
+  pdfauthor={Andrew Manderson},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=2.25cm]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{amsmath}
+% I always seem to need tikz for something
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes, intersections, through, backgrounds, fit, decorations.pathmorphing, angles, quotes}
+\usepackage{lineno}
+% \linenumbers
+
+
+\makeatletter
+\@ifclassloaded{imsart}{}{
+\usepackage{setspace}
+\onehalfspacing
+}
+\makeatother
+
+\usepackage{relsize}
+\usepackage{placeins}
+
+% required for landscape pages. beware, they back the build very slow.
+\usepackage{pdflscape}
+
+% table - `gt' package uses these, often unimportant
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\usepackage{color}
+\definecolor{myredhighlight}{RGB}{180, 15, 32}
+\definecolor{mydarkblue}{RGB}{0, 33, 79}
+\definecolor{mymidblue}{RGB}{44, 127, 184}
+\definecolor{mylightblue}{RGB}{166, 233, 255}
+\definecolor{mygrey}{RGB}{68, 68, 68}
+
+\usepackage{colortbl}
+
+\newcommand{\semitransp}[2][35]{\color{fg!#1}#2}
+
+\setcounter{secnumdepth}{3}
+
+\let\Oldcap\cap
+\renewcommand{\cap}{\mathrel{\mathsmaller{\Oldcap}}}
+
+% pd stands for: probability distribution and is useful to distringuish
+% marignals for probabilities specifically p(p_{1}) and the like.
+\newcommand{\pd}{\text{p}}
+\newcommand{\q}{\text{q}}
+\newcommand{\w}{\text{w}}
+\newcommand{\pdr}{\text{r}}
+\newcommand{\pdrh}{\hat{\text{r}}}
+
+% melding
+\newcommand{\ppoolphi}{\pd_{\text{pool}}(\phi)}
+\newcommand{\pmeld}{\pd_{\text{meld}}}
+
+% the q(x)w(x), "weighted target" density 
+% for the moment I'm going to call it s(x), as that is the next letter of the 
+% alphabet. Can change it later
+\newcommand{\s}{\text{s}}
+% direct density estimate - replaces lambda.
+\newcommand{\ddest}{\text{s}}
+% target weighting function
+\newcommand{\tarw}{\text{u}}
+
+% constants - usually sizes of things
+\newcommand{\Nx}{N}
+\newcommand{\Nnu}{\text{N}_{\text{nu}}}
+\newcommand{\Nde}{\text{N}_{\text{de}}}
+\newcommand{\Nmc}{\text{N}_{\text{mc}}}
+\newcommand{\Nw}{W}
+\newcommand{\Nm}{M}
+\newcommand{\Ns}{S}
+\newcommand{\Np}{P}
+
+% locales - could switch to x and x'
+\newcommand{\xnu}{x_{\text{nu}}}
+\newcommand{\xde}{x_{\text{de}}}
+\newcommand{\phinu}{\phi_{\text{nu}}}
+\newcommand{\phide}{\phi_{\text{de}}}
+
+% sugiyama stuff
+\newcommand{\pdnu}{\pd_{\text{nu}}}
+\newcommand{\pdde}{\pd_{\text{de}}}
+
+% indices 
+\newcommand{\wfindex}{w}
+\newcommand{\sampleindex}{n}
+\newcommand{\modelindex}{m}
+\newcommand{\stageindex}{s}
+\newcommand{\phiindex}{p}
+
+% independence symbol
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\setcomp}{\mathsf{c}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% ARDS example in text commands
+\newcommand{\paoii}{PaO\textsubscript{2}}
+\newcommand{\fioii}{FiO\textsubscript{2}}
+\newcommand{\spoii}{SpO\textsubscript{2}}
+\newcommand{\pfratio}{\paoii/\fioii}
+\newcommand{\sfratio}{\spoii/\fioii}
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{tikzplot tests}
+\author{Andrew Manderson}
+\date{01 July, 2021}
+
+\begin{document}
+\maketitle
+
+\begin{figure}
+  \begin{minipage}{.49\textwidth}
+    \input{../tex-input/mimic-example/0090-pf-schematic.tex}
+  \end{minipage}
+  \begin{minipage}{.49\textwidth}
+    \input{../tex-input/mimic-example/0091-fluid-schematic.tex}
+  \end{minipage}
+  \caption{test caption}
+  \label{fig:test_lab}
+\end{figure}
+
+\ref{fig:test_lab}
+
+\end{document}

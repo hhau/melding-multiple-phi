@@ -20,7 +20,8 @@ init_function <- function(i) {
   n_icu_stays <- stan_data$n_icu_stays
 
   list(
-    y_sigma = abs(rnorm(n = 1, mean = 1, sd = 1)),
+    y_sigma = abs(rnorm(n = n_icu_stays, mean = 1, sd = 1)) %>%
+      array(dim = c(n_icu_stays)),
     eta_zero_raw = rlnorm(
       n = n_icu_stays,
       meanlog = 1.61,
@@ -53,14 +54,14 @@ model_fit <- sampling(
   iter = N_POST_WARMUP_MCMC + 1000,
   init = init_function,
   control = list(
-    adapt_delta = 0.9,
-    max_treedepth = 11
+    adapt_delta = 0.98,
+    max_treedepth = 12
   )
 )
 
 long_samples <- model_fit %>%
   gather_draws(
-    y_sigma,
+    y_sigma[i],
     eta_zero[i],
     eta_slope[i, b],
     breakpoint[i],

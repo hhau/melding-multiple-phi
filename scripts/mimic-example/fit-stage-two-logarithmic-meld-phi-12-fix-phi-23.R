@@ -38,8 +38,8 @@ n_iter_submodel_one <- dim(submodel_one_samples)[1]
 n_chain_submodel_one <- dim(submodel_one_samples)[2]
 
 stage_two_indices_names_psi_1 <- c(
-  "submodel_one_iter_index",
-  "submodel_one_chain_index"
+  sprintf("submodel_one_iter_index_indiv_%d", 1 : n_icu_stays),
+  sprintf("submodel_one_chain_index_indiv_%d", 1 : n_icu_stays)
 )
 
 # process into Stan data for all chains
@@ -193,7 +193,10 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
   # initialise containers
   psi_1_iter_index_init <- sample.int(n = n_iter_submodel_one, size = 1)
   psi_1_chain_index_init <- sample.int(n = n_chain_submodel_one, size = 1)
-  psi_1_indices[1, 1, ] <- c(psi_1_iter_index_init, psi_1_chain_index_init)
+  psi_1_indices[1, 1, ] <- c(
+    rep(psi_1_iter_index_init, times = n_icu_stays),
+    rep(psi_1_chain_index_init, times = n_icu_stays)
+  )
 
   phi_12_samples[1, 1, ] <- submodel_one_samples[
     psi_1_iter_index_init,
@@ -334,18 +337,19 @@ list_res <- mclapply(1 : n_stage_two_chain, mc.cores = 5, function(chain_id) {
       # )
 
       if (runif(1) < exp(log_alpha_phi_12_indiv)) {
-        if (jj == 1) {
-          psi_1_indices[ii, 1, ] <- c(phi_12_iter_index_prop, phi_12_chain_index_prop)
-        }
+        psi_1_indices[ii, 1, c(indiv_index, indiv_index + n_icu_stays)] <- c(
+          phi_12_iter_index_prop,
+          phi_12_chain_index_prop
+        )
 
         phi_12_samples[ii, 1, phi_12_indiv_names] <- c(
           .subset2(phi_12_indiv_prop_list, 1),
           .subset2(phi_12_indiv_prop_list, 2)
         )
       } else {
-        if (jj == 1) {
-          psi_1_indices[ii, 1, ] <- psi_1_indices[ii - 1, 1, ]
-        }
+        psi_1_indices[ii, 1, c(indiv_index, indiv_index + n_icu_stays)] <-
+          psi_1_indices[ii - 1, 1, c(indiv_index, indiv_index + n_icu_stays)]
+
         phi_12_samples[ii, 1, phi_12_indiv_names] <- phi_12_samples[ii - 1, 1, phi_12_indiv_names]
       }
     }

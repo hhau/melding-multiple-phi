@@ -14,7 +14,7 @@ data {
 }
 
 parameters {
-  real <lower = 0> y_sigma;
+  real <lower = 0> y_sigma [n_icu_stays];
   vector [n_icu_stays] beta_zero;
   vector [n_basis_coef] spline_coef [n_icu_stays];
 }
@@ -35,7 +35,7 @@ model {
     indiv_obs_mu = beta_zero[ii] + indiv_obs_matrix * spline_coef[ii];
 
     // add on the likelihood
-    target += student_t_lpdf(indiv_y_ctr | noise_df, indiv_obs_mu, y_sigma);
+    target += student_t_lpdf(indiv_y_ctr | noise_df, indiv_obs_mu, y_sigma[ii]);
 
     // spline coefficient prior for appropriate wigglyness.
     target += normal_lpdf(spline_coef[ii][1] | 0, spline_coef_prior_sd);
