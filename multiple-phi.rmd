@@ -78,7 +78,6 @@ output:
     keep_tex: true
 -->
 
-
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.align = "center")
 ```
