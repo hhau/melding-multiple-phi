@@ -26,7 +26,7 @@ abstract: |
   It may be easier to instead specify distinct submodels for each source of data, then join the submodels together.
   We consider chains of submodels, where submodels directly relate to their neighbours via common quantities which may be parameters or deterministic functions thereof.
   We propose _chained Markov melding_, an extension of Markov melding, to combine chains of submodels into a joint model.
-  Estimating the posterior of a complex joint model is challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
+  Estimating the posterior of the resulting overall joint model is challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
   We demonstrate our methodology using two examples.
   The first example considers an ecological integrated population model, where multiple data are required to accurately estimate population immigration and reproduction rates.
   We also consider a joint longitudinal and time-to-event model with uncertain, submodel-derived event times.
@@ -86,7 +86,7 @@ knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.align = "center")
 # Introduction
 
 The Bayesian philosophy is appealing in part because the posterior distribution quantifies all sources of uncertainty.
-However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is challenging.
+However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is a formidable task.
 Models that consider such data are necessary to describe complex phenomena at a useful precision.
 One possible approach begins by specifying individual submodels for each source of data.
 These submodels could guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
