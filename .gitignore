@@ -33,3 +33,7 @@ rmd-reports/*.html
 .DS_Store
 bibliography/multi-phi-bib.bib.original
 rstanarm_surv_stan_code.stan
+
+# relent and use rstudio projects to get separate sessions working.
+.Rproj.user
+2019-10-11_multiple-phi.Rproj
