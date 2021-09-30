@@ -91,8 +91,8 @@ One possible approach begins by specifying individual submodels for each source 
 These submodels could guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
 Instead, it may be preferable to construct a joint model by formally joining the individual submodels together.
 
-There is a general interest in integrating many sources of data into a single model, and some specific forms of combining data are well established.
-Meta-analyses and evidence synthesis methods are important modelling techniques that summarise many disparate data, often using hierarchical models [@ades_multiparameter_2006; @presanis_synthesising_2014].
+There is widespread interest in integrating many sources of data into a single model, and some specific forms of combining data are well established.
+Meta-analyses and evidence synthesis methods are widely used to summarise data, often using hierarchical models [@ades_multiparameter_2006; @presanis_synthesising_2014].
 Outside of the statistical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
 More familiar to Bayesian statisticians are the family of _divide and conquer_ methods (D&C).
 These are useful in tall data settings, where the number of observations presents a computational challenge.
@@ -109,9 +109,9 @@ In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesi
 Such data have standard models associated with them, such as the Cormack—Jolly—Seber model [@lebreton_modeling_1992] for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
 
 _Markov melding_ [@goudie_joining_2019] is a general statistical methodology for combining submodels.
-Specifically, it considers $\Nm$ submodels that share some common quantity $\phi$.
-Each of the $\modelindex = 1, \ldots, \Nm$ submodels also has distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$, which are combined into a joint model $\pd_{\text{meld}}(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm})$.
-However, it is unclear how to integrate models where there is no single quantity $\phi$ common to all submodels, such for submodels that are linked in a chain structure.
+Specifically, it considers $\Nm$ submodels that share some common quantity $\phi$, and for which each of the $\modelindex = 1, \ldots, \Nm$ submodels also has distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$.
+[@goudie_joining_2019] propose how to combine these submodels into a joint model $\pd_{\text{meld}}(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm})$.
+However, it is unclear how to integrate models where there is no single quantity $\phi$ common to all submodels, such as for submodels that are linked in a chain structure.
 
 We propose an extension to Markov melding, which we call _chained Markov melding_[^chained], which facilitates the combination of submodels that are in a chain structure.
 Specifically, in the $\Nm = 3$ case, we address the case in which submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a different quantity $\phi_{2 \cap 3}$.
@@ -126,7 +126,7 @@ Multi-stage samplers can aid in understanding the contribution of each submodel 
 
 ## Example introduction
 
-In this section we provide a high-level overview of two applications involving chain-like inter-submodel relationships.
+In this section we provide a high-level overview of two applications that require integrating a chain of submodels.
 We will provide more details and illustrate our methodology with these examples in Section \ref{examples}.
 
 ### An Integrated population model for little owls
@@ -144,7 +144,7 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 Our second example considers the time to onset of acute respiratory distress syndrome (ARDS) amongst patients in intensive care units, and factors that influence the onset of ARDS.
 A patient can be said to be experiencing ARDS if the ratio of the partial pressure of arterial blood oxygen (\paoii) to the faction of inspired oxygen (\fioii) is less than 300mmHg [@the_ards_definition_task_force_acute_2012].
-Drawing arterial blood is a painful procedure, and calculating \paoii requires laboratory testing, so patients' \pfratio\ ratios are not always available.
+Drawing arterial blood is a painful procedure, and calculating \paoii\ requires laboratory testing, so patients' \pfratio\ ratios are not always available.
 An alternative is to consider the ratio of peripheral oxygen saturation (\spoii) to \fioii, as the former can be obtained from a pulse oximeter, a device typically worn on the finger tip that produces immediate measurements.
 The \sfratio\ ratio can then be converted to a \pfratio\ by various formula [@pandharipande_derivation_2009-1; @brown_nonlinear_2016-1].
 However, the noise introduced by the \spoii\ measurements [@nitzan_pulse_2014] and the conversion formula yield a \pfratio\ value that is contaminated by statistically nonneglible amounts of noise.
@@ -168,10 +168,8 @@ We now review Markov melding [@goudie_joining_2019] before detailing our propose
 As noted in the introduction, Markov melding is a method for combining $\Nm$ submodels $\pd_{1}(\phi, \psi_{1}, Y_{1}), \ldots, \pd_{\Nm}(\phi, \psi_{\Nm}, Y_{\Nm})$ which share the same $\phi$.
 When the submodel prior marginals $\pd_{\modelindex}(\phi)$ are identical, i.e. $\pd_{\modelindex}(\phi) = \pd(\phi)$ for all $\modelindex$, it is possible to combine the submodels using _Markov combination_ [@dawid_hyper_1993-1; @massa_combining_2010]
 \input{tex-input/orig-markov-melding/0010-markov-combination.tex}
-Markov combination is not immediately applicable when submodel prior marginals are distinct, so Goudie _et al._&nbsp;define a _marginal replacement_ procedure, where individual submodel prior marginals are replaced with a common marginal $\pd_{\text{pool}}(\phi)$
+Markov combination is not immediately applicable when submodel prior marginals are distinct, so Goudie _et al._&nbsp;define a _marginal replacement_ procedure, where individual submodel prior marginals are replaced with a common marginal $\pd_{\text{pool}}(\phi) = h(\pd_{1}(\phi), \ldots, \pd_{\Nm}(\phi))$ is the result of a pooling function $h$ that appropriately summarises all prior marginals (the choice of which is described below).
 \input{tex-input/orig-markov-melding/0011-marginal-replacement.tex}
-where $\pd_{\text{pool}}(\phi) = h(\pd_{1}(\phi), \ldots, \pd_{\Nm}(\phi))$ is the result of a pooling function $h$ that appropriately summarises all prior marginals.
-This ensures the prior marginals are the same in all submodels.
 Goudie _et al._&nbsp;show that $\pd_{\text{repl}, \modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$ minimises the Kullback–Leibler (KL) divergence between a distribution $\q(\phi, \psi_{\modelindex}, Y_{\modelindex})$ and $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$ under the constraint that $\q(\phi) = \pd_{\text{pool}}(\phi)$, and that marginal replacement is valid when $\phi$ is a deterministic function of the other parameters in submodel $\modelindex$.
 Markov melding joins the submodels via the Markov combination of the marginally replaced submodels
 \input{tex-input/orig-markov-melding/0012-markov-melding.tex}
@@ -183,7 +181,7 @@ Goudie _et al._&nbsp;proposed forming $\pd_{\text{pool}}(\phi)$ using linear or 
 where $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$ are nonnegative weights, which are chosen subjectively to ensure $\pd_{\text{pool}}(\phi)$ appropriately represents prior knowledge about the common quantity.
 Two special cases of pooling are of particular interest.
 _Product of experts (PoE) pooling_  [@hinton_training_2002] is a special case of logarithmic pooling that occurs when $\lambda_{\modelindex} = 1$ for all $\modelindex$.
-_Dictatorial pooling_ is a special case of either pooling method when $\lambda_{\modelindex'} = 1$ and $\lambda_{\modelindex} = 0$ for all $\modelindex \neq \modelindex'$.
+_Dictatorial pooling_ is a special case of either pooling method when $\lambda_{\modelindex'} = 1$ and, for all $\modelindex eq \modelindex’$, $\lambda_{\modelindex} = 0$.
 
 # Chained model specification
 
@@ -232,7 +230,7 @@ An intermediary notion, between complete dependence \eqref{eqn:pooled-prior-gene
 \input{tex-input/pooled-prior-discussion/0031-pooled-prior-split-def.tex}
 without any additional assumptions.
 That is, if any two consecutive components of $\boldsymbol{\phi}$ are independent in the submodel containing both of them, we can divide the pooled prior specification problem into two pooling functions.
-The smaller number of arguments to $g_{1}$ and $g_{2}$ make it is easier to choose appropriate forms for those functions
+The smaller number of arguments to $g_{1}$ and $g_{2}$ make it is easier to choose appropriate forms for those functions.
 
 Selecting an appropriate pooling function is not trivial given the many choices of functional form and pooling weights (which we discuss momentarily).
 It is important that prior predictive visualisations of the pooled prior are produced [@gabry_visualization_2019; @gelman_bayesian_2020] to ensure that it suitably represents the available information.
