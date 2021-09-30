@@ -1,5 +1,5 @@
 ---
-title: "Extending Markov melding for chains of submodels"
+title: "Combining chains of Bayesian models with Markov melding"
 runtitle: "Chained Markov melding"
 author:
   - name: "Andrew A."
@@ -43,40 +43,6 @@ output:
         tex-input/pre.tex
       keep_tex: true
 ---
-
-<!-- arXiv / local YAML header -->
-<!-- title: "Extending Markov melding for chains of submodels"
-author: "Andrew Manderson"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
-abstract: |
-  A challenge for practitioners of Bayesian inference is specifying a model that incorporates multiple relevant, heterogeneous data.
-  It may be easier to instead specify distinct submodels for each source of data, then join the submodels together.
-  We consider chains of submodels, where submodels directly relate to their neighbours via common quantities which may be parameters or deterministic functions thereof.
-  We propose _chained Markov melding_, an extension of Markov melding, to combine chains of submodels into a joint model.
-  Estimating the posterior of a complex joint model is challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
-  We demonstrate our methodology using two examples.
-  The first example considers an ecological integrated population model, where multiple data are required to accurately estimate population immigration and reproduction rates.
-  We also consider a joint longitudinal and time-to-event model with uncertain, submodel-derived event times.
-  Chained Markov melding is a conceptually appealing approach to integrating submodels in these settings.
-fontfamily: tgpagella
-fontsize: 10pt
-papersize: a4
-geometry: margin=2.25cm
-bibliography: bibliography/multi-phi-bib.bib
-csl: bibliography/journal-of-the-royal-statistical-society.csl
-link-citations: true
-hyperrefoptions:
-  - backref
-  - colorlinks=true
-output:
-  pdf_document:
-    includes:
-      in_header:
-        tex-input/pre.tex
-    fig_caption: true
-    number_sections: true
-    keep_tex: true
--->
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.align = "center")
