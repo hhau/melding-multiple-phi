@@ -230,9 +230,9 @@ We discuss extensions to linear pooling that enable prior dependence between the
 ### Dictatorial pooling
 
 Chained Markov melding does not admit a direct analogue to dictatorial pooling as defined in Section \ref{pooled-prior} because not all submodel prior marginals contain all common quantities.
-For example, consider the logarithmically pooled prior of Equation \eqref{eqn:pooled-prior-overall} with one entry in $\lambda$ set to $1$ and all others set to $0$.
-This choice of $\lambda$ results in $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd_{\text{pool}}(\phi_{\modelindex})$, and is implicitly flat for $\boldsymbol{\phi}_{-\modelindex}$.
-It seems reasonable to require any generalisation of dictatorial pooling to result in an explicit prior for all components in $\boldsymbol{\phi}$.
+For example, consider the logarithmically pooled prior of Equation \eqref{eqn:pooled-prior-overall} with, say, the $\modelindex^{\prime}$th entry in $\lambda$ set to $1$ and all others set to $0$.
+This choice of $\lambda$ results in $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd(\phi_{\modelindex^{\prime}})$, which is flat for $\boldsymbol{\phi}_{-\modelindex^{\prime}}$.
+It seems reasonable to require any generalisation of dictatorial pooling to result in a reasonable prior for all components in $\boldsymbol{\phi}$.
 Such a generalisation should also retain the original intention of dictatorial pooling, i.e.&nbsp;'_the authoritative prior for_ $\phi_{\modelindex}$ _is_ $\pd_{\modelindex}(\phi_{\modelindex})$'.
 
 We propose two possible forms of dictatorial pooling that satisfy the aforementioned criteria.
@@ -284,7 +284,7 @@ By employing a multi-stage strategy we can avoid evaluating all submodels simult
 This is desirable in situations where simultaneously evaluating the submodel terms is computationally infeasible or cumbersome, whilst evaluating the prior marginal distributions is possible and relatively inexpensive.
 The first sampler operates sequentially, accruing and refining samples by considering one submodel at a time.
 The second parallelises parts of the sampling process, and has the potential to produce posterior samples from the melded posterior in less time than the sequential method.
-Both sampler assume $\pd_{\text{pool}}(\boldsymbol{\phi})$ decomposes in sampler-specific ways, which we detail along when introducing each sampler.
+Both samplers assume $\pd_{\text{pool}}(\boldsymbol{\phi})$ decomposes in sampler-specific ways, which we detail along when introducing each sampler.
 
 We also describe an approximate method, where stage one submodels are summarised by normal distributions for use in stage two.
 
