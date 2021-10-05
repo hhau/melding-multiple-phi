@@ -40,3 +40,7 @@ rstanarm_surv_stan_code.stan
 # relent and use rstudio projects to get separate sessions working.
 .Rproj.user
 2019-10-11_multiple-phi.Rproj
+
+# sublime project to build with correct version of make
+multiple-phi.sublime-project
+multiple-phi.sublime-workspace

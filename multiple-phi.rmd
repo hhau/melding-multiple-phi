@@ -267,7 +267,7 @@ In the logarithmic case we set $\lambda_{1} = \lambda_{3}$ and parameterise $\la
 Similarly, in the linear case we set $\lambda_{1, 1} = \lambda_{2, 2} = \lambda_{1}$ and $\lambda_{1, 2} = \lambda_{2, 1} = 1 - 2 \lambda_{1}$.
 We consider 5 evenly spaced values of $\lambda_{1} \in [0, 0.5]$.
 
-```{r pooled_densities_plot, out.width = '0.95\\linewidth', fig.cap = "Contour plots of $\\pd_{\\text{pool}}(\\boldsymbol{\\phi})$ (red) under logarithmic and linear pooling (left and right column respectively). The values of $\\lambda_{1}$ are indicated in the plot titles, and the constituent marginal densities are shown in blue."}
+```{r pooled_densities_plot, out.width = '0.95\\linewidth', fig.cap = "Contour plots of $\\pd_{\\text{pool}}(\\boldsymbol{\\phi})$ (red) under logarithmic and linear pooling (left and right column respectively). The three original densities $\\pd_{1}(\\phi_{1 \\cap 2})$, $\\pd_{3}(\\phi_{2 \\cap 3})$ and $\\pd_{2}(\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3})$ are shown in blue, with the univariate densities shown on the appropriate axis. The pooling weight parameter $\\lambda_{1}$ is indicated in the plot titles."}
 knitr::include_graphics("plots/pooling-tests/version-two.pdf")
 ```
 
@@ -379,12 +379,12 @@ The equivalent approximations for the subposterior and prior of $\pd_{3}$ are $\
 Substituting in these approximations yields the approximate melded posterior
 \input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
 This expression can be simplified.
-Noting that he product of independent normal densities is an unnormalised multivariate normal density with independent components, we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
+Noting that the product of independent normal densities is an unnormalised multivariate normal density with independent components, we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
 \input{tex-input/multiple-normal-approximation/0030-normal-approx-nu-de-form.tex}
 Finally, the ratio of normal densities is also an unnormalised normal density, and hence Equation \eqref{eqn:normal-approx-nu-de-form} simplifies to
 \input{tex-input/multiple-normal-approximation/0040-final-normal-approx.tex}
 Standard MCMC methods can be used to sample from the approximate melded posterior.
-If instead we opt for product-of-experts pooling, all $\mu_{\text{de}}$ and $\Sigma_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:final-normal-approx}.
+If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}$ and $\widehat{\Sigma}_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:final-normal-approx}.
 
 # Examples
 
@@ -392,12 +392,12 @@ If instead we opt for product-of-experts pooling, all $\mu_{\text{de}}$ and $\Si
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
 @finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010: here we consider only the
-variant from @finke_efficient_2019 with the highest marginal likelihood.
+variant from @finke_efficient_2019 with the highest marginal likelihood (Model 4 of the online supplement).
 
 ### Submodels
 
 Before we detail the specifics of each submodel, we must introduce some notation.
-Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur annually at times $t \in \{1, \ldots, T\}$, with $T = 25$.
+Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls (less than one year old) and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur annually at times $t \in \{1, \ldots, T\}$, with $T = 25$.
 The sex- and age-specific probability of an owl surviving from time $t$ to $t + 1$ is $\delta_{a, s, t}$, and the sex-specific probability of a previously captured owl being recaptured at time $t + 1$ is $\pi_{s, t + 1}$ so long as the owl is alive at time $t + 1$.
 Owls are assumed to develop from juveniles into adults after 1 year.
 

@@ -146,8 +146,6 @@ base_plot <- ggplot(
     )
   )
 
-base_plot
-
 log_cumulative_hazard_time_before_breakpoint <- function(
   t,
   hazard_gamma,
