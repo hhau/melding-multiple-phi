@@ -403,12 +403,11 @@ Owls are assumed to develop from juveniles into adults after 1 year.
 
 #### Capture recapture: $\pd_{1}$
 
-Capture-recapture data pertain to owls that are released at time $t$ (having been captured and tagged).
-These individuals are then recaptured at time $u = t + 1, \dots, T$, or not recaptured before the conclusion of the study, in which case $u = T + 1$.
-Define $M_{a, s, t, u}$ as the number of owls of sex $s$ and age-group $a$ last observed at time $t$, recaptured at time $u$.
-We aggregate these observations into age-group and sex specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows, corresponding to released times, and $T + 1$ columns, corresponding to recapture times.
-Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} \boldsymbol{M}_{a, s, t, u}$ be the number of owls released at time $t$, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
-The recapture times for owls released at time $t$ follow a sex- and age-specific multinomial likelihood
+Capture-recapture data pertain to owls that are released at time $t$ (having been captured and tagged), and then recaptured at time $u = t + 1, \dots, T$, or not recaptured before the conclusion of the study, in which case $u = T + 1$.
+Define $M_{a, s, t, u}$ as the number of owls of age-group $a$ and sex $s$ last observed at time $t$, recaptured at time $u$.
+We aggregate these observations into age- and sex-specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows, corresponding to release times, and $T + 1$ columns, corresponding to recapture times.
+Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} M_{a, s, t, u}$ be the number of owls released at time $t$, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
+The recapture times for owls released at time $t$ follow a age- and sex-specific multinomial likelihood
 \input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
 with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
 \input{tex-input/owls-example/0011-multinomial-probabilities.tex}
