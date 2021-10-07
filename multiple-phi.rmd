@@ -191,7 +191,7 @@ because we do not assume independence between the components of $\boldsymbol{\ph
 Two special cases of Equation \eqref{eqn:pooled-prior-general-def-two} are noteworthy.
 Firstly, if all components of $\boldsymbol{\phi}$ are independent, then we can form $\pd_{\text{pool}}(\boldsymbol{\phi})$ as the product of $\Nm - 1$ standard pooling functions $h_{\modelindex}$ defined in Section \ref{pooled-prior}
 \input{tex-input/pooled-prior-discussion/0010-bad-alternative-one.tex}
-A second intermediary notion, between complete dependence \eqref{eqn:pooled-prior-general-def} and independence \eqref{eqn:bad-alternative-one}, is that if $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) = \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1})$ then we can define
+A second intermediary notion, between complete dependence \eqref{eqn:pooled-prior-general-def-two} and independence \eqref{eqn:bad-alternative-one}, is that if $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) = \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1})$ then we can define
 \input{tex-input/pooled-prior-discussion/0031-pooled-prior-split-def.tex}
 without any additional assumptions.
 That is, if any two consecutive components of $\boldsymbol{\phi}$ are independent in the submodel containing both of them, we can divide the pooled prior specification problem into two pooling functions.
@@ -409,7 +409,7 @@ We aggregate these observations into age- and sex-specific matrices $\boldsymbol
 Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} M_{a, s, t, u}$ be the number of owls released at time $t$, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
 The recapture times for owls released at time $t$ follow a age- and sex-specific multinomial likelihood
 \input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
-with probabilities $\boldsymbol{Q}_{a, s, t} = \{Q_{a, s, t, u}\}_{u = 1}^{T + 1}$ such that
+with probabilities $\boldsymbol{Q}_{a, s, t} = (Q_{a, s, t, 1}, \ldots, Q_{a, s, t, T + 1})$ such that
 \input{tex-input/owls-example/0011-multinomial-probabilities.tex}
 
 #### Fecundity: $\pd_{3}$
