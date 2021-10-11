@@ -492,36 +492,35 @@ See appendix \ref{cohort-selection-criteria} for information on $N$ and how the 
 
 Each individual has P/F ratio observations $z_{i, j}$ at times $t_{i, j}$, with $j = 1, \ldots, J_{i}$.
 For each individual denote the vector of observations $\boldsymbol{z}_{i} = (z_{i, 1}, \ldots, z_{i, J_{i}})$ and observation times $\boldsymbol{t}_{i} = (t_{i, 1}, \ldots, t_{i, J_{i}})$.
-To improve computational performance, we standardise the P/F data for each individual such that $z_{i, j} = \frac{\tilde{z}_{i, j} - \overline{z}_{i}}{\hat{s}_{i}}$, where $\tilde{z}_{i, j}$ is the underlying unstandardised observation with mean $\overline{z}_{i}$ and standard deviation $\hat{s}_{i}$.
+To improve computational performance, we standardise the P/F ratio data for each individual such that $z_{i, j} = \frac{\tilde{z}_{i, j} - \overline{z}_{i}}{\hat{s}_{i}}$, where $\tilde{z}_{i, j}$ is the underlying unstandardised observation with mean $\overline{z}_{i}$ and standard deviation $\hat{s}_{i}$.
 Similarly we rescale the threshold for respiratory failure: $\tau_{i} = \frac{300 - \overline{z}_{i}}{\hat{s}_{i}}$.
 
 We choose to model the P/F ratio using a B-spline of degree 3, with 2 boundary knots and 7 internal knots, and do not include an intercept column in the spline basis.
 The internal knots are evenly spaced between the two boundary knots at $\min(\boldsymbol{t}_{i})$ and $\max(\boldsymbol{t}_{i})$.
 These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, with coefficients $\zeta_{i, k}$ where $\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})$.
-We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in \mathbb{R}_{+} \cup \{0\}$ so that the submodel can be written as
+We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j})$ so that the submodel can be written as
 \begin{equation}
   z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
   \label{eqn:pf-model-def}
 \end{equation}
 We employ a weakly informative prior for the intercept, and a heavy tailed ($t_{5}$) distribution for the error term[^pfoutliers] with a weakly informative half-normal prior for unknown scale parameter
 \begin{equation}
-  \beta_{0, i} \sim \text{N}(0, 1^2), \,\, \varepsilon_{i, j} \sim t_{5}(0, \omega_{i}), \,\,  \omega_{i} \sim \text{N}_{+}(0, 1^2).
+  \beta_{0, i} \sim \text{N}(0, 1^2), \qquad \varepsilon_{i, j} \sim t_{5}(0, \omega_{i}), \qquad  \omega_{i} \sim \text{N}_{+}(0, 1^2).
   \label{eqn:pf-model-priors-simple}
 \end{equation}
 For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.1^2)$, and for $k = 2, \ldots, 10$ we employ a random-walk prior $\zeta_{i, k} \sim \text{N}(\zeta_{i, k - 1}, 0.1^2)$.
 
 [^pfoutliers]: P/F data contain many outliers for, amongst many possible reasons, arterial/venous blood sample mis-labelling; incorrectly recorded oxygenation support information; and differences between sample collection time, lab result time, and the observation time recorded as in the EHR.
 
-If a solution to the optimisation problem exists
+We identify that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$ if a solution to the following optimisation problem exists 
 \begin{equation}
   T_{i} = \min_{t} \left\{
     \tau_{i} = \beta_{0, i} + B_{i}(t)\boldsymbol{\zeta}_{i}
     \mid
-    t \in [\max(0, \min(\boldsymbol{t}_{i})), \max(\boldsymbol{t}_{i})]
+    t \in [\max(0, \min(\boldsymbol{t}_{i})),\, \max(\boldsymbol{t}_{i})]
   \right\},
   \label{eqn:event_time_model_def}
 \end{equation}
-then we conclude that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$.
 We attempt to solve Equation \ref{eqn:event_time_model_def} using a standard multiple root finder [@soetaert_rootsolve_2020].
 If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 0$.
 The relationship between $T_{i}$ and other model coefficients is displayed in the left hand panel of Figure \ref{fig:submodel-schematics}.
@@ -593,7 +592,7 @@ The likelihood for the submodel is
 \end{equation}
 where we suppress the dependence on the parameters on the right hand side for brevity.
 
-Our priors for the submodel specific parameters are
+Our priors, which we justify in Appendix&nbsp;\ref{p2-prior-justification}, for the submodel specific parameters are
 \begin{equation}
 \begin{gathered}
   \gamma \sim \text{Gamma}(9.05, 8.72), \, \,
@@ -603,8 +602,7 @@ Our priors for the submodel specific parameters are
   \label{eqn:surv-submodel-prior-def}
 \end{gathered}
 \end{equation}
-where $\hat{E}$ is the log of the crude event rate [@brilleman_bayesian_2020], and $\boldsymbol{I}_{p}$ is the $p \times p$ identity matrix.
-Appendix&nbsp;\ref{p2-prior-justification} contains our justification for these priors.
+where $\hat{E}$ is the log of the crude event rate [@brilleman_bayesian_2020].
 We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i}, \eta_{1, i}^{b}$, and $\eta_{1, i}^{a}$.
 
 [^competerisks]: The relationship between this model and the competing risks approach is discussed in Appendix&nbsp;\ref{a-comparison-with-the-competing-risk-approach}.
@@ -614,7 +612,7 @@ We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i
 We consider logarithmic pooling with $\lambda = (\frac{4}{5}, \frac{4}{5}, \frac{4}{5})$ (any smaller value of $\lambda$ results in a prior that is so uninformative that it causes computational problems) and with $\lambda = (1, 1, 1)$ (Product-of-Experts).
 Because the correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ is important, we do not consider linear pooling in this example.
 Logarithmic pooling requires estimates of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-Because these distributions are functions of discrete and continuous parameters standard kernel density estimation, as suggested by @goudie_joining_2019, is inappropriate.
+Because these are mixed distributions, with both discrete and continuous components, standard kernel density estimation, as suggested by @goudie_joining_2019, is inappropriate.
 Instead we fit appropriate parametric mixture distributions using Monte Carlo samples from the priors.
 Samples from $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are obtained using the methodology of @crowther_simulating_2013 as implemented in `simsurv` @brilleman_simsurv_2021.
 We will also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$, which we obtain using the same methodology.
@@ -668,7 +666,7 @@ Figure \ref{fig:kap_meier_pc_plot} also suggests that the Weibull hazard is insu
 knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
 ```
 
-[^median]: We choose the median because the mean value of $d_{i}$ is nonsensical. For each individual the samples of $\{(T_{i}, d_{i})\}_{i = 1}^{N}$ sorted by $T_{i}$, and the $\lfloor \frac{N}{2}\rfloor$\textsuperscript{th} tuple $(\tilde{T}_{i}, \tilde{d}_{i})$ is chosen as the median.
+[^median]: For each individual the samples of $\{(T_{i}, d_{i})\}_{i = 1}^{N}$ sorted by $T_{i}$, and the $\lfloor \frac{N}{2}\rfloor$\textsuperscript{th} tuple $(\tilde{T}_{i}, \tilde{d}_{i})$ is chosen as the median.
 
 [^hazards]: More complex hazards (e.g. the default M-spline hazard in @brilleman_bayesian_2020) require numerically integrating the hazard to obtain the survival probabilities. Such integrations are not trivial, particularly when the hazard is discontinuous, which ours is at the breakpoint.
 
@@ -683,7 +681,7 @@ The two most common approximation strategies seem to be (i) approximating the su
 These strategies may, but not always, produce acceptable approximations to the chained melded model.
 Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach being the most sophisticated.
 
-The melding methodology is very general and permits any form of uncertainty in the link parameters.
+The melding methodology is general and permits any form of uncertainty in the link parameters.
 In Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
 We note that some specific forms of uncertainty have been considered in previous work.
 These include @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation data to account for measurement error in the event time.
@@ -1193,10 +1191,10 @@ In the text we speak of the $i$\textsuperscript{th} individual.
 This is because in our final data set (the data that results from applying the following criteria) we are dealing with unique individuals, however some individuals in MIMIC have multiple ICU stays.
 In this appendix $i$ represents a single stay in ICU.
 
-1. Each ICU stay must have at least 12 PF observations ($z_{i, j}$ with $J_{i} \geq 12$), with the first 6 being greater than 350.
+1. Each ICU stay must have at least 12 PF observations ($J_{i} \geq 12$), with the first 6 being greater than 350 ($z_{i, j} > 350$ for $j = 1, \dots, 1$).
     - This is to ensure we have enough data to fit a B-spline with 7 internal knots. The restriction on the first 6 observations is to avoid selecting those who have already started to experience respiratory failure prior to ICU admission.
 1. The time between any 2 consecutive PF observations cannot exceed 2 days.
-    - This is because some data are aggregated into a single ICU stay when they perhaps should be two or more stays.
+    - This is because we believe this lack of PF observations is likely to be an error in the data: e.g. what appears as a single ICU stay in the data is actually two or more separate stays.
 1. The fluid observations must be after ICU admission (some observations are entered as 'Pre-admission intake') and cannot be associated with fluid administered in the operating room (OR). Note that this does not mean all OR fluid administrations are removed, as some are mis-labelled.
 1. There must be sufficient temporal overlap between the fluid data and the PF data. Specifically,
   \begin{equation}
