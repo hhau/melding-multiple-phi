@@ -92,7 +92,7 @@ Multi-stage samplers can aid in understanding the contribution of each submodel 
 In this section we provide a high-level overview of two applications that require integrating a chain of submodels.
 We will provide more details and illustrate our methodology with these examples in Section \ref{examples}.
 
-### An Integrated population model for little owls
+### An Integrated population model for little owls {-}
 
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] combine multiple data to estimate key quantities governing the dynamics of a specific population.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
@@ -106,7 +106,7 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
-### Survival analysis with time varying covariates and uncertain event times
+### Survival analysis with time varying covariates and uncertain event times {-}
 
 Our second example considers the time to onset of respiratory failure (RF) amongst patients in intensive care units, and factors that influence the onset of RF.
 A patient can be said to be experiencing RF if the ratio of the partial pressure of arterial blood oxygen (\paoii) to the faction of inspired oxygen (\fioii) is less than 300mmHg [@the_ards_definition_task_force_acute_2012], though this is not the only definition of RF.
@@ -131,7 +131,8 @@ We now review Markov melding [@goudie_joining_2019] before detailing our propose
 As noted in the introduction, Markov melding is a method for combining $\Nm$ submodels $\pd_{1}(\phi, \psi_{1}, Y_{1}), \ldots, \pd_{\Nm}(\phi, \psi_{\Nm}, Y_{\Nm})$ which share the same $\phi$.
 When the submodel prior marginals $\pd_{\modelindex}(\phi)$ are identical, i.e. $\pd_{\modelindex}(\phi) = \pd(\phi)$ for all $\modelindex$, it is possible to combine the submodels using _Markov combination_ [@dawid_hyper_1993-1; @massa_combining_2010]
 \input{tex-input/orig-markov-melding/0010-markov-combination.tex}
-Markov combination is not immediately applicable when submodel prior marginals are distinct, so Goudie _et al._&nbsp;define a _marginal replacement_ procedure, where individual submodel prior marginals are replaced with a common marginal $\pd_{\text{pool}}(\phi) = h(\pd_{1}(\phi), \ldots, \pd_{\Nm}(\phi))$ is the result of a pooling function $h$ that appropriately summarises all prior marginals (the choice of which is described below).
+Markov combination is not immediately applicable when submodel prior marginals are distinct, so Goudie _et al._&nbsp;define a _marginal replacement_ procedure, where individual submodel prior marginals are replaced with a common marginal $\pd_{\text{pool}}(\phi) = h(\pd_{1}(\phi), \ldots, \pd_{\Nm}(\phi))$ which is the result of a pooling function $h$ that appropriately summarises all prior marginals (the choice of which is described below).
+The result of marginal replacement is
 \input{tex-input/orig-markov-melding/0011-marginal-replacement.tex}
 Goudie _et al._&nbsp;show that $\pd_{\text{repl}, \modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$ minimises the Kullback–Leibler (KL) divergence between a distribution $\q(\phi, \psi_{\modelindex}, Y_{\modelindex})$ and $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$ under the constraint that $\q(\phi) = \pd_{\text{pool}}(\phi)$, and that marginal replacement is valid when $\phi$ is a deterministic function of the other parameters in submodel $\modelindex$.
 Markov melding joins the submodels via the Markov combination of the marginally replaced submodels
@@ -191,7 +192,7 @@ because we do not assume independence between the components of $\boldsymbol{\ph
 Two special cases of Equation \eqref{eqn:pooled-prior-general-def-two} are noteworthy.
 Firstly, if all components of $\boldsymbol{\phi}$ are independent, then we can form $\pd_{\text{pool}}(\boldsymbol{\phi})$ as the product of $\Nm - 1$ standard pooling functions $h_{\modelindex}$ defined in Section \ref{pooled-prior}
 \input{tex-input/pooled-prior-discussion/0010-bad-alternative-one.tex}
-A second intermediary notion, between complete dependence \eqref{eqn:pooled-prior-general-def-two} and independence \eqref{eqn:bad-alternative-one}, is that if $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) = \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1})$ then we can define
+A second case, in between complete dependence \eqref{eqn:pooled-prior-general-def-two} and independence \eqref{eqn:bad-alternative-one}, is that if $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) = \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1})$ then we can define
 \input{tex-input/pooled-prior-discussion/0031-pooled-prior-split-def.tex}
 without any additional assumptions.
 That is, if any two consecutive components of $\boldsymbol{\phi}$ are independent in the submodel containing both of them, we can divide the pooled prior specification problem into two pooling functions.
@@ -224,8 +225,8 @@ In step two we form the pooled prior as the product of the intermediaries
 \input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
 with
 \input{tex-input/multiple-phi/00551-linear-normalising-constant.tex}
-Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$, which may be undesirable, particularly if this independence was not present under one or more of the original sub-model priors..
-We discuss extensions to linear pooling that enable prior dependence between the elements of $\boldsymbol{\phi}$ in Section \ref{discussion}.
+Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present under one or more of the original sub-model priors.
+We discuss extensions to linear pooling that enable prior dependence between the components of $\boldsymbol{\phi}$ in Section \ref{discussion}.
 
 ### Dictatorial pooling
 
@@ -237,21 +238,22 @@ Such a generalisation should also retain the original intention of dictatorial p
 
 We propose two possible forms of dictatorial pooling that satisfy the aforementioned criteria.
 The first considers $\pd_{\modelindex}(\phi_{\modelindex})$ as the authoritative prior for $\phi_{\modelindex}= (\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$.
-This results in
+This results in,
 \input{tex-input/pooled-prior-discussion/0040-dictatorial-one-submodel.tex}
-where $g_{1}$ and $g_{2}$ are linear or logarithmic pooling functions as desired.
+where $g_{1}$ and $g_{2}$ are linear or logarithmic pooling functions as desired[^end-of-chain].
 
-In our second proposal we require the prior for each element in $\boldsymbol{\phi}$ to be associated with only one submodel.
-When this condition is combined with one choice of $\pd_{\modelindex}$ or $\pd_{\modelindex + 1}$ for $\phi_{\modelindex \cap \modelindex + 1}$, no other choices are required.
-For example, if $\Nm = 5$ and we dictate that $\pd_{3}$ is the authoritative prior for $\phi_{2 \cap 3}$ (and consequently $\phi_{3 \cap 4}$), this immediately implies
-\input{tex-input/pooled-prior-discussion/0042-dictatorial-def-two.tex}
-In general, this form of dictatorial pooling is equivalent to logarithmic pooling with the following choice of pooling weights
-\input{tex-input/pooled-prior-discussion/0041-dictatorial-def-all.tex} <!-- % takes up too much space, but slightly annoying to describe in words.-->
-with the non-zero elements of $\lambda_{\text{dict}}$ set to $1$.
+[^end-of-chain]: Some care is required if the authoritative submodel is $\pd_{\modelindex}$ for $\modelindex \in \{1, 2, M - 1, M\}$. If it is taken to be $\modelindex \in \{1, 2\}$, then $g_{1}$ does not exist, and additionally in the $\modelindex = 1$ case $\pd_{1}(\phi_{0 \cap 1}, \phi_{1 \cap 2}) \coloneqq \pd_{1}(\phi_{1 \cap 2})$. The $\modelindex \in \{\Nm - 1, \Nm\}$ cases have analogous definitions.
 
-<!-- We will later require the specific forms of dictatorial pooling with $\Nm = 3$ and all non-zero elements of $\lambda = 1$, which are
-\input{tex-input/multiple-phi/0057-dictatorial-pooling.tex}
- -->
+In our second proposal we require each component in $\boldsymbol{\phi}$ to be associated with only one submodel.
+For $\modelindex = 1, \ldots, \Nm - 1$, the $\modelindex$\textsuperscript{th} marginal of the pooled prior is either
+\input{tex-input/pooled-prior-discussion/0043-dictatorial-def-three.tex}
+If two consecutive marginals are chosen such that
+\input{tex-input/pooled-prior-discussion/0044-dictatorial-def-three-part-two.tex}
+then we instead define
+\input{tex-input/pooled-prior-discussion/0045-dictatorial-def-three-part-three.tex}
+to preserve any dependence between $\phi_{\modelindex - 1 \cap \modelindex}$ and $\phi_{\modelindex \cap \modelindex + 1}$ that may be present under $\pd_{\modelindex}$.
+For example, if $\Nm = 5$ and we wish to associate $\phi_{1 \cap 2}$ with $\pd_{1}$, both $\phi_{2 \cap 3}$ and $\phi_{3 \cap 4}$ with $\pd_{3}$, and $\phi_{4 \cap 5}$ with $\pd_{5}$, then
+\input{tex-input/pooled-prior-discussion/0046-dictatorial-def-two-example-one.tex}
 
 ### Pooling weights
 
@@ -295,7 +297,7 @@ Generic methodology for efficiently sampling arbitrary numbers of submodels in p
 
 The sequential sampler assumes that the pooled prior decomposes such that
 \input{tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
-This is necessary to avoid sampling all elements of $\boldsymbol{\phi}$ in the first stage.
+This is necessary to avoid sampling all components of $\boldsymbol{\phi}$ in the first stage.
 All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as we can assume all but $\pd_{\text{pool}, 3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are improper, flat distributions.
 However, including some portion of the pooled prior in each stage of the sampler can improve performance, and eliminate computational instabilities when submodel likelihoods contain little information.
 
@@ -368,7 +370,7 @@ In addition, assume that
 
 - Such approximations are appropriate for $\pd_{1}(\phi_{1 \cap 2}), \pd_{1}(\phi_{1 \cap 2} \mid Y_{1}), \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$.
 - We are not interested in $\psi_{1}$ and $\psi_{3}$, and can integrate them out of all relevant densities.
-- We employ dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
+- We employ our second form of dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
 
 The latter two assumptions imply that the melded posterior of interest is proportional to
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
@@ -376,19 +378,16 @@ The latter two assumptions imply that the melded posterior of interest is propor
 Denote the normal approximation of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ as $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$, which is a normal distribution with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$.
 The corresponding normal approximation of the prior $\pd_{1}(\phi_{1 \cap 2})$ is $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0})$.
 The equivalent approximations for the subposterior and prior of $\pd_{3}$ are $\widehat{\pd}_{3}(\phi_{2 \cap 3} \mid \widehat{\mu}_{3}, \widehat{\Sigma}_{3})$ and $\widehat{\pd}_{3}(\phi_{2 \cap 3} \mid \widehat{\mu}_{3, 0}, \widehat{\Sigma}_{3, 0})$ respectively.
-Substituting in these approximations yields the approximate melded posterior
-\input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
-This expression can be simplified.
-Noting that the product of independent normal densities is an unnormalised multivariate normal density with independent components, we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
-\input{tex-input/multiple-normal-approximation/0030-normal-approx-nu-de-form.tex}
-Finally, the ratio of normal densities is also an unnormalised normal density, and hence Equation \eqref{eqn:normal-approx-nu-de-form} simplifies to
+Substituting in the approximations and using standard results for Gaussian density functions (see @bromiley_products_2003 and Appendix \ref{normal-approximation-calculations}) results in
 \input{tex-input/multiple-normal-approximation/0040-final-normal-approx.tex}
+where
+\input{tex-input/multiple-normal-approximation/0050-in-text-normal-approx.tex}
 Standard MCMC methods can be used to sample from the approximate melded posterior.
-If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}$ and $\widehat{\Sigma}_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:final-normal-approx}.
+If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}$ and $\widehat{\Sigma}_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:in-text-normal-approx}.
 
 # Examples
 
-## Little owls
+## An Integrated population model for little owls
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
 @finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010: here we consider only the
@@ -399,7 +398,6 @@ variant from @finke_efficient_2019 with the highest marginal likelihood (Model 4
 Before we detail the specifics of each submodel, we must introduce some notation.
 Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls (less than one year old) and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur annually at times $t \in \{1, \ldots, T\}$, with $T = 25$.
 The sex- and age-specific probability of an owl surviving from time $t$ to $t + 1$ is $\delta_{a, s, t}$, and the sex-specific probability of a previously captured owl being recaptured at time $t + 1$ is $\pi_{s, t + 1}$ so long as the owl is alive at time $t + 1$.
-Owls are assumed to develop from juveniles into adults after 1 year.
 
 #### Capture recapture: $\pd_{1}$
 
@@ -412,22 +410,22 @@ The recapture times for owls released at time $t$ follow a age- and sex-specific
 with probabilities $\boldsymbol{Q}_{a, s, t} = (Q_{a, s, t, 1}, \ldots, Q_{a, s, t, T + 1})$ such that
 \input{tex-input/owls-example/0011-multinomial-probabilities.tex}
 
-#### Fecundity: $\pd_{3}$
-
-The fecundity submodel considers the number of breeding females at time $t$ denoted $N_{t}$, and the number of chicks produced that survive and leave the nest denoted $n_{t}$.
-A Poisson model is employed to estimate fecundity (reproductive rate) $\rho$
-\input{tex-input/owls-example/0030-fecundity-submodel.tex}
-
 #### Count data model: $\pd_{2}$
 
-To estimate population abundance, a two level model is used: the first level models the observed (counted) number of females at each point in time, with a second, latent process modelling the total number of females in population.
-Denote the total number of juvenile and adult females in the population at time $t$ as $\boldsymbol{x}_{t} = \left[x_{J, t}, x_{A, t}\right]$.
+To estimate population abundance, a two level model is used: the first level models the observed (counted) number of females at each point in time denoted $y_{t}$, with a second, latent process modelling the total number of females in population.
+Denote the total number of juvenile and adult females in the population at time $t$ as $x_{t} = x_{J, t} + x_{A, t}$.
 If $\text{sur}_{t}$ adult females survive from time $t - 1$ to time $t$, and $\text{imm}_{t}$ adult females immigrate over the same time period, then the latent, population level model is
 \input{tex-input/owls-example/0020-count-data-submodel.tex}
 where $\eta_{t}$ is the immigration rate.
 The initial population sizes $x_{J, 1}$ and $x_{A, 1}$ have independent discrete uniform priors on $\{0, 1, \ldots, 50\}$.
 The observation model is
 \input{tex-input/owls-example/0021-observation-process.tex}
+
+#### Fecundity: $\pd_{3}$
+
+The fecundity submodel considers the number of breeding females at time $t$ denoted $N_{t}$, and the number of chicks produced that survive and leave the nest denoted $n_{t}$.
+A Poisson model is employed to estimate fecundity (reproductive rate) $\rho$
+\input{tex-input/owls-example/0030-fecundity-submodel.tex}
 
 #### Parameterisation and melding quantities
 
@@ -436,8 +434,9 @@ The specific parameterisation of @finke_efficient_2019 we employ is
 \input{tex-input/owls-example/0040-parameterisation-info.tex}
 thus the quantities in common between the submodels are $\phi_{1 \cap 2} = (\alpha_{0}, \alpha_{2})$ and $\phi_{2 \cap 3} = \rho$.
 Not that the definition of $\phi_{1 \cap 2}$ does not include $\alpha_{1}$ as it is male specific and does not exist in $\pd_{2}$.
+The model variant of @finke_efficient_2019 we consider does not include $\alpha_{3}$, and for comparability we keep the other parameter indices the same.
 
-To align the notation of this example with our chained melding notation we define, for all permitted values of $a, s$ and $t$, $Y_{1} = (\boldsymbol{M}_{a, s})$, $\psi_{1} = (\alpha_{1}, \alpha_{4}, \alpha_{5, t})$; $Y_{2} = (y_{t})$, $\psi_{2} = (\boldsymbol{x}_{t}, \alpha_{6}, \text{sur}_{t}, \text{imm}_{t})$; and $Y_{3} = (N_{t}, n_{t})$, $\psi_{3} = \varnothing$.
+To align the notation of this example with our chained melding notation we define, for all permitted values of $a, s$ and $t$, $Y_{1} = (\boldsymbol{M}_{a, s})$, $\psi_{1} = \left(\alpha_{1}, \alpha_{4}, (\alpha_{5, u})_{u = 2}^{T + 1}\right)$; $Y_{2} = (y_{t})$, $\psi_{2} = (x_{J, t}, \alpha_{6}, \text{sur}_{t}, \text{imm}_{t})$; and $Y_{3} = (N_{t}, n_{t})$, $\psi_{3} = \varnothing$.
 
 #### Priors
 
@@ -448,19 +447,19 @@ The time varying recapture probabilities $\alpha_{5, u}$ also have $\text{Normal
 A $\text{Uniform}(0, 10)$ prior is assigned to $\rho$ in $\pd_{2}$ and $\pd_{3}$.
 
 To completely specify $\pd_{\text{meld}}$ we must choose how to form $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-We form $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ using three pooling methods and estimate the melded posterior in each case.
+We form $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ using three different pooling methods and estimate the melded posterior in each case.
 The first pooling method is product-of-experts (PoE) pooling, which is logarithmic pooling with $\lambda = (1, 1, 1)$, and we denote the melded posterior as $\pd_{\text{meld, PoE}}$.
 We also use logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, which is denoted $\pd_{\text{meld, log}}$.
 The final pooling method is linear pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, denoted $\pd_{\text{meld, lin}}$.
 
 ### Posterior estimation
 
-We estimate the melded posterior using both the normal approximation and parallel sampler described in Section \ref{parallel-sampler}.
+We estimate the melded posterior -- $\pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y})$, proportional to Equation \eqref{eqn:melded-model-full} -- using both the parallel sampler (Section \ref{parallel-sampler}) and normal approximation (Section \ref{normal-approximations-to-submodel-components}).
 This allows us to use pre-existing implementations of the submodels.
 Specifically, the capture-recapture submodel is written in BUGS [@lunn_bugs_2009] and sampled via `rjags` [@plummer_rjags_2019].
 The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2021].
-The the count data submodel is also written in BUGS, and we reuse this implementation in stage two of the multi-stage sampler via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
-A modified version of the count data submodel is used to demonstrate the normal approximation method of Section \ref{normal-approximations-to-submodel-components}, which is also run through `rjags`.
+The count data submodel is also written in BUGS, and we reuse this implementation in stage two of the multi-stage sampler via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
+The approximate melded posterior obtained by Section \ref{normal-approximations-to-submodel-components} is sampled using `rjags`.
 
 Code and data for all examples are available at [https://github.com/hhau/melding-multiple-phi](https://github.com/hhau/melding-multiple-phi).
 __TODO:__ Swap this for a Zenodo DOI
@@ -468,20 +467,21 @@ Trace plots and numerical convergence measures [@vehtari_rank-normalization_2020
 
 ### Results
 
-```{r phi_subpost, fig.cap = "Top row: credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{0}, \\alpha_{2})$ and $\\phi_{2 \\cap 3} = \\rho$ from the posterior of the original integrated population model $\\pd_{\\text{ipm}}$; the chained melded posteriors using product-of-experts pooling, logarithmic pooling, and linear pooling denoted $\\pd_{\\text{meld}}$, $\\pd_{\\text{meld, log}}$ and $\\pd_{\\text{meld, lin}}$; the melded posterior using the normal approximation $\\widehat{\\pd}_{\\text{meld}}$; and the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Intervals are 50\\%, 80\\%, 95\\%, and 99\\% wide. Bottom row: otherwise identical to the top row but with the individual subposteriors removed."}
+```{r phi_subpost, fig.cap = "Top row: credible intervals for $\\phi_{1 \\cap 2} = (\\alpha_{0}, \\alpha_{2})$ and $\\phi_{2 \\cap 3} = \\rho$ from the posterior of the original integrated population model $\\pd_{\\text{ipm}}$, and the individual subposteriors from submodels $\\pd_{1}, \\pd_{2}$, and $\\pd_{3}$. Bottom row: credible intervals for the same quantities, but with a different x-axis scale, from the original IPM (repeated from top row); the chained melded posteriors using product-of-experts pooling, logarithmic pooling, and linear pooling denoted $\\pd_{\\text{meld}}$, $\\pd_{\\text{meld, log}}$ and $\\pd_{\\text{meld, lin}}$; and the melded posterior using the normal approximation $\\widehat{\\pd}_{\\text{meld}}$. Intervals are 50\\%, 80\\%, 95\\%, and 99\\% wide."}
 knitr::include_graphics("plots/owls-example/subposteriors-both-patchwork.pdf")
 ```
 
 We empirically validate our methodology and sampler by comparing the melded posterior samples to a large sample -- 6 chains, each containing $1 \times 10^5$ post-warmup iterations -- from the original IPM posterior.
+Note that under logarithmic pooling, with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, the melded posterior is identical to the original IPM, so any differences are attributable to the multi-stage sampler.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the common quantities from the individual submodels, the melded models, and the original IPM.
-We see that the count data alone ($\pd_{2}$) contain minimal information about $\alpha_{0}, \alpha_{2}$ and $\rho$; incorporating the data from the other submodels is essential for precise estimates.
+The top row in Figure \ref{fig:phi_subpost} indicates that the count data alone ($\pd_{2}$) contain minimal information about $\alpha_{0}, \alpha_{2}$ and $\rho$; incorporating the data from the other submodels is essential for precise estimates.
 
 The melded posterior estimates are generally similar to the original IPM estimate,
 PoE pooling produces the posterior most different from the original IPM, as it yields a prior for $(\alpha_{0}, \alpha_{2})$ that is more concentrated around zero than the other pooling methods.
 The lack of large differences between the melded posteriors that use different pooled priors indicates that the prior has almost no effect on the posterior.
 The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bottom row of Figure \ref{fig:phi_subpost}) to the melding approaches suggests that the normal approximations are good summaries of the subposteriors.
 
-## Uncertain time to respiratory failure
+## Survival analysis with time varying covariates and uncertain event times
 
 We now return to the example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
 There are $i = 1, \ldots, N$ individuals in the data set.
@@ -684,11 +684,11 @@ These strategies may, but not always, produce acceptable approximations to the c
 Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach being the most sophisticated.
 
 The melding methodology is very general and permits any form of uncertainty in the link parameters.
-In Section \ref{uncertain-time-to-respiratory-failure} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
+In Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
 We note that some specific forms of uncertainty have been considered in previous work.
 These include @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation data to account for measurement error in the event time.
 
-The example in Section \ref{uncertain-time-to-respiratory-failure} has two more interesting aspects to discuss.
+The example in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times} has two more interesting aspects to discuss.
 
 Firstly, the P/F ratio data used in the first submodel is obtained by finding all blood gas measurements from arterial blood samples.
 Approximately $20\%$ of the venous/arterial labels are missing.
@@ -728,6 +728,16 @@ The choice of $\lambda_{2}$ is critical; by controlling the contribution of $\pd
 The left hand column of Figure \ref{fig:pooled_densities_plot} illustrates this phenomena.
 When $\lambda_{1} = \lambda_{3} = 0 \implies \lambda_{2} = 1$, all correlation in $\pd_{2}$ is present in $\pd_{\text{pool}}$.
 The correlation decreases for increasing values of $\lambda_{1}$ until $\lambda_{1} = \lambda_{3} = 0.5 \implies \lambda_{2} = 0$, where no correlation persists.
+
+## Normal approximation calculations
+
+Substituting in the approximations of Section \ref{normal-approximations-to-submodel-components} to Equation \eqref{eqn:normal-approx-melded-posterior-target} yields the approximate melded posterior
+\input{tex-input/multiple-normal-approximation/0020-normal-approximation-approximate-target.tex}
+Noting that the product of independent normal densities is an unnormalised multivariate normal density with independent components, we rewrite Equation \eqref{eqn:normal-approximation-approximate-target} as
+\input{tex-input/multiple-normal-approximation/0030-normal-approx-nu-de-form.tex}
+The ratio of normal densities is also an unnormalised normal density, and hence Equation \eqref{eqn:normal-approx-nu-de-form} simplifies to
+\input{tex-input/multiple-normal-approximation/0041-final-normal-approx-appendix.tex}
+
 
 ## Coherency of the chained melded model
 

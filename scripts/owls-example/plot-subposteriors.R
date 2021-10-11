@@ -58,7 +58,7 @@ melded_model_tidybayes_tbl <- melded_model_samples %>%
   gather_draws(v[i], fec) %>%
   filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
-  mutate(model_type = "melded-model-z")  
+  mutate(model_type = "melded-model-z")
 
 melded_model_tidybayes_tbl$orig_par <- melded_model_tidybayes_tbl$i %>%
   recode(!!!recode_vec)
@@ -68,27 +68,27 @@ normal_approx_tidybayes_tbl <- normal_approx_samples %>%
   gather_draws(v[i], fec) %>%
   filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
-  mutate(model_type = "melded-model-a-normal-approx")  
+  mutate(model_type = "melded-model-a-normal-approx")
 
 normal_approx_tidybayes_tbl$orig_par <- normal_approx_tidybayes_tbl$i %>%
   recode(!!!recode_vec)
 
-melded_log_pooling_tidybayes_tbl <- melded_model_log_pooling_phi_samples %>% 
+melded_log_pooling_tidybayes_tbl <- melded_model_log_pooling_phi_samples %>%
   array_to_mcmc_list() %>%
   gather_draws(v[i], fec) %>%
   filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
-  mutate(model_type = "melded-model-log-pooling")  
+  mutate(model_type = "melded-model-log-pooling")
 
 melded_log_pooling_tidybayes_tbl$orig_par <- melded_log_pooling_tidybayes_tbl$i %>%
   recode(!!!recode_vec)
 
-melded_lin_pooling_tidybayes_tbl <- melded_model_lin_pooling_phi_samples %>% 
+melded_lin_pooling_tidybayes_tbl <- melded_model_lin_pooling_phi_samples %>%
   array_to_mcmc_list() %>%
   gather_draws(v[i], fec) %>%
   filter(i %in% c(1, 2) || .variable == "fec") %>%
   median_qi(.width = c(.5, .8, .95, .99)) %>%
-  mutate(model_type = "melded-model-lin-pooling")  
+  mutate(model_type = "melded-model-lin-pooling")
 
 melded_lin_pooling_tidybayes_tbl$orig_par <- melded_lin_pooling_tidybayes_tbl$i %>%
   recode(!!!recode_vec)
@@ -125,10 +125,75 @@ plot_tbl <- bind_rows(
   melded_lin_pooling_tidybayes_tbl
 )
 
-plot_tbl$orig_par <- plot_tbl$orig_par %>%  
+plot_tbl$orig_par <- plot_tbl$orig_par %>%
   tidyr::replace_na(
     "rho"
   )
+
+plot_tbl_ipm_and_subposterior <- plot_tbl %>%
+  filter(
+    model_type %in% c(
+      'original-ipm-model',
+      'capture-recapture-submodel',
+      'count-data-submodel',
+      'fecundity-submodel'
+    )
+  )
+
+p_ipm_and_subposteriors <- ggplot(
+  data = plot_tbl_ipm_and_subposterior,
+  aes(y = model_type, x = .value, colour = model_type)
+) +
+  facet_wrap(
+    vars(orig_par),
+    scales = "free",
+    ncol = 3,
+    nrow = 1,
+    labeller = label_parsed
+  ) +
+  ggdist::geom_interval(
+    mapping = aes(xmin = .lower, xmax = .upper),
+    alpha = rescale(1 - plot_tbl_ipm_and_subposterior$.width, to = c(0.1, 1)),
+    size = 9,
+    orientation = "horizontal"
+  ) +
+  scale_size_continuous(range = c(12, 20)) +
+  scale_color_manual(
+    aesthetics = "colour",
+    name = "Model",
+    values = c(
+      "original-ipm-model" = "#000000",
+      "capture-recapture-submodel" = highlight_col,
+      "count-data-submodel" = greens[2],
+      "fecundity-submodel" = "#EE3377",
+      "melded-model-z" = blues[1],
+      "melded-model-log-pooling" = blues[2],
+      "melded-model-lin-pooling" = blues[3],
+      "melded-model-a-normal-approx" = "#666666"
+    ),
+    labels = c(
+      "original-ipm-model" = expression("p"["ipm"]),
+      "capture-recapture-submodel" = expression("p"[1]),
+      "count-data-submodel" = expression("p"[2]),
+      "fecundity-submodel" = expression("p"[3]),
+      "melded-model-z" = expression("p"["meld," ~ "PoE"]),
+      "melded-model-log-pooling" = expression("p"["meld," ~ "log"]),
+      "melded-model-lin-pooling" = expression("p"["meld," ~ "lin"]),
+      "melded-model-a-normal-approx" = expression(widehat("p")["meld"])
+    ),
+    guide = guide_legend(
+      reverse = TRUE,
+      override.aes = list(size = 4)
+    )
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    strip.text = element_text(size = 10),
+    axis.text.x = element_text(size = rel(0.9))
+  ) +
+  xlab("") +
+  ylab("")
 
 p_2 <- ggplot(
   data = plot_tbl,
@@ -183,7 +248,7 @@ p_2 <- ggplot(
     axis.text.x = element_text(size = rel(0.9))
   ) +
   xlab("") +
-  ylab("") 
+  ylab("")
 
 ggsave_fullpage(
   filename = "plots/owls-example/subposteriors.pdf",
@@ -194,7 +259,7 @@ ggsave_fullpage(
 # this plot filters out the count data submodel and its' wide credible intervals
 # all the other models look spot on the same.
 p_melding_only <- ggplot(
-  data = plot_tbl %>% 
+  data = plot_tbl %>%
     filter(grepl(pattern = '(original|melded)', x = model_type)),
   aes(y = model_type, x = .value, colour = model_type)
 ) +
@@ -258,10 +323,10 @@ ggsave_fullpage(
   adjust_height = -15
 )
 
-p_patchwork <- (p_2 / p_melding_only) + plot_layout(heights = c(7 / 12, 5 / 12))
+p_patchwork <- (p_ipm_and_subposteriors / p_melding_only) + plot_layout(heights = c(3 / 8, 5 / 8))
 
 ggsave_fullpage(
   filename = "plots/owls-example/subposteriors-both-patchwork.pdf",
   plot = p_patchwork,
-  adjust_height = -7
+  adjust_height = -9
 )

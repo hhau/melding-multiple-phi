@@ -1,22 +1,22 @@
 \begin{equation}
   \begin{aligned}
-    x_{J, t} \mid \boldsymbol{x}_{t - 1}, \rho, \delta_{J, F, t - 1}
+    x_{J, t} \mid x_{t - 1}, \rho, \delta_{J, F, t - 1}
     \,\, &\sim \,\,
     \text{Poisson}\left(
-      \left[x_{J, t - 1} + x_{A, t - 1}\right]
+      x_{t - 1}
       \, \frac{\rho}{2} \,
       \delta_{J, F, t - 1}
     \right), \\
-    \text{sur}_{t} \mid \boldsymbol{x}_{t - 1}, \delta_{A, F, t - 1}
+    \text{sur}_{t} \mid x_{t - 1}, \delta_{A, F, t - 1}
     \,\, &\sim \,\,
     \text{Binomial}\left(
-      x_{J, t - 1} + x_{A, t - 1},
+      x_{t - 1}, \,
       \delta_{A, F, t - 1}
     \right), \\
-    \text{imm}_{t} \mid \boldsymbol{x}_{t - 1}, \eta_{t}
+    \text{imm}_{t} \mid x_{t - 1}, \eta_{t}
     \,\, &\sim\,\,
     \text{Poisson}\left(
-      \left[x_{J, t - 1} + x_{A, t - 1}\right] \eta_{t}\right
+      x_{t - 1} \eta_{t}\right
     ), \\
     x_{A, t} &= \text{sur}_{t} + \text{imm}_{t},
     \end{aligned}
