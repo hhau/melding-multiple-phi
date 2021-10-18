@@ -1,12 +1,13 @@
-\begin{multline}
-  \pd_{\text{meld}} (\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y}) = \\
+  \begin{equation}
+  \begin{aligned}
+  \pd_{\text{meld}} (\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y}) &=
     \pd_{\text{pool}}(\boldsymbol{\phi})   
     \frac {
       \pd_{1} (\phi_{1 \cap 2}, \psi_{1}, Y_{1})
     } {
       \pd_{1}(\phi_{1 \cap 2})
-    }
-    \prod_{\modelindex = 2}^{\Nm - 1} \left(
+    } \\
+    &\times \prod_{\modelindex = 2}^{\Nm - 1} \left(
       \frac {
         \pd_{\modelindex} (\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}, \psi_{\modelindex}, Y_{\modelindex})
       } {
@@ -17,6 +18,7 @@
       \pd_{\Nm} (\phi_{\Nm - 1 \cap \Nm}, \psi_{\Nm}, Y_{\Nm})
     } {
       \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm})
-    }
+    }.
+  \end{aligned}
   \label{eqn:melded-model-general}
-\end{multline}
+\end{equation}

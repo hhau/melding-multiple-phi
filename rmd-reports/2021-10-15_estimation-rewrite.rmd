@@ -1,0 +1,163 @@
+---
+title: "estimation bits"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+link-citations: true
+hyperrefoptions:
+  - backref
+  - colorlinks=true
+output:
+  pdf_document:
+    includes:
+      in_header:
+        ../tex-input/pre.tex
+    fig_caption: true
+    number_sections: true
+    keep_tex: true
+---
+
+<!--
+Rscript -e 'rmarkdown::render("rmd-reports/2021-10-15_estimation-rewrite.rmd")'
+-->
+
+# Posterior estimation
+
+We now present a multi-stage MCMC method for generating samples from the melded posterior.
+By employing a multi-stage strategy we can avoid evaluating all submodels simultaneously.
+This is desirable in situations where simultaneously evaluating the submodel terms is computationally infeasible or cumbersome, whilst evaluating the prior marginal distributions is possible and relatively inexpensive.
+By parallelising the multi-stage process we can produce posterior samples in less time than an equivalent sequential method[^sequential].
+
+Multi-stage posterior estimation methods including @lunn:etal:13, @tom:etal:10, and @mauff_joint_2020, are employed when a single-stage MCMC sampler for the posterior distribution is infeasible.
+This is often the case when applying chained melding; it is feasible to fit each submodel separately using standard methods, but when the submodels are combined -- either through Markov melding, or by expanding the definition of one submodel to include another -- the computation required poses an insurmountable barrier to posterior estimation.
+
+We also describe an approximate method, where stage one submodels are summarised by normal distributions for use in stage two.
+
+We only consider the $\Nm = 3$ case, as this setting includes both of our examples.
+Generic, parallel methodology for efficiently sampling the melded posterior composed of arbitrary numbers of submodels is challenging, and beyond the scope of this article.
+We discuss some of difficulties in Section \ref{discussion}.
+
+[^sequential]: Appendix \ref{sequential-sampler} describes such a sequential MCMC sampler.
+
+## Parallel sampler
+
+We now devise a strategy where stage one samples submodels 1 and 3 in parallel.
+Stage two reuses these samples in a Metropolis-within-Gibbs sampler, which targets the full melded posterior.
+The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
+
+\input{../tex-input/dc-sampler/0001-parallel-dag.tex}
+
+The parallel sampler assumes that the pooled prior decomposes such that
+\input{../tex-input/dc-sampler/0002-parallel-decomposition.tex}
+All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are improper, flat distributions.
+Another assumption we commonly employ is that $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, with appropriate adjustments to $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+We shall see momentarily that this ensures that the stage one targets are the subposteriors of $\pd_{1}$ and $\pd_{3}$.
+
+#### Stage one
+
+Two independent, parallel sampling processes occur in stage one.
+Terms from the melded model that pertain to $\pd_{1}$ and $\pd_{3}$ are isolated and targeted
+\input{../tex-input/dc-sampler/0021-stage-one-targets.tex}
+using standard MCMC methodology.
+This produces $N_{1}$ samples $\{(\phi_{1 \cap 2}, \psi_{1})_{n}\}_{n = 1}^{N_{1}}$ from $\pd_{\text{meld}, 1}(\phi_{1 \cap 2}, \psi_{2} \mid Y_{1})$ and $N_{3}$ samples $\{(\phi_{2 \cap 3}, \psi_{3})_{n}\}_{n = 1}^{N_{3}}$ from $\pd_{\text{meld}, 3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$.
+
+#### Stage two
+
+Stage two targets the melded posterior of Equation \eqref{eqn:melded-model-full} using a Metropolis-within-Gibbs sampler, where the proposal distributions are
+\input{../tex-input/dc-sampler/0031-stage-two-proposals.tex}
+where $\q(\psi_{2}^{*} \mid \psi_{2})$ is a generic proposal distribution for $\psi_{2}$.
+In practice, we draw an index $n_{1}^{*}$ uniformly from $\{1, \ldots, N_{1}\}$ and use the corresponding value of $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})_{n_{1}^{*}}$ as the proposal in Equation \eqref{eqn:stage-two-proposals-one}, and do likewise for $n_{3}^{*}$ and $(\phi_{2 \cap 3}^{*}, \psi_{3}^{*})_{n_{3}^{*}}$.
+The acceptance probabilities for these updates are
+\input{../tex-input/dc-sampler/0032-stage-two-acceptance.tex}
+where $\alpha(x, z)$ denotes the probability associated with a move from $z$ to $x$.
+Note that all stage two acceptance probabilities only contain terms from the second submodel and the pooled prior, and thus do not depend on $\psi_{1}$ or $\psi_{3}$.
+If a move is accepted then we also store the index, i.e. $n_{1}^{*}$ or $n_{3}^{*}$, associated with the move, otherwise we store the current value of the index.
+The stored indices are used to appropriately resample $\psi_{1}$ and $\psi_{3}$ from the stage one samples.
+
+## Normal approximation
+
+Normal approximations are commonly employed to summarise submodels for subsequent use in more complex models.
+For example, two-stage meta-analyses often use a normal distribution centred on each studies' effect estimate [@burke_meta-analysis_2017].
+Suppose we employ such an approximation to summarise the prior and posterior of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ under $\pd_{1}$ and $\pd_{3}$ respectively.
+In addition, assume that
+
+- Such approximations are appropriate for $\pd_{1}(\phi_{1 \cap 2}), \pd_{1}(\phi_{1 \cap 2} \mid Y_{1}), \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$.
+- We are not interested in $\psi_{1}$ and $\psi_{3}$, and can integrate them out of all relevant densities.
+- We employ our second form of dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
+
+The latter two assumptions imply that the melded posterior of interest is proportional to
+\input{../tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
+
+Denote the normal approximation of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ as $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1}, \widehat{\Sigma}_{1})$, which is a normal distribution with mean $\widehat{\mu}_{1}$ and covariance matrix $\widehat{\Sigma}_{1}$.
+The corresponding normal approximation of the prior $\pd_{1}(\phi_{1 \cap 2})$ is $\widehat{\pd}_{1}(\phi_{1 \cap 2} \mid \widehat{\mu}_{1, 0}, \widehat{\Sigma}_{1, 0})$.
+The equivalent approximations for the subposterior and prior of $\pd_{3}$ are $\widehat{\pd}_{3}(\phi_{2 \cap 3} \mid \widehat{\mu}_{3}, \widehat{\Sigma}_{3})$ and $\widehat{\pd}_{3}(\phi_{2 \cap 3} \mid \widehat{\mu}_{3, 0}, \widehat{\Sigma}_{3, 0})$ respectively.
+Substituting in the approximations and using standard results for Gaussian density functions (see @bromiley_products_2003 and Appendix \ref{normal-approximation-calculations}) results in
+\input{../tex-input/multiple-normal-approximation/0040-final-normal-approx.tex}
+where
+\input{../tex-input/multiple-normal-approximation/0050-in-text-normal-approx.tex}
+Standard MCMC methods can be used to sample from the approximate melded posterior.
+If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}$ and $\widehat{\Sigma}_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:in-text-normal-approx}.
+
+
+# Discussion
+
+Our parallel sampler is currently limited to $\Nm = 3$ submodels.
+A general method would consider an arbitrary number of submodels in a chain, and initially split the chain into more/fewer pieces depending on the computational resources available.
+Designing such a method is complex, as it would have to:
+
+- Avoid requiring the inverse of any component of $\boldsymbol{\phi}$ with a noninvertible definition,
+- Estimate relative cost of sampling each submodel's subposterior, to split the chain of submodels into steps/jobs of approximately the same computational cost,
+- Decide the order in which pieces of the chain are combined.
+
+These are substantial challenges.
+It may be possible to use combine the ideas in @lindsten_divide-and-conquer_2017, who propose a parallel Sequential Monte Carlo method, with the aforementioned constraints to obtain a generic methodology.
+Ideally we would retain the ability to use existing implementations of the submodels, however the need to recompute the weights of the particles, and hence reevaluate previously considered submodels, may make this an impossible requirement.
+
+# Appendix
+
+## Sequential sampler
+
+The sequential sampler assumes that the pooled prior decomposes such that
+\input{../tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
+This is necessary to avoid sampling all components of $\boldsymbol{\phi}$ in the first stage.
+All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as we can assume all but $\pd_{\text{pool}, 3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are improper, flat distributions.
+However, including some portion of the pooled prior in each stage of the sampler can improve performance, and eliminate computational instabilities when submodel likelihoods contain little information.
+
+### Stage one
+
+Stage one of the sequential sampler targets
+\input{../tex-input/multi-stage-sampler/0020-stage-one-target.tex}
+using a generic proposal kernel for both $\phi_{1 \cap 2}$ and $\psi_{1}$.
+The corresponding acceptance probability for a proposed update from $(\phi_{1 \cap 2}, \psi_{1})$ to $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})$ is
+\input{../tex-input/multi-stage-sampler/0021-stage-one-acceptance-probability.tex}
+
+### Stage two
+
+The stage two target augments the stage one target by including the second submodel, corresponding prior marginal distribution, and an additional pooled prior term
+\input{../tex-input/multi-stage-sampler/0030-stage-two-target.tex}
+A Metropolis-within-Gibbs strategy is employed, where the stage one samples are used as a proposal for $\phi_{1 \cap 2}$, whilst a generic proposal kernel is used for $\psi_{2}$ and $\phi_{2 \cap 3}$.
+Thus the proposal distributions for $\phi_{1 \cap 2}^{*}$ and $(\phi_{2 \cap 3}^{*}, \psi_{2}^{*})$ are
+\input{../tex-input/multi-stage-sampler/0031-stage-two-gibbs-updates.tex}
+The acceptance probability for this proposal strategy is
+\input{../tex-input/multi-stage-sampler/0032-stage-two-acceptance-probabilities.tex}
+Our judicious choice of proposal distribution has resulted in a cancellation in Equation \eqref{eqn:stage-two-acceptance-probabilities-one} which removes all terms related to $\pd_{1}$.
+Similarly, all terms related to $\pd_{1}$ are constant -- hence cancel -- in Equation \eqref{eqn:stage-two-acceptance-probabilities-two}.
+This eliminates any need to re-evaluate the first submodel.
+
+### Stage three
+
+In stage three we target the full melded posterior
+\input{../tex-input/multi-stage-sampler/0044-stage-three-target.tex}
+The target has now been broadened to include terms from the third submodel and the entirety of the pooled prior.
+Again, we employ a Metropolis-within-Gibbs sampler, with proposals drawn such that
+\input{../tex-input/multi-stage-sampler/0045-stage-three-gibbs-updates.tex}
+which leads to acceptance probabilities of
+\input{../tex-input/multi-stage-sampler/0046-stage-three-acceptance-probabilities.tex}
+The informed choice of proposal distribution for ($\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}$) has allowed us to target the full melded posterior without needing to evaluate all submodels simultaneously.
+
+# Bib

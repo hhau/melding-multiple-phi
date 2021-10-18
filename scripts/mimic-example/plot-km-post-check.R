@@ -122,7 +122,9 @@ base_plot <- ggplot(
   data = plot_df,
   aes(x = time, y = surv, group = iter_id, col = origin)
 ) +
-  geom_step(aes(alpha = origin_alpha, linetype = origin_step, size = origin_step)) +
+  geom_step(
+    aes(alpha = origin_alpha, linetype = origin_step, size = origin_step)
+  ) +
   geom_point(
     data = censor_df,
     inherit.aes = FALSE,
@@ -411,7 +413,7 @@ p1 <- base_plot +
     guide = FALSE,
     values = c(
       stage_one_median_phi_12 = blues[2],
-      stage_two_poe_phi_12 = "#000000",
+      stage_two_poe_phi_12 = highlight_col,
       chained = highlight_col,
       fixed = blues[2]
     ),
@@ -424,7 +426,7 @@ p1 <- base_plot +
   ) +
   labs(colour = "Posterior type") +
   ylab(expression("S"(italic(t)))) +
-  xlab(expression(italic(t))) +
+  xlab(expression(italic(t) ~ (plain("Days since ICU admission")))) +
   theme(axis.title.y = element_text(angle = 0, vjust = 0.5))
 
 ggsave_halfheight(

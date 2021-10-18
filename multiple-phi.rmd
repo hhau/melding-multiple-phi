@@ -110,8 +110,8 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 Our second example considers the time to onset of respiratory failure (RF) amongst patients in intensive care units, and factors that influence the onset of RF.
 A patient can be said to be experiencing RF if the ratio of the partial pressure of arterial blood oxygen (\paoii) to the faction of inspired oxygen (\fioii) is less than 300mmHg [@the_ards_definition_task_force_acute_2012], though this is not the only definition of RF.
-Drawing arterial blood is a painful procedure, and calculating \paoii\ requires laboratory testing, so patients' \pfratio\ ratios are not always available.
-The relatively infrequency of \pfratio\ data, when combined with the intrinsic variability in each individual's blood oxygen level, results in significant uncertainty in about the time of onset of RF.
+Drawing arterial blood is a painful procedure, and calculating \paoii\ requires laboratory testing, so patients' \pfratio\ (P/F) ratios are not always available.
+The relatively infrequency of P/F ratio data, when combined with the intrinsic variability in each individual's blood oxygen level, results in significant uncertainty in about the time of onset of RF.
 
 Factors that influence the time to onset of RF are both longitudinal and time invariant.
 Both types of data can be considered in _joint models_ [@rizopoulos_joint_2012], which are composed of two distinct submodels, one for each data type.
@@ -180,6 +180,9 @@ Note that it is the combination of $\pd_{\text{repl}, \modelindex}(\phi_{\modeli
 
 We form the chained melded model by taking the Markov combination of the marginally replaced submodels
 \input{tex-input/multiple-phi/0010-melded-model-cond.tex}
+Rewriting \eqref{eqn:melded-model-full} in terms of $\phi_{\modelindex \cap \modelindex + 1}$ for $\modelindex = 1, \ldots, \Nm - 1$ yields
+\input{tex-input/multiple-phi/0011-melded-model-general.tex}
+Finally, we will use _melded posterior_ $\pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y}) \propto \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y})$ to refer to posterior of the chained melded model conditioned on all data.
 
 ## Pooled prior
 
@@ -281,61 +284,26 @@ Appendix&nbsp;\ref{log-pooling-gaussian-densities} shows analytically that $\lam
 
 # Posterior estimation
 
-We now present two multi-stage MCMC methods for generating samples from the melded posterior.
+We now present a multi-stage MCMC method for generating samples from the melded posterior.
 By employing a multi-stage strategy we can avoid evaluating all submodels simultaneously.
 This is desirable in situations where simultaneously evaluating the submodel terms is computationally infeasible or cumbersome, whilst evaluating the prior marginal distributions is possible and relatively inexpensive.
-The first sampler operates sequentially, accruing and refining samples by considering one submodel at a time.
-The second parallelises parts of the sampling process, and has the potential to produce posterior samples from the melded posterior in less time than the sequential method.
-Both samplers assume $\pd_{\text{pool}}(\boldsymbol{\phi})$ decomposes in sampler-specific ways, which we detail along when introducing each sampler.
+By parallelising the multi-stage process we can produce posterior samples in less time than an equivalent sequential method[^sequential].
+
+Multi-stage posterior estimation methods including @lunn:etal:13, @tom:etal:10, and @mauff_joint_2020, are employed when a single-stage MCMC sampler for the posterior distribution is infeasible.
+This is often the case when applying chained melding; it is feasible to fit each submodel separately using standard methods, but when the submodels are combined -- either through Markov melding, or by expanding the definition of one submodel to include another -- the computation required poses an insurmountable barrier to posterior estimation.
 
 We also describe an approximate method, where stage one submodels are summarised by normal distributions for use in stage two.
 
 We only consider the $\Nm = 3$ case, as this setting includes both of our examples.
-Generic methodology for efficiently sampling arbitrary numbers of submodels in parallel is beyond the scope of this work [see @lindsten_divide-and-conquer_2017 for one such methodology].
+Generic, parallel methodology for efficiently sampling the melded posterior composed of arbitrary numbers of submodels is challenging, and beyond the scope of this article.
+We discuss some of difficulties in Section \ref{discussion}.
 
-## Sequential sampler
-
-The sequential sampler assumes that the pooled prior decomposes such that
-\input{tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
-This is necessary to avoid sampling all components of $\boldsymbol{\phi}$ in the first stage.
-All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as we can assume all but $\pd_{\text{pool}, 3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are improper, flat distributions.
-However, including some portion of the pooled prior in each stage of the sampler can improve performance, and eliminate computational instabilities when submodel likelihoods contain little information.
-
-#### Stage one
-
-Stage one of the sequential sampler targets
-\input{tex-input/multi-stage-sampler/0020-stage-one-target.tex}
-using a generic proposal kernel for both $\phi_{1 \cap 2}$ and $\psi_{1}$.
-The corresponding acceptance probability for a proposed update from $(\phi_{1 \cap 2}, \psi_{1})$ to $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})$ is
-\input{tex-input/multi-stage-sampler/0021-stage-one-acceptance-probability.tex}
-
-#### Stage two
-
-The stage two target augments the stage one target by including the second submodel, corresponding prior marginal distribution, and an additional pooled prior term
-\input{tex-input/multi-stage-sampler/0030-stage-two-target.tex}
-A Metropolis-within-Gibbs strategy is employed, where the stage one samples are used as a proposal for $\phi_{1 \cap 2}$, whilst a generic proposal kernel is used for $\psi_{2}$ and $\phi_{2 \cap 3}$.
-Thus the proposal distributions for $\phi_{1 \cap 2}^{*}$ and $(\phi_{2 \cap 3}^{*}, \psi_{2}^{*})$ are
-\input{tex-input/multi-stage-sampler/0031-stage-two-gibbs-updates.tex}
-The acceptance probability for this proposal strategy is
-\input{tex-input/multi-stage-sampler/0032-stage-two-acceptance-probabilities.tex}
-Our judicious choice of proposal distribution has resulted in a cancellation in Equation \eqref{eqn:stage-two-acceptance-probabilities-one} which removes all terms related to $\pd_{1}$.
-Similarly, all terms related to $\pd_{1}$ are constant -- hence cancel -- in Equation \eqref{eqn:stage-two-acceptance-probabilities-two}.
-This eliminates any need to re-evaluate the first submodel.
-
-#### Stage three
-
-In stage three we target the full melded posterior
-\input{tex-input/multi-stage-sampler/0044-stage-three-target.tex}
-The target has now been broadened to include terms from the third submodel and the entirety of the pooled prior.
-Again, we employ a Metropolis-within-Gibbs sampler, with proposals drawn such that
-\input{tex-input/multi-stage-sampler/0045-stage-three-gibbs-updates.tex}
-which leads to acceptance probabilities of
-\input{tex-input/multi-stage-sampler/0046-stage-three-acceptance-probabilities.tex}
-The informed choice of proposal distribution for ($\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}$) has allowed us to target the full melded posterior without needing to evaluate all submodels simultaneously.
+[^sequential]: Appendix \ref{sequential-sampler} describes such a sequential MCMC sampler.
 
 ## Parallel sampler
 
-We now devise a strategy where stage one samples submodels 1 and 3 in parallel. Stage two reuses these samples in a Metropolis-within-Gibbs sampler, which targets the full melded posterior.
+We now devise a strategy where stage one samples submodels 1 and 3 in parallel.
+Stage two reuses these samples in a Metropolis-within-Gibbs sampler, which targets the full melded posterior.
 The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
 
 \input{tex-input/dc-sampler/0001-parallel-dag.tex}
@@ -343,25 +311,31 @@ The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
 The parallel sampler assumes that the pooled prior decomposes such that
 \input{tex-input/dc-sampler/0002-parallel-decomposition.tex}
 All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are improper, flat distributions.
+Another assumption we commonly employ is that $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, with appropriate adjustments to $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+We shall see momentarily that this ensures that the stage one targets are the subposteriors of $\pd_{1}$ and $\pd_{3}$.
 
 #### Stage one
 
 Two independent, parallel sampling processes occur in stage one.
-Submodels one and three are targeted
+Terms from the melded model that pertain to $\pd_{1}$ and $\pd_{3}$ are isolated and targeted
 \input{tex-input/dc-sampler/0021-stage-one-targets.tex}
-using submodel-specific transition kernels, leading to acceptance probabilities of
-\input{tex-input/dc-sampler/0022-stage-one-acceptance-probs.tex}
-which can be computed independently of one another.
+using standard MCMC methodology.
+This produces $N_{1}$ samples $\{(\phi_{1 \cap 2}, \psi_{1})_{n}\}_{n = 1}^{N_{1}}$ from $\pd_{\text{meld}, 1}(\phi_{1 \cap 2}, \psi_{2} \mid Y_{1})$ and $N_{3}$ samples $\{(\phi_{2 \cap 3}, \psi_{3})_{n}\}_{n = 1}^{N_{3}}$ from $\pd_{\text{meld}, 3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$.
 
 #### Stage two
 
 Stage two targets the melded posterior of Equation \eqref{eqn:melded-model-full} using a Metropolis-within-Gibbs sampler, where the proposal distributions are
 \input{tex-input/dc-sampler/0031-stage-two-proposals.tex}
+where $\q(\psi_{2}^{*} \mid \psi_{2})$ is a generic proposal distribution for $\psi_{2}$.
+In practice, we draw an index $n_{1}^{*}$ uniformly from $\{1, \ldots, N_{1}\}$ and use the corresponding value of $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})_{n_{1}^{*}}$ as the proposal in Equation \eqref{eqn:stage-two-proposals-one}, and do likewise for $n_{3}^{*}$ and $(\phi_{2 \cap 3}^{*}, \psi_{3}^{*})_{n_{3}^{*}}$.
 The acceptance probabilities for these updates are
 \input{tex-input/dc-sampler/0032-stage-two-acceptance.tex}
-Note that all stage two acceptance probabilities only contain terms from the second submodel and the pooled prior.
+where $\alpha(x, z)$ denotes the probability associated with a move from $z$ to $x$.
+Note that all stage two acceptance probabilities only contain terms from the second submodel and the pooled prior, and thus do not depend on $\psi_{1}$ or $\psi_{3}$.
+If a move is accepted then we also store the index, i.e. $n_{1}^{*}$ or $n_{3}^{*}$, associated with the move, otherwise we store the current value of the index.
+The stored indices are used to appropriately resample $\psi_{1}$ and $\psi_{3}$ from the stage one samples.
 
-## Normal approximations to submodel components
+## Normal approximation
 
 Normal approximations are commonly employed to summarise submodels for subsequent use in more complex models.
 For example, two-stage meta-analyses often use a normal distribution centred on each studies' effect estimate [@burke_meta-analysis_2017].
@@ -385,7 +359,10 @@ where
 Standard MCMC methods can be used to sample from the approximate melded posterior.
 If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}$ and $\widehat{\Sigma}_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:in-text-normal-approx}.
 
+
 # Examples
+
+- high level
 
 ## An Integrated population model for little owls
 
@@ -486,24 +463,24 @@ The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bott
 We now return to the example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
 There are $i = 1, \ldots, N$ individuals in the data set.
 Each individual is admitted to the ICU at time $0$, and is discharged or dies at time $C_{i}$.
-See appendix \ref{cohort-selection-criteria} for information on $N$ and how the individuals were selected from MIMIC-III [@johnson_mimic-iii_2016].
+See Appendix \ref{cohort-selection-criteria} for information on $N$ and how the individuals were selected from MIMIC-III [@johnson_mimic-iii_2016].
 
 ### P/F ratio model (B-spline): $\pd_{1}$
 
-Each individual has P/F ratio observations $z_{i, j}$ at times $t_{i, j}$, with $j = 1, \ldots, J_{i}$.
+Each individual has P/F ratio observations $z_{i, j}$ (in units of mmHg) at times $t_{i, j}$, with $j = 1, \ldots, J_{i}$.
 For each individual denote the vector of observations $\boldsymbol{z}_{i} = (z_{i, 1}, \ldots, z_{i, J_{i}})$ and observation times $\boldsymbol{t}_{i} = (t_{i, 1}, \ldots, t_{i, J_{i}})$.
 To improve computational performance, we standardise the P/F ratio data for each individual such that $z_{i, j} = \frac{\tilde{z}_{i, j} - \overline{z}_{i}}{\hat{s}_{i}}$, where $\tilde{z}_{i, j}$ is the underlying unstandardised observation with mean $\overline{z}_{i}$ and standard deviation $\hat{s}_{i}$.
 Similarly we rescale the threshold for respiratory failure: $\tau_{i} = \frac{300 - \overline{z}_{i}}{\hat{s}_{i}}$.
 
-We choose to model the P/F ratio using a B-spline of degree 3, with 2 boundary knots and 7 internal knots, and do not include an intercept column in the spline basis.
-The internal knots are evenly spaced between the two boundary knots at $\min(\boldsymbol{t}_{i})$ and $\max(\boldsymbol{t}_{i})$.
+We choose to model the P/F ratio using cubic B-splines and 7 internal knots, and do not include an intercept column in the spline basis [for background on B-splines see Chapter 2 in @hastie_generalized_1999; supplementary material of @wang_shape-restricted_2021-1].
+The internal knots are evenly spaced between two additional boundary knots at $\min(\boldsymbol{t}_{i})$ and $\max(\boldsymbol{t}_{i})$.
 These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, with coefficients $\zeta_{i, k}$ where $\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})$.
-We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j})$ so that the submodel can be written as
+We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in [0, \infty)^{10}$ so that the submodel can be written as
 \begin{equation}
-  z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
+  z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})^{\top}\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
   \label{eqn:pf-model-def}
 \end{equation}
-We employ a weakly informative prior for the intercept, and a heavy tailed ($t_{5}$) distribution for the error term[^pfoutliers] with a weakly informative half-normal prior for unknown scale parameter
+We employ a weakly informative prior for the intercept, and a heavy tailed ($t_{5}$) distribution for the error term[^pfoutliers] with a weakly informative half-normal prior for the unknown scale parameter
 \begin{equation}
   \beta_{0, i} \sim \text{N}(0, 1^2), \qquad \varepsilon_{i, j} \sim t_{5}(0, \omega_{i}), \qquad  \omega_{i} \sim \text{N}_{+}(0, 1^2).
   \label{eqn:pf-model-priors-simple}
@@ -556,9 +533,9 @@ We model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at ti
 The cumulative data are derived from the raw fluid input/output observations, which we detail in Appendix&nbsp;\ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
 We denote the complete vector of observations by $\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})$ and times by $\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})$.
 
-We assume a piecewise linear model, with intercept $\eta_{0, i}$, slope $\eta_{1, i}^{b}$ before the breakpoint at time $\kappa_{i}$, and slope $\eta_{1, i}^{a}$ after the breakpoint.
+We assume a piecewise linear model, with $\eta_{0, i}$ as the value at the breakpoint, slope $\eta_{1, i}^{b}$ before the breakpoint at time $\kappa_{i}$, and slope $\eta_{1, i}^{a}$ after the breakpoint
 \begin{equation}
-  x_{i, l} = \eta_{0, i} + \eta^{b}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} < \kappa_{i}\}} + \eta^{a}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} \geq \kappa_{i}\}} + \epsilon_{i, l} \\
+  x_{i, l} = \eta_{0, i} + \eta^{b}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} < \kappa_{i}\}} + \eta^{a}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} \geq \kappa_{i}\}} + \epsilon_{i, l}. \\
    \label{eqn:piecewise-fluid-model}
 \end{equation}
 Prior distributions and justification are available in Appendix&nbsp;\ref{priors-and-justification-for-the-fluid-submodel}.
@@ -577,16 +554,16 @@ knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pd
 
 Individuals experience respiratory failure ($d_{i} = 1$) at time $T_{i}$, or are censored[^competerisks] $(d_{i} = 0, T_{i} = C_{i})$.
 We assume a Weibull hazard with shape parameter $\gamma$ for the event times.
-All individuals have $b = 1, \ldots, B$ baseline (time invariant) covariates $w_{i, b}$ with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, B})$(i.e. including an intercept term), and coefficient $\theta \in \mathbb{R}^{B + 1}$.
+All individuals have $a = 1, \ldots, A$ baseline (time invariant) covariates $w_{i, a}$ with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, A})$(i.e. including an intercept term), and common coefficients $\boldsymbol{\theta} =  (\theta_{0}, \ldots, \theta_{A})$.
 The hazard is assumed to be influenced by these covariates and the rate of increase $\frac{\partial}{\partial t} m_{i}(t)$ in the cumulative fluid balance.
 The strength of the latter relationship is captured by $\alpha$.
 Hence, the hazard is
 \begin{gather}
-  h_{i}(T_{i}) = \gamma T_{i}^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\right\} \\
+  h_{i}(T_{i}) = \gamma T_{i}^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta} + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\right\} \\
   \frac{\partial}{\partial T_{i}} m_{i}(T_{i}) = \eta^{b}_{1, i}\boldsymbol{1}_{\{T_{i} < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{T_{i} \geq \kappa_{i}\}},
 \end{gather}
 The survival probability $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$ has an analytic form, which we derive in Appendix&nbsp;\ref{analytic-form-for-the-survival-probability}.
-The likelihood for the submodel is
+The likelihood for individual $i$ is
 \begin{equation}
   \pd(T_{i}, d_{i} \mid \gamma, \boldsymbol{\theta}, \alpha, \kappa_{i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}, \boldsymbol{w}_{i}) = h_{i}(T_{i})^{d_{i}} S_{i}(T_{i}), \\
 \end{equation}
@@ -595,10 +572,10 @@ where we suppress the dependence on the parameters on the right hand side for br
 Our priors, which we justify in Appendix&nbsp;\ref{p2-prior-justification}, for the submodel specific parameters are
 \begin{equation}
 \begin{gathered}
-  \gamma \sim \text{Gamma}(9.05, 8.72), \, \,
+  \gamma \sim \text{Gamma}(9.05, 8.72), \,\,
   \alpha \sim \text{SkewNormal}(0, 0.5, -2), \\
-  \theta_{1} \sim \text{N}(\hat{E}, 0.5^2), \, \,
-  (\theta_{2}, \ldots, \theta_{B + 1}) \sim \text{SkewNormal}(0, 0.5, -1),
+  \theta_{0} \sim \text{N}(\hat{E}, 0.5^2), \,\,
+  \theta_{a} \sim \text{SkewNormal}(0, 0.5, -1)
   \label{eqn:surv-submodel-prior-def}
 \end{gathered}
 \end{equation}
@@ -618,14 +595,14 @@ Samples from $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are obtained using the 
 We will also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$, which we obtain using the same methodology.
 Further details about these estimates are available in Appendix&nbsp;\ref{estimating-submodel-prior-marginal-distributions}.
 
-We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) \propto 1$ and $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) \propto 1$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi})$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
 These samples are used as proposal densities for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in stage two, and we use Stan to sample $\psi_{2}$ for every MH-within-Gibbs step, with 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
 Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper.
 
-[^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, disable all adaptive procedures, and manually rescale the target using the `multiplier` syntax to ensure the default (identity) mass matrix is suitable.
+[^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, and disable all adaptive procedures as the default (identity) mass matrix and step size are suitable.
 
 It is crucial for the convergence of our multi-stage sampler that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_.
 Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
@@ -633,36 +610,37 @@ Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 ### Results
 
 To assess the impact of the melding process we compare the posterior for $\psi_{2}$ obtained using the chained melding approach with the posterior obtained by fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+
 Specifically, we fix $\phi_{1 \cap 2}$ to the median value[^median] for each individual under $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, which we denote $\tilde{\phi}_{1 \cap 2}$.
 We fix $\phi_{2 \cap 3}$ to the subposterior mean of $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$ similarly denoted $\tilde{\phi}_{2 \cap 3}$.
 We also compare the melded posterior to the original marginal prior $\pd_{2}(\psi_{2})$, but we note that this comparison is difficult to interpret, as the melding process alters the prior for $\psi_{2}$.
-Figure \ref{fig:psi_2_comparision_plot} displays the aforementioned densities for $(\theta_{3}, \theta_{17}, \gamma, \alpha) \subset \psi_{2}$.
+Figure \ref{fig:psi_2_comparison_plot} displays the aforementioned densities for $(\theta_{3}, \theta_{17}, \gamma, \alpha) \subset \psi_{2}$.
 For the baseline coefficients ($\theta_{3}, \theta_{17}$) the chained melding posterior differs only slightly in location from the posterior obtained using $\tilde{\phi}_{1 \cap 2}$ and $\tilde{\phi}_{2 \cap 3}$, with a small increase in uncertainty.
 It is interesting that the large uncertainty in $\phi_{1 \cap 2}$ seems
 A more pronounced change is visible in $\alpha$, where the melding process has added a notable degree of uncertainty and heavier left tail to the posterior.
 
-```{r psi_2_comparision_plot, fig.cap = 'Density estimates for a subset of $\\psi_{2}$. The original marginal prior $\\pd_{2}(\\psi_{2})$ is shown as the grey dotted line (note that this is not the marginal prior under the melded model). The figure also contains the subposteriors obtained from chained melding using PoE pooling (red, solid line) and logarithmic pooling (blue, solid line), as well as the posterior obtained using fixed values of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ (black, dashed line).'}
+```{r psi_2_comparison_plot, fig.cap = 'Density estimates for a subset of $\\psi_{2}$. The original marginal prior $\\pd_{2}(\\psi_{2})$ is shown as the grey dotted line (note that this is not the marginal prior under the melded model). The figure also contains the subposteriors obtained from chained melding using PoE pooling (red, solid line) and logarithmic pooling (blue, solid line), as well as the posterior obtained using fixed values of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ (black, dashed line).'}
 knitr::include_graphics('plots/mimic-example/psi-2-method-comparison-small.pdf')
 ```
 
 To investigate which part of the melding process causes this change in the posterior of $\alpha$, we consider fixing only one of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to their respective point estimates.
-Figure \ref{fig:alpha_only_comparision_plot} displays the same distributions for $\alpha$ as \ref{fig:psi_2_comparision_plot}, and adds the posteriors obtained using one fixed value ($\tilde{\phi}_{1 \cap 2}$ or $\tilde{\phi}_{2 \cap 3}$) whilst melding the other non-fixed parameter.
+Figure \ref{fig:alpha_only_comparision_plot} displays the same distributions for $\alpha$ as \ref{fig:psi_2_comparison_plot}, and adds the posteriors obtained using one fixed value ($\tilde{\phi}_{1 \cap 2}$ or $\tilde{\phi}_{2 \cap 3}$) whilst melding the other non-fixed parameter.
 Evident for both choices of pooling is the importance of incorporating the uncertainty in $\phi_{1 \cap 2}$.
 This is expected given the comparatively large uncertainty and multimodal nature of $\phi_{1 \cap 2}$ compared to $\phi_{2 \cap 3}$ (see Figure \ref{fig:pf_fit_and_fluid_fit_plot}).
 We suspect that it is the multimodality in $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ that produces the shift in posterior mode of $\phi_{1 \cap 2}$, with the width of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ affecting the increase in uncertainty.
 
-```{r alpha_only_comparision_plot, fig.cap = 'Median (vertical line), 50\\%, 80\\%, 95\\%, and 99\\% credible intervals (least transparent to most transparent) for $\\alpha$. The marginal prior (grey, top row) and posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ fixed (black, bottom row) are as in Figure \\ref{fig:psi_2_comparision_plot}. For the chained melded posteriors (red and blue, rows 2 -- 7), the tick label on the y-axis denotes the type of pooling used, and which of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ are fixed.'}
+```{r alpha_only_comparision_plot, fig.cap = 'Median (vertical line), 50\\%, 80\\%, 95\\%, and 99\\% credible intervals (least transparent to most transparent) for $\\alpha$. The marginal prior (grey, top row) and posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ fixed (black, bottom row) are as in Figure \\ref{fig:psi_2_comparison_plot}. For the chained melded posteriors (red and blue, rows 2 -- 7), the tick label on the y-axis denotes the type of pooling used, and which of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ are fixed.'}
 knitr::include_graphics('plots/mimic-example/psi-2-alpha-only-compare.pdf')
 ```
 
-The change to the posterior distribution of $\gamma$ in Figure \ref{fig:psi_2_comparision_plot} appears small, however when we consider the corresponding estimates of the survival probability, this difference becomes much more apparent.
+The change to the posterior distribution of $\gamma$ in Figure \ref{fig:psi_2_comparison_plot} appears small, however when we consider the corresponding estimates of the survival probability, this difference becomes much more apparent.
 Figure \ref{fig:kap_meier_pc_plot} displays the average survival probability under the melded posterior (using PoE pooling) of $\psi_{2}$ and $\phi_{2 \cap 3}$, and corresponding draws of $\phi_{1 \cap 2}$ converted into empirical survival probabilities using the Kaplan-Meier estimator.
 Also shown is the Kaplan-Meier estimate using $\tilde{\phi}_{1 \cap 2}$, and the average survival probability computed using the posterior of $\psi_{2}$ with fixed $\tilde{\phi}_{1 \cap 2}$ and $\tilde{\phi}_{2 \cap 3}$.
 The survival curves differ markedly, with the 95\% intervals overlapping only for small values of time.
 It is also interesting to see that $\tilde{\phi}_{1 \cap 2}$, despite being a reasonable point estimate of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, is not very likely under the melded posterior.
 Figure \ref{fig:kap_meier_pc_plot} also suggests that the Weibull hazard is insufficiently flexible for this example, however more complex hazards are beyond the scope of this paper[^hazards].
 
-```{r kap_meier_pc_plot, fig.cap = 'Empirical survival curves and average survival probabilities at time $t$. The black lines are draws of $\\phi_{1 \\cap 2}$ from the melded posterior using PoE pooling, converted into empirical survival curves via the Kaplan-Meier estimator. The red line and interval (posterior mean and 95\\% credible interval) denote the model-based average survival probability obtained from the melded posterior using PoE pooling computed from the values of $\\psi_{2}$ and $\\phi_{2 \\cap 3}$. The blue dashed line is the Kaplan-Meier estimate obtained from the subposterior median $\\tilde{\\phi}_{1 \\cap 2}$, and the blue solid line and interval are the corresponding model based estimate obtained using $\\psi_{2}$ and $\\tilde{\\phi}_{2 \\cap 3}$.'}
+```{r kap_meier_pc_plot, fig.cap = 'Empirical survival curves and average survival probabilities at time $t$. The red, stepped lines are draws of $\\phi_{1 \\cap 2}$ from the melded posterior using PoE pooling, converted into empirical survival curves via the Kaplan-Meier estimator. The smooth red line and interval (posterior mean and 95\\% credible interval) denote the model-based average survival probability obtained from the melded posterior using PoE pooling computed from the values of $\\psi_{2}$ and $\\phi_{2 \\cap 3}$. The blue dashed line is the Kaplan-Meier estimate obtained from the subposterior median $\\tilde{\\phi}_{1 \\cap 2}$, and the blue solid line and interval are the corresponding model based estimate obtained using $\\psi_{2}$ and $\\tilde{\\phi}_{2 \\cap 3}$.'}
 knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
 ```
 
@@ -681,13 +659,24 @@ The two most common approximation strategies seem to be (i) approximating the su
 These strategies may, but not always, produce acceptable approximations to the chained melded model.
 Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach being the most sophisticated.
 
+Our parallel sampler is currently limited to $\Nm = 3$ submodels.
+A general method would consider an arbitrary number of submodels in a chain, and initially split the chain into more/fewer pieces depending on the computational resources available.
+Designing such a method is complex, as it would have to:
+
+- Avoid requiring the inverse of any component of $\boldsymbol{\phi}$ with a noninvertible definition,
+- Estimate relative cost of sampling each submodel's subposterior, to split the chain of submodels into steps/jobs of approximately the same computational cost,
+- Decide the order in which pieces of the chain are combined.
+
+These are substantial challenges.
+It may be possible to use combine the ideas in @lindsten_divide-and-conquer_2017, who propose a parallel Sequential Monte Carlo method, with the aforementioned constraints to obtain a generic methodology.
+Ideally we would retain the ability to use existing implementations of the submodels, however the need to recompute the weights of the particles, and hence reevaluate previously considered submodels, may make this an impossible requirement.
+
 The melding methodology is general and permits any form of uncertainty in the link parameters.
 In Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
 We note that some specific forms of uncertainty have been considered in previous work.
 These include @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation data to account for measurement error in the event time.
 
 The example in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times} has two more interesting aspects to discuss.
-
 Firstly, the P/F ratio data used in the first submodel is obtained by finding all blood gas measurements from arterial blood samples.
 Approximately $20\%$ of the venous/arterial labels are missing.
 In these instances a logistic regression model, fit by the MIMIC team, is used to predict the missing label based on other covariates.
@@ -726,6 +715,47 @@ The choice of $\lambda_{2}$ is critical; by controlling the contribution of $\pd
 The left hand column of Figure \ref{fig:pooled_densities_plot} illustrates this phenomena.
 When $\lambda_{1} = \lambda_{3} = 0 \implies \lambda_{2} = 1$, all correlation in $\pd_{2}$ is present in $\pd_{\text{pool}}$.
 The correlation decreases for increasing values of $\lambda_{1}$ until $\lambda_{1} = \lambda_{3} = 0.5 \implies \lambda_{2} = 0$, where no correlation persists.
+
+## Sequential sampler
+
+The sequential sampler assumes that the pooled prior decomposes such that
+\input{tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
+This is necessary to avoid sampling all components of $\boldsymbol{\phi}$ in the first stage.
+All pooled priors trivially satisfy \eqref{eqn:sequential-sampler-decomposition}, as we can assume all but $\pd_{\text{pool}, 3}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are improper, flat distributions.
+However, including some portion of the pooled prior in each stage of the sampler can improve performance, and eliminate computational instabilities when submodel likelihoods contain little information.
+
+### Stage one
+
+Stage one of the sequential sampler targets
+\input{tex-input/multi-stage-sampler/0020-stage-one-target.tex}
+using a generic proposal kernel for both $\phi_{1 \cap 2}$ and $\psi_{1}$.
+The corresponding acceptance probability for a proposed update from $(\phi_{1 \cap 2}, \psi_{1})$ to $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})$ is
+\input{tex-input/multi-stage-sampler/0021-stage-one-acceptance-probability.tex}
+
+### Stage two
+
+The stage two target augments the stage one target by including the second submodel, corresponding prior marginal distribution, and an additional pooled prior term
+\input{tex-input/multi-stage-sampler/0030-stage-two-target.tex}
+A Metropolis-within-Gibbs strategy is employed, where the stage one samples are used as a proposal for $\phi_{1 \cap 2}$, whilst a generic proposal kernel is used for $\psi_{2}$ and $\phi_{2 \cap 3}$.
+Thus the proposal distributions for $\phi_{1 \cap 2}^{*}$ and $(\phi_{2 \cap 3}^{*}, \psi_{2}^{*})$ are
+\input{tex-input/multi-stage-sampler/0031-stage-two-gibbs-updates.tex}
+The acceptance probability for this proposal strategy is
+\input{tex-input/multi-stage-sampler/0032-stage-two-acceptance-probabilities.tex}
+Our judicious choice of proposal distribution has resulted in a cancellation in Equation \eqref{eqn:stage-two-acceptance-probabilities-one} which removes all terms related to $\pd_{1}$.
+Similarly, all terms related to $\pd_{1}$ are constant -- hence cancel -- in Equation \eqref{eqn:stage-two-acceptance-probabilities-two}.
+This eliminates any need to re-evaluate the first submodel.
+
+### Stage three
+
+In stage three we target the full melded posterior
+\input{tex-input/multi-stage-sampler/0044-stage-three-target.tex}
+The target has now been broadened to include terms from the third submodel and the entirety of the pooled prior.
+Again, we employ a Metropolis-within-Gibbs sampler, with proposals drawn such that
+\input{tex-input/multi-stage-sampler/0045-stage-three-gibbs-updates.tex}
+which leads to acceptance probabilities of
+\input{tex-input/multi-stage-sampler/0046-stage-three-acceptance-probabilities.tex}
+The informed choice of proposal distribution for ($\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}$) has allowed us to target the full melded posterior without needing to evaluate all submodels simultaneously.
+
 
 ## Normal approximation calculations
 
@@ -1006,66 +1036,66 @@ This implies that the censoring model and the competing risks model are not equi
 The hazard at arbitrary time $t$ is
 
 \begin{gather*}
-  h_{i}(t) = \gamma t^{\gamma - 1} \exp\left\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial t} m_{i}(t)\right\} \\
-  m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t < k_{i}\}} + \eta^{a}_{1, i}(t - k_{i})\boldsymbol{1}_{\{t \geq k_{i}\}} \\
-  \frac{\partial}{\partial t} m_{i}(t) = \eta^{b}_{1, i}\boldsymbol{1}_{\{t < k_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{t \geq k_{i}\}}.
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}\theta + \alpha \frac{\partial}{\partial t} m_{i}(t)\right\} \\
+  m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}} \\
+  \frac{\partial}{\partial t} m_{i}(t) = \eta^{b}_{1, i}\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{t \geq \kappa_{i}\}}.
 \end{gather*}
 
-Then, for $t > k_{i}$, the cumulative hazard is
+Then, for $t > \kappa_{i}$, the cumulative hazard is
 
 \begin{align*}
   \int_{0}^{t} h_{i}(u) \text{d}u
   &= \int_{0}^{t}
     \gamma u^{\gamma - 1}
     \exp\left\{
-      \boldsymbol{x}_{i}\theta +
-      \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < k_{i}\}} +
-      \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq k_{i}\}}
+      \boldsymbol{w}_{i}\theta +
+      \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < \kappa_{i}\}} +
+      \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq \kappa_{i}\}}
     \right\}
     \text{d}u \\
-  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+  &= \gamma \exp\{\boldsymbol{w}_{i}\theta\}
     \int_{0}^{t}
       u^{\gamma - 1}
       \exp\left\{
-        \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < k_{i}\}} +
-        \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq k_{i}\}}
+        \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < \kappa_{i}\}} +
+        \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq \kappa_{i}\}}
       \right\}
     \text{d}u \\
-  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+  &= \gamma \exp\{\boldsymbol{w}_{i}\theta\}
     \left[
-      \int_{0}^{k_{i}}
+      \int_{0}^{\kappa_{i}}
         u^{\gamma - 1}
         \exp\left\{
           \alpha \eta^{b}_{1, i}
         \right\}
       \text{d}u
       +
-      \int_{k_{i}}^{t}
+      \int_{\kappa_{i}}^{t}
         u^{\gamma - 1}
         \exp\left\{
           \alpha \eta^{a}_{1, i}
         \right\}
       \text{d}u
     \right] \\
-  &= \exp\{\boldsymbol{x}_{i}\theta\}
+  &= \exp\{\boldsymbol{w}_{i}\theta\}
     \left[
       \exp\left\{
         \alpha \eta^{b}_{1, i}
       \right\}
-      k_{i}^{\gamma}
+      \kappa_{i}^{\gamma}
       +
       \exp\left\{
         \alpha \eta^{a}_{1, i}
       \right\}
-      (t^{\gamma} - k_{i}^{\gamma})
+      (t^{\gamma} - \kappa_{i}^{\gamma})
     \right]
 \end{align*}
 
-and for $t < k_{i}$
+and for $t < \kappa_{i}$
 
 \begin{align*}
   \int_{0}^{t} h_{i}(u) \text{d}u
-  &= \gamma \exp\{\boldsymbol{x}_{i}\theta\}
+  &= \gamma \exp\{\boldsymbol{w}_{i}\theta\}
     \left[
       \int_{0}^{t}
         u^{\gamma - 1}
@@ -1074,16 +1104,16 @@ and for $t < k_{i}$
         \right\}
       \text{d}u
     \right] \\
-  &= \exp\{\boldsymbol{x}_{i}\theta\}
+  &= \exp\{\boldsymbol{w}_{i}\theta\}
     \left[
       \exp\left\{
         \alpha \eta^{b}_{1, i}
       \right\}
       t_{i}^{\gamma}
     \right] \\
-  &= t_{i}^{\gamma} \exp\{\boldsymbol{x}_{i}\theta + \alpha \eta^{b}_{1, i}\}.
+  &= t_{i}^{\gamma} \exp\{\boldsymbol{w}_{i}\theta + \alpha \eta^{b}_{1, i}\}.
 \end{align*}
-The survival probabilities are defined with appropriately for $t > k_{i}$ and $t < k_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
+The survival probabilities are defined with appropriately for $t > \kappa_{i}$ and $t < \kappa_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
 
 ## Survival submodel prior justification {#p2-prior-justification}
 
@@ -1139,13 +1169,17 @@ To do so, we fit a mixture of multivariate normal distributions to transformatio
 The resulting density estimate, with estimated mixture weight $\widehat{\theta}_{i} \in [0, 1]$, is
 \begin{align*}
   \widehat{\pd}_{2}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i}) =
-    \Big[&(\widehat{\theta}_{i})
-    \text{N}\left(\left[\tilde{T}_{i}, \tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i} \right) \
-    \boldsymbol{1}_{\{d_{i} = 1\}}
-    + \\
-    &(1 - \widehat{\theta}_{i})
-    \text{N}\left(\left[\tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{0, i}, \widehat{\Sigma}_{0, i} \right) \
-    \boldsymbol{1}_{\{d_{i} = 0, T_{i} = C_{i}\}} \Big]
+    \Big[&
+      (\widehat{\theta}_{i})
+      \text{N}\left(
+        \left[\tilde{T}_{i}, \tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i}
+      \right)
+      \boldsymbol{1}_{\{d_{i} = 1\}}
+      + \\
+      & (1 - \widehat{\theta}_{i})
+      \text{N}\left(\left[\tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{0, i}, \widehat{\Sigma}_{0, i} \right)
+      \boldsymbol{1}_{\{d_{i} = 0, T_{i} = C_{i}\}}
+    \Big]
     J_{i},
 \end{align*}
 where $\widehat{\theta}_{i}, \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i}, \widehat{\mu}_{0, i}$, and $\widehat{\Sigma}_{0, i}$ are maximum likelihood estimates, and the Jacobian correction $J_{i}$ is
@@ -1180,7 +1214,7 @@ The raw samples and fit are displayed in Figure \ref{fig:surv_prior_phi_12_margi
 knitr::include_graphics("plots/mimic-example/submodel-2-phi-12-marginal-fit-plot-small.pdf")
 ```
 
-```{r surv_prior_plot_fit, fig.cap = 'Monte Carlo (MC) samples from $\\pd_{2, i}(\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3})$ obtained using \\texttt{simsurv} and samples from the fitted normal approximation (NA) for $i = 19$. The panels on the off diagonal elements contain a 2D kernel density estimate for $d_{i} = 1$ and the samples for $d_{i} = 0$. Diagonal and lower-triangular panels are on their original scales, whilst the upper-triangular panels are on the log scale.'}
+```{r surv_prior_plot_fit, out.width = '\\textwidth', fig.cap = 'Monte Carlo (MC) samples from $\\pd_{2, i}(\\phi_{1 \\cap 2}, \\phi_{2 \\cap 3})$ obtained using \\texttt{simsurv} and samples from the fitted normal approximation (NA) for $i = 19$. The panels on the off diagonal elements contain a 2D kernel density estimate for $d_{i} = 1$ and the samples for $d_{i} = 0$. Diagonal and lower-triangular panels are on their original scales, whilst the upper-triangular panels are on the log scale.'}
 knitr::include_graphics("plots/mimic-example/p3-prior-pairs/pairs-19.png")
 ```
 
@@ -1235,7 +1269,7 @@ Recall that
   &= (\{T_{1}, d_{1}\}, \ldots, \{T_{N}, d_{N}\}),
 \end{aligned}
 \end{equation}
-and $\psi_{1} = (\psi_{1, 1}, \ldots, \psi_{1, N}) = (\{\omega_{i}\}_{i = 1}^{N})$.
+and $\psi_{1} = (\psi_{1, 1}, \ldots, \psi_{1, N}) = (\omega_{i})_{i = 1}^{N}$.
 We would like to update $\phi_{1 \cap 2}$ and $\psi_{1}$ by updating $(T_{i}, d_{i}, \omega_{i})$ for one individual at a time, for a total of $N$ 'sub-steps'.
 
 ### Sub-step 1
