@@ -1,3 +1,77 @@
+## A comparison with the competing risk approach
+
+An alternative approach is to consider a competing risks model for $\pd_{2}$, where each individual experiences either the respiratory failure event or the competing, non-independent event of death or discharge [see Chapter 8 of @kalbfleisch_statistical_2002 for an introduction].
+However, issues arise due to the difference in supports between $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2})$; aligning the supports requires conditioning on $C_{i}$ (the length of stay) in $\pd_{2}$.
+Conditional on $C_{i}$, the death or discharge event can only happen at a known, fixed time, which violates the competing risk assumption (that each event can occur at any moment in time the individual is exposed to both risks).
+In light of this, we feel that it is more correct to consider the time of death or discharge as a censoring time.
+Standard survival analyses arguments show us that these approaches are equivalent subject to certain assumptions.
+However, one key these arguments make is that the survival times and indicators $(T_{i}, d_{i})$ must be known/fixed quantities.
+This assumption is not valid in our example, and below we show why this invalidates the usual equivalence between the competing risk and censoring approaches.
+
+Suppose that each individual $i$ experiences one of $d_{i} = 1, 2$ competing risks.
+We observe $\{T_{i}, d_{i}\}$, where $d_{i} = 1$ indicates that individual $i$ experienced respiratory failure at time $T_{i}$.
+If $d_{i} = 2$ then individual $i$ expired or was discharged at time $T_{i}$, noting that this event must occur at time $C_{i}$.
+Each cause-specific hazard has parameters $\theta_{d_{i}}$ and we denote the hazard $h_{i, d_{i}}(t \mid \theta_{d_{i}}, \boldsymbol{w}_{i})$.
+Denote $\boldsymbol{\theta} = (\theta_{1}, \theta_{2})$ and assume only one such event can occur at a time so that
+\begin{gather}
+  h_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) = \sum_{d_{i} \in \{1, 2\}} h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}), \\
+  \begin{aligned}
+  H_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
+    &= \int_{0}^{T_{i}} \sum_{d_{i} \in \{1, 2\}} h_{i, d_{i}}(u \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \text{d}u \\
+    &= \sum_{d_{i} \in \{1, 2\}} \int_{0}^{T_{i}} h_{i, d_{i}}(u \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \text{d}u \\
+    &= \sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}),
+  \end{aligned} \\
+  S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
+    = \exp\left\{-H_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})\right\}
+    = \exp\left\{-\sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i})\right\}.
+\end{gather}
+As per Equation (8.8) in @kalbfleisch_statistical_2002 the likelihood function for a specific individual is
+\begin{align*}
+  \pd(T_{i}, d_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
+    &= h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \\
+    &= h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \exp\left\{-\sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i})\right\}.
+\end{align*}
+
+It is now necessary to assume
+
+- that there are no shared elements in $\theta_{1}$ and $\theta_{2}$ and they are a priori independent,
+- that $\theta_{2}$ is not of interest, i.e. we wish to integrate/marginalise $\theta_{2}$ out of the likelihood.
+
+The model (given covariates $\boldsymbol{w}_{i}$) is
+
+\begin{equation}
+  \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) =
+    \pd(T_{i}, d_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})\pd(\boldsymbol{\theta}).
+\end{equation}
+
+We are interested in the following marginal
+
+\begin{equation}
+  \begin{aligned}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
+  &= \int \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) \text{d}\theta_{2} \\
+  &= \int h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \pd(\theta_{2}) \text{d}\theta_{2}.
+  \end{aligned}
+\end{equation}
+If $d_{i} = 1$
+\begin{multline}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i}) = \\
+    h_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2},
+  \label{eqn:competing-risks-deriv-one}
+\end{multline}
+and if $d_{i} = 2$
+\begin{multline}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i}) = \\
+    S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int h_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2}.
+  \label{eqn:competing-risks-deriv-two}
+\end{multline}
+Standard survival analyses consider $T_{i}$ as data.
+Under this assumption the integrals in \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} are constants that do not depend on the parameters of interest, and can be ignored when maximising the likelihood for $\theta_{1}$.
+The remaining components of \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} comprise the likelihood that would be obtained by considering all non $d_{i} = 1$ events as censored.
+However, in our case $T_{i}$ is a parameter, and hence the integrals are non-ignorable functions of $T_{i}$.
+This implies that the censoring model and the competing risks model are not equivalent, which we observed when comparing the posterior distributions for $(\gamma, \boldsymbol{\theta}, \alpha)$ under both models (not shown here).
+
+
 ## Coherency of the chained melded model
 
 - _I think a few of these results are wrong. Maybe this should just be a paragraph?_

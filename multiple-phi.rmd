@@ -63,7 +63,7 @@ Instead, it may be preferable to construct a joint model by formally joining the
 
 Some specific forms of combining data are well established.
 Meta-analyses and evidence synthesis methods are widely used to summarise data, often using hierarchical models [@ades_multiparameter_2006; @presanis_synthesising_2014].
-Outside of the statistical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
+Outside of the statistical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
 Interest in integrating data is not just methodological; applied researchers often collect multiple disparate data sets, or data of different modalities, and wish to combine them.
 For example, to estimate SARS-CoV-2 positivity @donnat_bayesian_2020 build an intricate hierarchical model that integrates both testing data and self-reported questionnaire data, and @parsons_bayesian_2021 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine.
 Both applications specify Bayesian models with data-specific components, which are united in a hierarchical manner.
@@ -84,6 +84,11 @@ We propose a multi-stage posterior estimation method that exploits the propertie
 We can parallelise aspects of the computation across the submodels, using less computationally expensive techniques for some submodels.
 Reusing existing software implementations of submodels, and where available subposterior samples, is also possible.
 Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn:etal:13] and joint models [@mauff_joint_2020].
+
+One contribution of our work is to make explicit the informal process of summarising and/or approximating submodels for use in subsequent analyses.
+The two most common approximation strategies seem to be (i) approximating the subposterior of the common quantity with a normal distribution for use in subsequent models [see, e.g. @jackson_when_2018; @nicholson_interoperability_2021] and (ii) taking only a point estimate of the subposterior, and treating it as a known value in further models.
+These strategies may, but not always, produce acceptable approximations to the chained melded model.
+Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach most comprehensively accounting for uncertainty.
 
 [^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
 
@@ -169,7 +174,6 @@ The $\modelindex$\textsuperscript{th} marginally replaced submodel is
 where $\pd_{\text{pool}}(\boldsymbol{\phi}) = g(\pd_{1}(\phi_{1}), \pd_{2}(\phi_{2}), \ldots, \pd_{\modelindex}(\phi_{\modelindex}))$ is a pooling function that appropriately summarises all submodel prior marginals.
 The second equality in Equation \eqref{eqn:chained-marginal-replacement} is because of the conditional independence $(\psi_{\modelindex}, Y_{\modelindex} \indep \boldsymbol{\phi}_{-\modelindex}) \mid \phi_{\modelindex}$ that exists due to the chained relationship between submodels.
 It is important to note that $\pd_{\text{repl}, \modelindex}(\boldsymbol{\phi}, \psi_{\modelindex}, Y_{\modelindex})$ is defined on a larger parameter space than $\pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$, as it includes $\boldsymbol{\phi}_{-\modelindex}$.
-We discuss this choice in the following section.
 
 Define $\pd_{\text{repl}, \modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex}) = \int \pd_{\text{repl}, \modelindex}(\boldsymbol{\phi}, \psi_{\modelindex}, Y_{\modelindex})\text{d}\boldsymbol{\phi}_{-\modelindex}$.
 Each marginally replaced submodel, as defined in Equation \eqref{eqn:chained-marginal-replacement}, minimises the following KL divergence
@@ -360,14 +364,7 @@ where
 Standard MCMC methods can be used to sample from the approximate melded posterior.
 If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}$ and $\widehat{\Sigma}_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:in-text-normal-approx}.
 
-
 # Examples
-
-- what are we trying to show with these examples? (if answering this was easy I would have written it down already!)
-- That the melding approach encompasses, and is more general than, a number of other common forms of combining models.
-- The first example compares chained melding to the normal approximation approach, where subposteriors are approximated by normal distributions and used as priors in later analyses. In this example, the normal approximation is good and both approaches yield similar results.
-- The second example compares the point estimate approach, were a point estimate from an earlier model is used in later models. For example, the non-Bayesian methods discussed in @ma_current_2019 propagate the point estimates of the marginal dose-response curves for use in estimating the synergistic effects of a two-drug interaction surface. In our example, accounting for the uncertainty in earlier models notable changes the final results; the melded posterior estimates are substantially more uncertain, and have also been shifted (in terms of mean).
-- The disparate fields from which we have drawn our examples illustrate the wide-applicability of chained melding.
 
 ## An Integrated population model for little owls
 
@@ -525,7 +522,7 @@ Figure \ref{fig:submodel-schematics} displays the parameters and their relations
 
 ### Survival submodel $\pd_{2}$
 
-Individuals experience respiratory failure ($d_{i} = 1$) at arbitrary time $0 < t < C_{i}$, or are censored[^competerisks] $(d_{i} = 0, t = C_{i})$.
+Individuals experience respiratory failure ($d_{i} = 1$) at arbitrary time $0 < t < C_{i}$, or are censored $(d_{i} = 0, t = C_{i})$.
 We assume a Weibull hazard with shape parameter $\gamma$ for the event times.
 All individuals have $a = 1, \ldots, A$ baseline (time invariant) covariates $w_{i, a}$ with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, A})$(i.e. including an intercept term), and common coefficients $\boldsymbol{\theta} =  (\theta_{0}, \ldots, \theta_{A})$.
 The hazard is assumed to be influenced by these covariates and the rate of increase $\frac{\partial}{\partial t} m_{i}(t)$ in the cumulative fluid balance.
@@ -552,7 +549,6 @@ Our priors, which we justify in Appendix&nbsp;\ref{p2-prior-justification}, for 
 where $\hat{E}$ is the log of the crude event rate [@brilleman_bayesian_2020].
 We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i}, \eta_{1, i}^{b}$, and $\eta_{1, i}^{a}$.
 
-[^competerisks]: The relationship between this model and the competing risks approach is discussed in Appendix&nbsp;\ref{a-comparison-with-the-competing-risk-approach}.
 
 ### Chained Markov melding details
 
@@ -630,6 +626,7 @@ That is, we employ Markov melding as described in Section \ref{markov-melding}, 
 Evident for both choices of pooling is the importance of incorporating the uncertainty in $\phi_{1 \cap 2}$.
 This is expected given the large uncertainty and multimodal nature of $\phi_{1 \cap 2}$ compared to $\phi_{2 \cap 3}$ (see Figure \ref{fig:pf_fit_and_fluid_fit_plot}).
 We suspect that it is the multimodality in $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ that produces the shift in posterior mode of $\phi_{1 \cap 2}$, with the width of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ affecting the increase in uncertainty.
+Because we prefer the chained melded posterior, under either pooling method, for its full accounting of uncertainty we conclude that $\pd(\alpha \mid, \widehat{\pd}_{1 \cap 2}, \widehat{\pd}_{2 \cap 3}, Y_{2})$ is both overconfident and biased.
 
 ```{r alpha_only_comparision_plot, fig.cap = 'Median (vertical line), 50\\%, 80\\%, 95\\%, and 99\\% credible intervals (least transparent to most transparent) for $\\alpha$. The marginal prior (grey, top row) and posterior using fixed $\\widehat{\\phi}_{1 \\cap 2}$ and $\\widehat{\\phi}_{2 \\cap 3}$ (black, bottom row) are as in Figure \\ref{fig:psi_2_comparison_plot}. For the chained melded posteriors (red and blue, rows 2 and 3) and the melded posteriors (red and blue, rows 4 -- 7), the tick label on the y-axis denotes the type of pooling used, and which of $\\phi_{1 \\cap 2}$ and/or $\\phi_{2 \\cap 3}$ are fixed.'}
 knitr::include_graphics('plots/mimic-example/psi-2-alpha-only-compare.pdf')
@@ -647,17 +644,11 @@ We discuss the complexities of other hazards in Section \ref{conclusion}.
 knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
 ```
 
-
 # Conclusion
 
 This paper introduces the chained melded model.
 In doing so we have made explicit the notion of submodels related in a chain-like way, which we illustrate with our examples.
 Our examples also demonstrate the importance of quantifying the uncertainty when joining submodels; not doing so can produce biased, over-confident inference.
-
-One contribution of our work is to make explicit the informal process of summarising and/or approximating submodels for use in subsequent analyses.
-The two most common approximation strategies seem to be (i) approximating the subposterior of the common quantity with a normal distribution, which is used as a prior in subsequent models and (ii) taking only a point estimate of the subposterior, and treating it as a known value in further models.
-These strategies may, but not always, produce acceptable approximations to the chained melded model.
-Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach being the most sophisticated.
 
 We have introduced extensions to linear and logarithmic pooling to marginals of different but overlapping parameters.
 Linear pooling, introduced in Section \ref{pooled-prior}, could be extended to induce dependence between the components of $\boldsymbol{\phi}$ using multivariate or vine copulas [@kurowicka_dependence_2011; @nelsen_introduction_2006], or other techniques [@lin_recent_2014]
@@ -836,79 +827,6 @@ These values are obtained assuming that, a priori, the $2.5\%, 50\%$, and $99\%$
 This is a broad prior that reflects the numerous possible admission routes into the ICU.
 We expect those admitted from the wards to have little pre-admission fluid data.
 Those admitted from the operating theatre occasionally have their in-theatre fluid input recorded after admission into the ICU, with no easy way to distinguish these records in the data.
-
-## A comparison with the competing risk approach
-
-An alternative approach is to consider a competing risks model for $\pd_{2}$, where each individual experiences either the respiratory failure event or the competing, non-independent event of death or discharge [see Chapter 8 of @kalbfleisch_statistical_2002 for an introduction].
-However, issues arise due to the difference in supports between $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2})$; aligning the supports requires conditioning on $C_{i}$ (the length of stay) in $\pd_{2}$.
-Conditional on $C_{i}$, the death or discharge event can only happen at a known, fixed time, which violates the competing risk assumption (that each event can occur at any moment in time the individual is exposed to both risks).
-In light of this, we feel that it is more correct to consider the time of death or discharge as a censoring time.
-Standard survival analyses arguments show us that these approaches are equivalent subject to certain assumptions.
-However, one key these arguments make is that the survival times and indicators $(T_{i}, d_{i})$ must be known/fixed quantities.
-This assumption is not valid in our example, and below we show why this invalidates the usual equivalence between the competing risk and censoring approaches.
-
-Suppose that each individual $i$ experiences one of $d_{i} = 1, 2$ competing risks.
-We observe $\{T_{i}, d_{i}\}$, where $d_{i} = 1$ indicates that individual $i$ experienced respiratory failure at time $T_{i}$.
-If $d_{i} = 2$ then individual $i$ expired or was discharged at time $T_{i}$, noting that this event must occur at time $C_{i}$.
-Each cause-specific hazard has parameters $\theta_{d_{i}}$ and we denote the hazard $h_{i, d_{i}}(t \mid \theta_{d_{i}}, \boldsymbol{w}_{i})$.
-Denote $\boldsymbol{\theta} = (\theta_{1}, \theta_{2})$ and assume only one such event can occur at a time so that
-\begin{gather}
-  h_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) = \sum_{d_{i} \in \{1, 2\}} h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}), \\
-  \begin{aligned}
-  H_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
-    &= \int_{0}^{T_{i}} \sum_{d_{i} \in \{1, 2\}} h_{i, d_{i}}(u \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \text{d}u \\
-    &= \sum_{d_{i} \in \{1, 2\}} \int_{0}^{T_{i}} h_{i, d_{i}}(u \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \text{d}u \\
-    &= \sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}),
-  \end{aligned} \\
-  S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
-    = \exp\left\{-H_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})\right\}
-    = \exp\left\{-\sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i})\right\}.
-\end{gather}
-As per Equation (8.8) in @kalbfleisch_statistical_2002 the likelihood function for a specific individual is
-\begin{align*}
-  \pd(T_{i}, d_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})
-    &= h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \\
-    &= h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) \exp\left\{-\sum_{d_{i} \in \{1, 2\}} H_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i})\right\}.
-\end{align*}
-
-It is now necessary to assume
-
-- that there are no shared elements in $\theta_{1}$ and $\theta_{2}$ and they are a priori independent,
-- that $\theta_{2}$ is not of interest, i.e. we wish to integrate/marginalise $\theta_{2}$ out of the likelihood.
-
-The model (given covariates $\boldsymbol{w}_{i}$) is
-
-\begin{equation}
-  \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) =
-    \pd(T_{i}, d_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i})\pd(\boldsymbol{\theta}).
-\end{equation}
-
-We are interested in the following marginal
-
-\begin{equation}
-  \begin{aligned}
-  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
-  &= \int \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) \text{d}\theta_{2} \\
-  &= \int h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \pd(\theta_{2}) \text{d}\theta_{2}.
-  \end{aligned}
-\end{equation}
-If $d_{i} = 1$
-\begin{multline}
-  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i}) = \\
-    h_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2},
-  \label{eqn:competing-risks-deriv-one}
-\end{multline}
-and if $d_{i} = 2$
-\begin{multline}
-  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i}) = \\
-    S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int h_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2}.
-  \label{eqn:competing-risks-deriv-two}
-\end{multline}
-Standard survival analyses consider $T_{i}$ as data.
-Under this assumption the integrals in \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} are constants that do not depend on the parameters of interest, and can be ignored when maximising the likelihood for $\theta_{1}$.
-The remaining components of \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} comprise the likelihood that would be obtained by considering all non $d_{i} = 1$ events as censored.
-However, in our case $T_{i}$ is a parameter, and hence the integrals are non-ignorable functions of $T_{i}$.
-This implies that the censoring model and the competing risks model are not equivalent, which we observed when comparing the posterior distributions for $(\gamma, \boldsymbol{\theta}, \alpha)$ under both models (not shown here).
 
 ## Analytic form for the survival function
 
