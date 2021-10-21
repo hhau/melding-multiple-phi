@@ -346,11 +346,12 @@ Normal approximations are commonly employed to summarise submodels for subsequen
 For example, two-stage meta-analyses often use a normal distribution centred on each studies' effect estimate [@burke_meta-analysis_2017].
 Suppose we employ such an approximation to summarise the prior and posterior of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ under $\pd_{1}$ and $\pd_{3}$ respectively.
 In addition, assume that
-
-- Such approximations are appropriate for $\pd_{1}(\phi_{1 \cap 2}), \pd_{1}(\phi_{1 \cap 2} \mid Y_{1}), \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$.
-- We are not interested in $\psi_{1}$ and $\psi_{3}$, and can integrate them out of all relevant densities.
-- We employ our second form of dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
-
+\begin{itemize}[nosep]
+  \tightlist
+  \item Such approximations are appropriate for $\pd_{1}(\phi_{1 \cap 2}), \pd_{1}(\phi_{1 \cap 2} \mid Y_{1}), \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$.
+  \item We are not interested in $\psi_{1}$ and $\psi_{3}$, and can integrate them out of all relevant densities.
+  \item We employ our second form of dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
+\end{itemize} \noindent
 The latter two assumptions imply that the melded posterior of interest is proportional to
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
 
