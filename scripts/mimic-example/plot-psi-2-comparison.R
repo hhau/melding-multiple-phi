@@ -102,7 +102,7 @@ plot_tbl <- bind_rows(
         "alpha"
       ),
       labels = c(
-        sprintf('theta[%d]', 1 : n_theta),
+        sprintf('theta[%d]', (1 : n_theta) - 1),
         "gamma",
         "alpha"
       )
@@ -161,8 +161,8 @@ ggsave_base(
 interesting_subplots <- c(
   'alpha',
   'hazard_gamma',
-  'theta_3',
-  'theta_17'
+  'theta_4',
+  'theta_18'
 )
 
 psmall <- ggplot(
@@ -192,7 +192,7 @@ psmall <- ggplot(
       "prior" = TeX("Prior: $\\mathrm{p}_{2}(\\psi_{2})$"),
       "melding-poe" = "PoE pooling",
       "melding-log" = "Log pooling",
-      "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
+      "a_point" = TeX("Fixed $\\widehat{\\phi}_{1 \\bigcap 2}$ and $\\widehat{\\phi}_{2 \\bigcap 3}$")
     ),
     guide = guide_legend(reverse = TRUE)
   ) +
@@ -207,7 +207,7 @@ psmall <- ggplot(
       "prior" = TeX("Prior: $\\mathrm{p}_{2}(\\psi_{2})$"),
       "melding-poe" = "PoE pooling",
       "melding-log" = "Log pooling",
-      "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
+      "a_point" = TeX("Fixed $\\widehat{\\phi}_{1 \\bigcap 2}$ and $\\widehat{\\phi}_{2 \\bigcap 3}$")
     ),
     guide = guide_legend(reverse = TRUE)
   ) +
@@ -229,13 +229,13 @@ interval_tbl <- plot_tbl %>%
 
 label_tbl <- tribble(
   ~plot_y, ~lab_y, ~val_y,
-  "prior.Not applic.", "a_prior", 11,
-  "melding-poe.none", "b_poe_none", 9,
-  "melding-poe.phi_12", "bb_poe_phi_12", 8,
-  "melding-poe.phi_23", "bbb_poe_phi_23", 7,
-  "melding-log.none", "c_log_none", 5,
-  "melding-log.phi_12", "cc_log_phi_12", 4,
-  "melding-log.phi_23", "ccc_log_phi_23", 3,
+  "prior.Not applic.", "a_prior", 8,
+  "melding-poe.none", "b_poe_none", 7,
+  "melding-log.none", "c_log_none", 6,
+  "melding-poe.phi_23", "bbb_poe_phi_23", 5,
+  "melding-log.phi_23", "ccc_log_phi_23", 4,
+  "melding-poe.phi_12", "bb_poe_phi_12", 3,
+  "melding-log.phi_12", "cc_log_phi_12", 2,
   "a_point.both", "d_point_both", 1
 )
 
@@ -246,16 +246,16 @@ plot_two_tbl <- interval_tbl %>%
   mutate(
     val_y = factor(
       x = val_y,
-      levels = c(11, 9, 8, 7, 5, 4, 3, 1),
+      levels = 8 : 1,
       labels = c(
-          TeX("Prior: NA"),
+          TeX("Prior"),
           TeX("PoE: none"),
-          TeX("PoE: fix $\\phi_{1 \\bigcap 2}$"),
-          TeX("PoE: fix $\\phi_{2 \\bigcap 3}$"),
           TeX("Log: none"),
-          TeX("Log: fix $\\phi_{1 \\bigcap 2}$"),
-          TeX("Log: fix $\\phi_{2 \\bigcap 3}$"),
-          TeX("Point: both")
+          TeX("PoE: fixed $\\widehat{\\phi}_{2 \\bigcap 3}$"),
+          TeX("Log: fixed $\\widehat{\\phi}_{2 \\bigcap 3}$"),
+          TeX("PoE: fixed $\\widehat{\\phi}_{1 \\bigcap 2}$"),
+          TeX("Log: fixed $\\widehat{\\phi}_{1 \\bigcap 2}$"),
+          TeX("N/A: both")
         )
     )
   )
@@ -299,7 +299,7 @@ p_alpha <- ggplot(
       "prior" = TeX("Prior: $\\mathrm{p}_{2}(\\psi_{2})$"),
       "melding-poe" = "PoE pooling",
       "melding-log" = "Log pooling",
-      "a_point" = TeX("Fix $\\phi_{1 \\bigcap 2}$ and $\\phi_{2 \\bigcap 3}$")
+      "a_point" = TeX("Fixed $\\widehat{\\phi}_{1 \\bigcap 2}$ and $\\widehat{\\phi}_{2 \\bigcap 3}$")
     ),
     guide = guide_legend(reverse = TRUE)
   ) +

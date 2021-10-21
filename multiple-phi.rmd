@@ -83,7 +83,7 @@ The computational effort required to fit a complex, multi-response model is a bu
 We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden.
 We can parallelise aspects of the computation across the submodels, using less computationally expensive techniques for some submodels.
 Reusing existing software implementations of submodels, and where available subposterior samples, is also possible.
-Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020].
+Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn:etal:13] and joint models [@mauff_joint_2020].
 
 [^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
 
@@ -156,7 +156,7 @@ For notational convenience define $\phi_{1} = \phi_{1 \cap 2}, \phi_{\Nm} = \phi
 The submodel-specific parameters of submodel $\modelindex$ are thus $\psi_\modelindex = \theta_\modelindex \setminus \phi_\modelindex$.
 Define the vector of all common quantities $\boldsymbol{\phi} = (\phi_{1}, \ldots, \phi_{\Nm}) = (\phi_{1 \cap 2}, \ldots, \phi_{\Nm - 1 \cap \Nm})$, and $\boldsymbol{\phi}_{-\modelindex}$ denotes the subvector of $\boldsymbol{\phi}$ excluding the $\modelindex$\textsuperscript{th} element.
 It will also be convenient to define $\boldsymbol{\psi} = (\psi_{1}, \ldots, \psi_{\Nm})$ and likewise $\boldsymbol{Y} = (Y_{1}, \ldots, Y_{\Nm})$.
-Note that all constituent elements of $\boldsymbol{\phi}, \boldsymbol{\psi}$ and $\boldsymbol{Y}$ may themselves be vectors.
+Note that all components of $\boldsymbol{\phi}, \boldsymbol{\psi}$ and $\boldsymbol{Y}$ may themselves be vectors.
 
 All submodels, and marginal and conditional distributions thereof, have density functions that are assumed to exist and integrate to one.
 When considering conditional distributions we assume that the parameter being conditioned on has support in the relevant region.
@@ -182,7 +182,8 @@ We form the chained melded model by taking the Markov combination of the margina
 \input{tex-input/multiple-phi/0010-melded-model-cond.tex}
 Rewriting \eqref{eqn:melded-model-full} in terms of $\phi_{\modelindex \cap \modelindex + 1}$ for $\modelindex = 1, \ldots, \Nm - 1$ yields
 \input{tex-input/multiple-phi/0011-melded-model-general.tex}
-Finally, we will use _melded posterior_ $\pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y}) \propto \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y})$ to refer to posterior of the chained melded model conditioned on all data.
+Finally, we use _melded posterior_ $\pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y}) \propto \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y})$ to refer to posterior of the chained melded model conditioned on all data,
+and define the $\modelindex$\textsuperscript{th} _subposterior_ as $\pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex} \mid Y_{\modelindex})$.
 
 ## Pooled prior
 
@@ -229,7 +230,7 @@ In step two we form the pooled prior as the product of the intermediaries
 with
 \input{tex-input/multiple-phi/00551-linear-normalising-constant.tex}
 Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present under one or more of the original sub-model priors.
-We discuss extensions to linear pooling that enable prior dependence between the components of $\boldsymbol{\phi}$ in Section \ref{discussion}.
+We discuss extensions to linear pooling that enable prior dependence between the components of $\boldsymbol{\phi}$ in Section \ref{conclusion}.
 
 ### Dictatorial pooling
 
@@ -296,7 +297,7 @@ We also describe an approximate method, where stage one submodels are summarised
 
 We only consider the $\Nm = 3$ case, as this setting includes both of our examples.
 Generic, parallel methodology for efficiently sampling the melded posterior composed of arbitrary numbers of submodels is challenging, and beyond the scope of this article.
-We discuss some of difficulties in Section \ref{discussion}.
+We discuss some of difficulties in Section \ref{conclusion}.
 
 [^sequential]: Appendix \ref{sequential-sampler} describes such a sequential MCMC sampler.
 
@@ -327,7 +328,7 @@ This produces $N_{1}$ samples $\{(\phi_{1 \cap 2}, \psi_{1})_{n}\}_{n = 1}^{N_{1
 Stage two targets the melded posterior of Equation \eqref{eqn:melded-model-full} using a Metropolis-within-Gibbs sampler, where the proposal distributions are
 \input{tex-input/dc-sampler/0031-stage-two-proposals.tex}
 where $\q(\psi_{2}^{*} \mid \psi_{2})$ is a generic proposal distribution for $\psi_{2}$.
-In practice, we draw an index $n_{1}^{*}$ uniformly from $\{1, \ldots, N_{1}\}$ and use the corresponding value of $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})_{n_{1}^{*}}$ as the proposal in Equation \eqref{eqn:stage-two-proposals-one}, and do likewise for $n_{3}^{*}$ and $(\phi_{2 \cap 3}^{*}, \psi_{3}^{*})_{n_{3}^{*}}$.
+In practice, we draw an index $n_{1}^{*}$ uniformly from $\{1, \ldots, N_{1}\}$ and use the corresponding value $(\phi_{1 \cap 2}^{*}, \psi_{1}^{*})_{n_{1}^{*}}$ as the proposal, doing likewise for $n_{3}^{*}$ and $(\phi_{2 \cap 3}^{*}, \psi_{3}^{*})_{n_{3}^{*}}$.
 The acceptance probabilities for these updates are
 \input{tex-input/dc-sampler/0032-stage-two-acceptance.tex}
 where $\alpha(x, z)$ denotes the probability associated with a move from $z$ to $x$.
@@ -335,7 +336,7 @@ Note that all stage two acceptance probabilities only contain terms from the sec
 If a move is accepted then we also store the index, i.e. $n_{1}^{*}$ or $n_{3}^{*}$, associated with the move, otherwise we store the current value of the index.
 The stored indices are used to appropriately resample $\psi_{1}$ and $\psi_{3}$ from the stage one samples.
 
-## Normal approximation
+## Normal approximations to submodel components
 
 Normal approximations are commonly employed to summarise submodels for subsequent use in more complex models.
 For example, two-stage meta-analyses often use a normal distribution centred on each studies' effect estimate [@burke_meta-analysis_2017].
@@ -362,13 +363,16 @@ If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}
 
 # Examples
 
-- high level
+- what are we trying to show with these examples? (if answering this was easy I would have written it down already!)
+- That the melding approach encompasses, and is more general than, a number of other common forms of combining models.
+- The first example compares chained melding to the normal approximation approach, where subposteriors are approximated by normal distributions and used as priors in later analyses. In this example, the normal approximation is good and both approaches yield similar results.
+- The second example compares the point estimate approach, were a point estimate from an earlier model is used in later models. For example, the non-Bayesian methods discussed in @ma_current_2019 propagate the point estimates of the marginal dose-response curves for use in estimating the synergistic effects of a two-drug interaction surface. In our example, accounting for the uncertainty in earlier models notable changes the final results; the melded posterior estimates are substantially more uncertain, and have also been shifted (in terms of mean).
+- The disparate fields from which we have drawn our examples illustrate the wide-applicability of chained melding.
 
 ## An Integrated population model for little owls
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
-@finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010: here we consider only the
-variant from @finke_efficient_2019 with the highest marginal likelihood (Model 4 of the online supplement).
+@finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010: here we consider only the variant from @finke_efficient_2019 with the highest marginal likelihood (Model 4 of their online supplement).
 
 ### Submodels
 
@@ -449,7 +453,7 @@ knitr::include_graphics("plots/owls-example/subposteriors-both-patchwork.pdf")
 ```
 
 We empirically validate our methodology and sampler by comparing the melded posterior samples to a large sample -- 6 chains, each containing $1 \times 10^5$ post-warmup iterations -- from the original IPM posterior.
-Note that under logarithmic pooling, with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, the melded posterior is identical to the original IPM, so any differences are attributable to the multi-stage sampler.
+Note that under logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$ the melded posterior is identical to the original IPM, so any differences are attributable to the multi-stage sampler.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the common quantities from the individual submodels, the melded models, and the original IPM.
 The top row in Figure \ref{fig:phi_subpost} indicates that the count data alone ($\pd_{2}$) contain minimal information about $\alpha_{0}, \alpha_{2}$ and $\rho$; incorporating the data from the other submodels is essential for precise estimates.
 
@@ -463,58 +467,31 @@ The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bott
 We now return to the example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
 There are $i = 1, \ldots, N$ individuals in the data set.
 Each individual is admitted to the ICU at time $0$, and is discharged or dies at time $C_{i}$.
-See Appendix \ref{cohort-selection-criteria} for information on $N$ and how the individuals were selected from MIMIC-III [@johnson_mimic-iii_2016].
+See Appendix \ref{cohort-selection-criteria} for information on how the $N = 37$ individuals were selected from MIMIC-III [@johnson_mimic-iii_2016].
 
-### P/F ratio model (B-spline): $\pd_{1}$
+### P/F ratio submodel (B-spline): $\pd_{1}$
 
 Each individual has P/F ratio observations $z_{i, j}$ (in units of mmHg) at times $t_{i, j}$, with $j = 1, \ldots, J_{i}$.
 For each individual denote the vector of observations $\boldsymbol{z}_{i} = (z_{i, 1}, \ldots, z_{i, J_{i}})$ and observation times $\boldsymbol{t}_{i} = (t_{i, 1}, \ldots, t_{i, J_{i}})$.
 To improve computational performance, we standardise the P/F ratio data for each individual such that $z_{i, j} = \frac{\tilde{z}_{i, j} - \overline{z}_{i}}{\hat{s}_{i}}$, where $\tilde{z}_{i, j}$ is the underlying unstandardised observation with mean $\overline{z}_{i}$ and standard deviation $\hat{s}_{i}$.
 Similarly we rescale the threshold for respiratory failure: $\tau_{i} = \frac{300 - \overline{z}_{i}}{\hat{s}_{i}}$.
 
-We choose to model the P/F ratio using cubic B-splines and 7 internal knots, and do not include an intercept column in the spline basis [for background on B-splines see Chapter 2 in @hastie_generalized_1999; supplementary material of @wang_shape-restricted_2021-1].
+We choose to model the P/F ratio using cubic B-splines and 7 internal knots, and do not include an intercept column in the spline basis [for background on B-splines see: Chapter 2 in @hastie_generalized_1999; and the supplementary material of @wang_shape-restricted_2021-1].
 The internal knots are evenly spaced between two additional boundary knots at $\min(\boldsymbol{t}_{i})$ and $\max(\boldsymbol{t}_{i})$.
 These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, with coefficients $\zeta_{i, k}$ where $\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})$.
 We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in [0, \infty)^{10}$ so that the submodel can be written as
-\begin{equation}
-  z_{i, j} = \beta_{0, i} + B_{i}(t_{i, j})^{\top}\boldsymbol{\zeta}_{i} + \varepsilon_{i, j}
-  \label{eqn:pf-model-def}
-\end{equation}
+\input{tex-input/mimic-example/0010-pf-model-def.tex}
 We employ a weakly informative prior for the intercept, and a heavy tailed ($t_{5}$) distribution for the error term[^pfoutliers] with a weakly informative half-normal prior for the unknown scale parameter
-\begin{equation}
-  \beta_{0, i} \sim \text{N}(0, 1^2), \qquad \varepsilon_{i, j} \sim t_{5}(0, \omega_{i}), \qquad  \omega_{i} \sim \text{N}_{+}(0, 1^2).
-  \label{eqn:pf-model-priors-simple}
-\end{equation}
-For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.1^2)$, and for $k = 2, \ldots, 10$ we employ a random-walk prior $\zeta_{i, k} \sim \text{N}(\zeta_{i, k - 1}, 0.1^2)$.
+\input{tex-input/mimic-example/0011-pf-model-priors-simple.tex}
+For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.1^2)$, and for $k = 2, \ldots, 10$ we employ the random-walk prior $\zeta_{i, k} \sim \text{N}(\zeta_{i, k - 1}, 0.1^2)$ from @kharratzadeh_splines_2017.
 
-[^pfoutliers]: P/F data contain many outliers for, amongst many possible reasons, arterial/venous blood sample mis-labelling; incorrectly recorded oxygenation support information; and differences between sample collection time, lab result time, and the observation time recorded as in the EHR.
+[^pfoutliers]: P/F data contain many outliers for, amongst many possible reasons, arterial/venous blood sample mislabelling; incorrectly recorded oxygenation support information; and differences between sample collection time, lab result time, and the observation time as recorded in the EHR.
 
 We identify that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$ if a solution to the following optimisation problem exists 
-\begin{equation}
-  T_{i} = \min_{t} \left\{
-    \tau_{i} = \beta_{0, i} + B_{i}(t)\boldsymbol{\zeta}_{i}
-    \mid
-    t \in [\max(0, \min(\boldsymbol{t}_{i})),\, \max(\boldsymbol{t}_{i})]
-  \right\},
-  \label{eqn:event_time_model_def}
-\end{equation}
-We attempt to solve Equation \ref{eqn:event_time_model_def} using a standard multiple root finder [@soetaert_rootsolve_2020].
+\input{tex-input/mimic-example/0012-event-time-model-def.tex}
+We attempt to solve Equation \ref{eqn:event-time-model-def} using a standard multiple root finder [@soetaert_rootsolve_2020].
 If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 0$.
 The relationship between $T_{i}$ and other model coefficients is displayed in the left hand panel of Figure \ref{fig:submodel-schematics}.
-
-We would like to link this submodel with the other submodels via $(\{T_{i}, d_{i}\}_{i = 1}^{N})$.
-However, we require a careful definition of the link parameter $\phi_{1 \cap 2}$ as it is a deterministic function of $(\beta_{0, i}, \boldsymbol{\zeta}_{i})$.
-Keeping with the notation of @goudie_joining_2019, we define $\theta_{1, i} = (\beta_{0, i}, \boldsymbol{\zeta}_{i})$, with $\phi_{1 \cap 2, i} = f(\theta_{1, i}) = (T_{i}, d_{i})$, where $f$ is the output from attempting to solve Equation \eqref{eqn:event_time_model_def}, and $\phi_{1 \cap 2} = \phi_{1 \cap 2}(\theta_{1}) = (f(\theta_{1, i}), \ldots, f(\theta_{1, N}))$.
-It is also convenient to define $\theta_{1} = (\theta_{1, 1}, \ldots, \theta_{1, N})$.
-
-Care is also required when considering the prior marginal $\pd_{1}(\phi_{1 \cap 2})$.
-We note that $\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})$, and that $\pd_{1, i}(T_{i}, d_{i})$ conditions on each individual's length of stay (in specifying the location of the knots), as well as the range, mean, and standard deviation of the P/F data (by standardising $\tilde{z}_{i, j}$).
-The analytic form of $\pd_{1, i}(T_{i}, d_{i})$ is not available and must be estimated, which we discuss in Appendix \ref{estimating-submodel-prior-marginal-distributions}.
-To completely align with our chained melding notation we also define $Y_{1} = (\{\boldsymbol{z}_{i}, \boldsymbol{t}_{i}\}_{i = 1}^{N})$ and $\psi_{1} = (\psi_{1, 1}, \ldots, \psi_{1, N}) = (\{\omega_{i}\}_{i = 1}^{N})$.
-
-The left column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 15, 17$, and $29$.
-The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
-It is interesting to see the relatively wide, multimodal distribution for $(T_{29}, d_{29})$ (there is a second mode at $(T_{29} = C_{29}, d_{29} = 0)$ and for other individuals not shown here).
 
 \begin{figure}
   \begin{minipage}{.499\textwidth}
@@ -527,43 +504,36 @@ It is interesting to see the relatively wide, multimodal distribution for $(T_{2
   \label{fig:submodel-schematics}
 \end{figure}
 
-### Cumulative fluid model (piecewise linear) $\pd_{3}$
+### Cumulative fluid submodel (piecewise linear) $\pd_{3}$
 
 We model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
 The cumulative data are derived from the raw fluid input/output observations, which we detail in Appendix&nbsp;\ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
 We denote the complete vector of observations by $\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})$ and times by $\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})$.
 
-We assume a piecewise linear model, with $\eta_{0, i}$ as the value at the breakpoint, slope $\eta_{1, i}^{b}$ before the breakpoint at time $\kappa_{i}$, and slope $\eta_{1, i}^{a}$ after the breakpoint
-\begin{equation}
-  x_{i, l} = \eta_{0, i} + \eta^{b}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} < \kappa_{i}\}} + \eta^{a}_{1, i}(u_{i, l} - \kappa_{i})\boldsymbol{1}_{\{u_{i, l} \geq \kappa_{i}\}} + \epsilon_{i, l}. \\
-   \label{eqn:piecewise-fluid-model}
-\end{equation}
-Prior distributions and justification are available in Appendix&nbsp;\ref{priors-and-justification-for-the-fluid-submodel}.
+We assume a piecewise linear model with $\eta_{0, i}$ as the value at the breakpoint at time $\kappa_{i}$, slope $\eta_{1, i}^{b}$ before the breakpoint, and slope $\eta_{1, i}^{a}$ after the breakpoint.
+We write this submodel as
+\input{tex-input/mimic-example/0020-piecewise-fluid-model.tex}
+It will be useful to refer to the fitted value of this submodel at arbitrary time as $m_{i}(t)$.
+We assume a weakly informative prior for the error term, with individual-specific error variances
+\input{tex-input/mimic-example/0021-fluid-submodel-noise-priors.tex}
+and specific, informative priors for the slopes
+\input{tex-input/mimic-example/0022-fluid-submodel-slope-priors.tex}
+An appropriate prior for $\kappa_{i}$ and $\eta_{0, i}$ is challenging to specify due to the relationship between the two parameters and the individual-specific support for $\kappa_{i}$.
+We address both challenges by reparameterisation, resulting in a prior for $\kappa_{i}$ that, in the absence of other information, places the breakpoint in the middle of an individuals ICU stay, and a prior for $\eta_{0, i}$ that captures the diverse pathways into ICU that an individual can experience.
+Details and justifications for all the informative priors are available in Appendix&nbsp;\ref{priors-and-justification-for-the-cumulative-fluid-submodel}.
 Figure \ref{fig:submodel-schematics} displays the parameters and their relationship to the fitted regression line.
-
-To align with our melding notation we define $m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}}$, with $\phi_{2 \cap 3} = \left(\{\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i}\}_{i = 1}^{N}\right)$, $Y_{3} = (\{\boldsymbol{x}_{i}, \boldsymbol{u}_{i}\}_{i = 1}^{N})$, and $\psi_{3} = (\{\eta_{0, i}, \sigma^{2}_{x, i}\}_{i = 1}^{N})$.
-
-The right column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for individuals $i = 6, 15, 17$, and $29$.
-There is relatively little noise in these data, which results in tight subposterior distributions for $\eta_{1, i}^{b}$ and $\eta_{1, i}^{a}$.
-
-```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 6, 15, 17$, and $29$.'}
-knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pdf')
-```
 
 ### Survival submodel $\pd_{2}$
 
-Individuals experience respiratory failure ($d_{i} = 1$) at time $T_{i}$, or are censored[^competerisks] $(d_{i} = 0, T_{i} = C_{i})$.
+Individuals experience respiratory failure ($d_{i} = 1$) at arbitrary time $0 < t < C_{i}$, or are censored[^competerisks] $(d_{i} = 0, t = C_{i})$.
 We assume a Weibull hazard with shape parameter $\gamma$ for the event times.
 All individuals have $a = 1, \ldots, A$ baseline (time invariant) covariates $w_{i, a}$ with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, A})$(i.e. including an intercept term), and common coefficients $\boldsymbol{\theta} =  (\theta_{0}, \ldots, \theta_{A})$.
 The hazard is assumed to be influenced by these covariates and the rate of increase $\frac{\partial}{\partial t} m_{i}(t)$ in the cumulative fluid balance.
 The strength of the latter relationship is captured by $\alpha$.
 Hence, the hazard is
-\begin{gather}
-  h_{i}(T_{i}) = \gamma T_{i}^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta} + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\right\} \\
-  \frac{\partial}{\partial T_{i}} m_{i}(T_{i}) = \eta^{b}_{1, i}\boldsymbol{1}_{\{T_{i} < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{T_{i} \geq \kappa_{i}\}},
-\end{gather}
-The survival probability $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$ has an analytic form, which we derive in Appendix&nbsp;\ref{analytic-form-for-the-survival-probability}.
-The likelihood for individual $i$ is
+\input{tex-input/mimic-example/0030-surv-submodel-def.tex}
+The survival function at an individual's observed event time and status, $(T_{i}, d_{i})$, denoted $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$, has an analytic form which we derive in Appendix&nbsp;\ref{analytic-form-for-the-survival-function}.
+Hence the likelihood for individual $i$ is
 \begin{equation}
   \pd(T_{i}, d_{i} \mid \gamma, \boldsymbol{\theta}, \alpha, \kappa_{i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}, \boldsymbol{w}_{i}) = h_{i}(T_{i})^{d_{i}} S_{i}(T_{i}), \\
 \end{equation}
@@ -584,74 +554,104 @@ We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i
 
 [^competerisks]: The relationship between this model and the competing risks approach is discussed in Appendix&nbsp;\ref{a-comparison-with-the-competing-risk-approach}.
 
-### Estimation details
+### Chained Markov melding details
+
+To combine the submodels with chained Markov melding we must define the common quantities $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+We meld $\pd_{1}$ and $\pd_{2}$ by treating the derived event times and indicators $\{(T_{i}, d_{i})\}_{i = 1}^{N}$ under $\pd_{1}$ as the "response", i.e.&nbsp;event times, in $\pd_{2}$.
+Care is required when defining $\phi_{1 \cap 2}$ under $\pd_{1}$ as it is a deterministic function of $\beta_{0, i}$ and  $\boldsymbol{\zeta}_{i}$.
+Define $\chi_{1, i} = (\beta_{0, i}, \boldsymbol{\zeta}_{i})$ and $\phi_{1 \cap 2, i} = f(\chi_{1, i}) = (T_{i}, d_{i})$, where $f$ is the output from attempting to solve Equation \eqref{eqn:event-time-model-def}, so that $\phi_{1 \cap 2} = (f(\chi_{1, i}), \ldots, f(\chi_{1, N}))$.
+The parameters shared by Equations \eqref{eqn:piecewise-fluid-model} and \eqref{eqn:surv-submodel-def-two} constitute $\phi_{2 \cap 3} = (\eta^{b}_{1, i}, \eta^{a}_{1, i}, \kappa_{i})_{i = 1}^{N}$.
+
+To completely align with our chained melding notation we also define, for the P/F submodel, $Y_{1} = (\boldsymbol{z}_{i}, \boldsymbol{t}_{i})_{i = 1}^{N}$ and $\psi_{1} = (\omega_{i})_{i = 1}^{N}$, noting that $\psi_{1}$ and $(\chi_{1, i}, \ldots, \chi_{1, N})$ have no components in common.
+For the cumulative fluid submodel we define $Y_{3} = (\boldsymbol{x}_{i}, \boldsymbol{u}_{i})_{i = 1}^{N}$, and $\psi_{3} = (\eta_{0, i}, \sigma^{2}_{x, i})_{i = 1}^{N}$.
+Finally, for the survival submodel we define $Y_{2} = (\boldsymbol{w}_{i})_{i = 1}^{N}$ and $\psi_{2} = (\gamma, \boldsymbol{\theta}, \alpha)$.
+
+
+### Pooling and estimation
 
 We consider logarithmic pooling with $\lambda = (\frac{4}{5}, \frac{4}{5}, \frac{4}{5})$ (any smaller value of $\lambda$ results in a prior that is so uninformative that it causes computational problems) and with $\lambda = (1, 1, 1)$ (Product-of-Experts).
 Because the correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ is important, we do not consider linear pooling in this example.
 Logarithmic pooling requires estimates of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 Because these are mixed distributions, with both discrete and continuous components, standard kernel density estimation, as suggested by @goudie_joining_2019, is inappropriate.
-Instead we fit appropriate parametric mixture distributions using Monte Carlo samples from the priors.
-Samples from $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ are obtained using the methodology of @crowther_simulating_2013 as implemented in `simsurv` @brilleman_simsurv_2021.
-We will also require an estimate of $\pd_{2}(\phi_{1 \cap 2})$, which we obtain using the same methodology.
-Further details about these estimates are available in Appendix&nbsp;\ref{estimating-submodel-prior-marginal-distributions}.
 
-We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) \propto 1$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi})$.
+Instead, we fit appropriate parametric mixture distributions to the unknown prior marginal distributions.
+For $\pd_{1}$, we note that $\pd_{1}(\phi_{1 \cap 2}) = \prod_{i = 1}^{N}\pd_{1, i}(T_{i}, d_{i})$, and that $\pd_{1, i}(T_{i}, d_{i})$ conditions on each individual's length of stay (in specifying the location of the knots), as well as the range, mean, and standard deviation of the P/F data (by standardising $\tilde{z}_{i, j}$).
+Simple Monte Carlo samples are drawn from $\pd_{1}(\phi_{1 \cap 2})$ and used to estimate $\widehat{\pd}_{1}(\phi_{1 \cap 2})$.
+Under the second submodel we obtain samples from $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ using the methodology of @crowther_simulating_2013 as implemented in `simsurv` [@brilleman_simsurv_2021].
+These samples are use to estimate $\widehat{\pd}_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+Details for all the parametric mixture distribution estimates are contained in Appendix&nbsp;\ref{estimating-submodel-prior-marginal-distributions}.
+
+We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2}), \,\, \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi}) \mathop{/} \left(\pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3}) \right)$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
-These samples are used as proposal densities for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in stage two, and we use Stan to sample $\psi_{2}$ for every MH-within-Gibbs step, with 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
+We use `Stan` to sample $\psi_{2}$ where, in every MH-within-Gibbs step, we run `Stan` for 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
 Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper.
 
-[^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, and disable all adaptive procedures as the default (identity) mass matrix and step size are suitable.
+[^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, and disable all adaptive procedures as the default (identity) mass matrix and step size are suitable for this example.
 
 It is crucial for the convergence of our multi-stage sampler that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_.
 Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 
 ### Results
 
-To assess the impact of the melding process we compare the posterior for $\psi_{2}$ obtained using the chained melding approach with the posterior obtained by fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 6, 15, 17$, and $29$.'}
+knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pdf')
+```
 
-Specifically, we fix $\phi_{1 \cap 2}$ to the median value[^median] for each individual under $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, which we denote $\tilde{\phi}_{1 \cap 2}$.
-We fix $\phi_{2 \cap 3}$ to the subposterior mean of $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$ similarly denoted $\tilde{\phi}_{2 \cap 3}$.
+We first inspect the subposterior fitted values for $\pd_{1}$ and $\pd_{3}$.
+The left column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 6, 15, 17$, and $29$.
+The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
+It is interesting to see the relatively wide, multimodal distribution for $(T_{29}, d_{29})$ (there is a second mode at $(T_{29} = C_{29}, d_{29} = 0)$ and for other individuals not shown here).
+The right column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for the same individuals.
+There is little noise in these data which results in tight subposterior distributions for $\eta_{0, i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}$ and $\kappa_{i}$, and hence minimal uncertainty about the fitted value.
+
+To assess the importance of fulling accounting for the uncertainty in $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, we compare the posterior for $\psi_{2}$ obtained using the chained melding approach with the posterior obtained by fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+Plugging in a point estimate reflects common applied statistical practice when combining submodels, particularly when a distributional approximation is nontrival to obtain (as it is for $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$).
+Standard survival models and software are also a consideration, as they typically do not permit uncertainty in event times and indicators.
+
+Specifically, we fix $\phi_{1 \cap 2}$ to the median value[^median] for each individual under $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, which we denote $\widehat{\phi}_{1 \cap 2}$.
+We fix $\phi_{2 \cap 3}$ to the subposterior mean of $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$ similarly denoted $\widehat{\phi}_{2 \cap 3}$.
+With these fixed values, we use standard MCMC methods to sample $\pd(\psi_{2} \mid \widehat{\phi}_{1 \cap 2}, \widehat{\phi}_{2 \cap 3}, Y_{2})$.
 We also compare the melded posterior to the original marginal prior $\pd_{2}(\psi_{2})$, but we note that this comparison is difficult to interpret, as the melding process alters the prior for $\psi_{2}$.
-Figure \ref{fig:psi_2_comparison_plot} displays the aforementioned densities for $(\theta_{3}, \theta_{17}, \gamma, \alpha) \subset \psi_{2}$.
-For the baseline coefficients ($\theta_{3}, \theta_{17}$) the chained melding posterior differs only slightly in location from the posterior obtained using $\tilde{\phi}_{1 \cap 2}$ and $\tilde{\phi}_{2 \cap 3}$, with a small increase in uncertainty.
-It is interesting that the large uncertainty in $\phi_{1 \cap 2}$ seems
-A more pronounced change is visible in $\alpha$, where the melding process has added a notable degree of uncertainty and heavier left tail to the posterior.
+Figure \ref{fig:psi_2_comparison_plot} displays the aforementioned densities for $(\theta_{3}, \theta_{17}, \gamma, \alpha) \subset \psi_{2}$, with $(\theta_{3}, \theta_{17})$ chosen as they exhibit the greatest sensitivity to the fixing of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+For the baseline coefficients ($\theta_{3}, \theta_{17}$) the chained melding posterior differs slightly in location from $\pd(\psi_{2} \mid \widehat{\phi}_{1 \cap 2}, \widehat{\phi}_{2 \cap 3}, Y_{2})$, with a small increase in uncertainty.
+A more pronounced change is visible for $\alpha$, where the melding process has added a notable degree of uncertainty and shifted the posterior leftwards.
 
-```{r psi_2_comparison_plot, fig.cap = 'Density estimates for a subset of $\\psi_{2}$. The original marginal prior $\\pd_{2}(\\psi_{2})$ is shown as the grey dotted line (note that this is not the marginal prior under the melded model). The figure also contains the subposteriors obtained from chained melding using PoE pooling (red, solid line) and logarithmic pooling (blue, solid line), as well as the posterior obtained using fixed values of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ (black, dashed line).'}
+[^median]: For each individual the samples of $(T_{i}, d_{i})_{i = 1}^{N}$-pairs are sorted by $T_{i}$, and the $\lfloor \frac{N}{2}\rfloor$\textsuperscript{th} tuple $(\widehat{T}_{i}, \widehat{d}_{i})$ is chosen as the median.
+
+```{r psi_2_comparison_plot, fig.cap = 'Density estimates for a subset of $\\psi_{2}$. The original marginal prior $\\pd_{2}(\\psi_{2})$ is shown as the grey dotted line (note that this is not the marginal prior under the melded model). The figure also contains the subposteriors obtained from chained melding using PoE pooling (red, solid line) and logarithmic pooling (blue, solid line), as well as the posterior using the fixed values $\\pd(\\psi_{2} \\mid \\widehat{\\phi}_{1 \\cap 2}, \\widehat{\\phi}_{2 \\cap 3}, Y_{2})$ (black, dashed line).'}
 knitr::include_graphics('plots/mimic-example/psi-2-method-comparison-small.pdf')
 ```
 
-To investigate which part of the melding process causes this change in the posterior of $\alpha$, we consider fixing only one of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to their respective point estimates.
-Figure \ref{fig:alpha_only_comparision_plot} displays the same distributions for $\alpha$ as \ref{fig:psi_2_comparison_plot}, and adds the posteriors obtained using one fixed value ($\tilde{\phi}_{1 \cap 2}$ or $\tilde{\phi}_{2 \cap 3}$) whilst melding the other non-fixed parameter.
+To investigate which part of the melding process causes this change in the posterior of $\alpha$, we consider fixing one or both of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to their respective point estimates.
+Figure \ref{fig:alpha_only_comparision_plot} displays the same distributions for $\alpha$ as Figure \ref{fig:psi_2_comparison_plot}, and adds the posteriors obtained using one fixed value ($\widehat{\phi}_{1 \cap 2}$ or $\widehat{\phi}_{2 \cap 3}$) whilst melding the other non-fixed parameter.
+That is, we employ Markov melding as described in Section \ref{markov-melding}, using either logarithmic or PoE pooling, to obtain $\pd_{\text{meld}}(\alpha \mid \widehat{\phi}_{1 \cap 2}, Y_{2}, Y_{3})$ and $\pd_{\text{meld}}(\alpha \mid \widehat{\phi}_{2 \cap 3}, Y_{1}, Y_{2})$.
 Evident for both choices of pooling is the importance of incorporating the uncertainty in $\phi_{1 \cap 2}$.
-This is expected given the comparatively large uncertainty and multimodal nature of $\phi_{1 \cap 2}$ compared to $\phi_{2 \cap 3}$ (see Figure \ref{fig:pf_fit_and_fluid_fit_plot}).
+This is expected given the large uncertainty and multimodal nature of $\phi_{1 \cap 2}$ compared to $\phi_{2 \cap 3}$ (see Figure \ref{fig:pf_fit_and_fluid_fit_plot}).
 We suspect that it is the multimodality in $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ that produces the shift in posterior mode of $\phi_{1 \cap 2}$, with the width of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ affecting the increase in uncertainty.
 
-```{r alpha_only_comparision_plot, fig.cap = 'Median (vertical line), 50\\%, 80\\%, 95\\%, and 99\\% credible intervals (least transparent to most transparent) for $\\alpha$. The marginal prior (grey, top row) and posterior with both $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ fixed (black, bottom row) are as in Figure \\ref{fig:psi_2_comparison_plot}. For the chained melded posteriors (red and blue, rows 2 -- 7), the tick label on the y-axis denotes the type of pooling used, and which of $\\phi_{1 \\cap 2}$ and $\\phi_{2 \\cap 3}$ are fixed.'}
+```{r alpha_only_comparision_plot, fig.cap = 'Median (vertical line), 50\\%, 80\\%, 95\\%, and 99\\% credible intervals (least transparent to most transparent) for $\\alpha$. The marginal prior (grey, top row) and posterior using fixed $\\widehat{\\phi}_{1 \\cap 2}$ and $\\widehat{\\phi}_{2 \\cap 3}$ (black, bottom row) are as in Figure \\ref{fig:psi_2_comparison_plot}. For the chained melded posteriors (red and blue, rows 2 and 3) and the melded posteriors (red and blue, rows 4 -- 7), the tick label on the y-axis denotes the type of pooling used, and which of $\\phi_{1 \\cap 2}$ and/or $\\phi_{2 \\cap 3}$ are fixed.'}
 knitr::include_graphics('plots/mimic-example/psi-2-alpha-only-compare.pdf')
 ```
 
-The change to the posterior distribution of $\gamma$ in Figure \ref{fig:psi_2_comparison_plot} appears small, however when we consider the corresponding estimates of the survival probability, this difference becomes much more apparent.
-Figure \ref{fig:kap_meier_pc_plot} displays the average survival probability under the melded posterior (using PoE pooling) of $\psi_{2}$ and $\phi_{2 \cap 3}$, and corresponding draws of $\phi_{1 \cap 2}$ converted into empirical survival probabilities using the Kaplan-Meier estimator.
-Also shown is the Kaplan-Meier estimate using $\tilde{\phi}_{1 \cap 2}$, and the average survival probability computed using the posterior of $\psi_{2}$ with fixed $\tilde{\phi}_{1 \cap 2}$ and $\tilde{\phi}_{2 \cap 3}$.
-The survival curves differ markedly, with the 95\% intervals overlapping only for small values of time.
-It is also interesting to see that $\tilde{\phi}_{1 \cap 2}$, despite being a reasonable point estimate of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, is not very likely under the melded posterior.
-Figure \ref{fig:kap_meier_pc_plot} also suggests that the Weibull hazard is insufficiently flexible for this example, however more complex hazards are beyond the scope of this paper[^hazards].
+The marginal changes to the components of $\psi_{2}$ visible in Figure \ref{fig:psi_2_comparison_plot} appear small, however the cumulative effect of such changes becomes apparent when inspecting the posterior of the survival function.
+Figure \ref{fig:kap_meier_pc_plot} displays the model-based, mean survival function under the melded posterior (using PoE pooling), and corresponding draws of $\phi_{1 \cap 2}$ converted into survival curves using the Kaplan-Meier estimator.
+Also shown are the Kaplan-Meier estimate of $\widehat{\phi}_{1 \cap 2}$ and the mean survival function computed using $\pd(\psi_{2} \mid \widehat{\phi}_{1 \cap 2}, \widehat{\phi}_{2 \cap 3}, Y_{2})$.
+The posterior survival functions differ markedly, with the 95\% intervals overlapping only for small values of time.
+It is also interesting to see that $\widehat{\phi}_{1 \cap 2}$, despite being a reasonable point estimate of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, is not very likely under the melded posterior.
+Figure \ref{fig:kap_meier_pc_plot} also suggests that the Weibull hazard is insufficiently flexible for this example.
+We discuss the complexities of other hazards in Section \ref{conclusion}.
 
-```{r kap_meier_pc_plot, fig.cap = 'Empirical survival curves and average survival probabilities at time $t$. The red, stepped lines are draws of $\\phi_{1 \\cap 2}$ from the melded posterior using PoE pooling, converted into empirical survival curves via the Kaplan-Meier estimator. The smooth red line and interval (posterior mean and 95\\% credible interval) denote the model-based average survival probability obtained from the melded posterior using PoE pooling computed from the values of $\\psi_{2}$ and $\\phi_{2 \\cap 3}$. The blue dashed line is the Kaplan-Meier estimate obtained from the subposterior median $\\tilde{\\phi}_{1 \\cap 2}$, and the blue solid line and interval are the corresponding model based estimate obtained using $\\psi_{2}$ and $\\tilde{\\phi}_{2 \\cap 3}$.'}
+```{r kap_meier_pc_plot, fig.cap = 'Survival curves and mean survival function at time $t$. The red, stepped lines are draws of $\\phi_{1 \\cap 2}$ from the melded posterior using PoE pooling, converted into survival curves via the Kaplan-Meier estimator. The smooth red line and interval (posterior mean and 95\\% credible interval) denote the model-based, mean survival function obtained from the melded posterior (PoE pooling) values of $\\psi_{2}$ and $\\phi_{2 \\cap 3}$. The blue dashed line is the Kaplan-Meier estimate of $\\widehat{\\phi}_{1 \\cap 2}$, and the blue solid line and interval are the corresponding model-based estimate from $\\pd(\\psi_{2} \\mid \\widehat{\\phi}_{1 \\cap 2}, \\widehat{\\phi}_{2 \\cap 3}, Y_{2})$.'}
 knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
 ```
 
-[^median]: For each individual the samples of $\{(T_{i}, d_{i})\}_{i = 1}^{N}$ sorted by $T_{i}$, and the $\lfloor \frac{N}{2}\rfloor$\textsuperscript{th} tuple $(\tilde{T}_{i}, \tilde{d}_{i})$ is chosen as the median.
 
-[^hazards]: More complex hazards (e.g. the default M-spline hazard in @brilleman_bayesian_2020) require numerically integrating the hazard to obtain the survival probabilities. Such integrations are not trivial, particularly when the hazard is discontinuous, which ours is at the breakpoint.
-
-# Discussion
+# Conclusion
 
 This paper introduces the chained melded model.
-In doing so we have made explicit the notion of submodels related in a chain-like way,  which we illustrate with our examples.
+In doing so we have made explicit the notion of submodels related in a chain-like way, which we illustrate with our examples.
 Our examples also demonstrate the importance of quantifying the uncertainty when joining submodels; not doing so can produce biased, over-confident inference.
 
 One contribution of our work is to make explicit the informal process of summarising and/or approximating submodels for use in subsequent analyses.
@@ -659,41 +659,49 @@ The two most common approximation strategies seem to be (i) approximating the su
 These strategies may, but not always, produce acceptable approximations to the chained melded model.
 Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach being the most sophisticated.
 
+We have introduced extensions to linear and logarithmic pooling to marginals of different but overlapping parameters.
+Linear pooling, introduced in Section \ref{pooled-prior}, could be extended to induce dependence between the components of $\boldsymbol{\phi}$ using multivariate or vine copulas [@kurowicka_dependence_2011; @nelsen_introduction_2006], or other techniques [@lin_recent_2014]
+Copula methods are particularly appealing as, depending on the choice of copula, they yield cheap to evaluate expressions for the density function, are easy to sample, and induce correlation between an arbitrary number of marginals.
+
 Our parallel sampler is currently limited to $\Nm = 3$ submodels.
 A general method would consider an arbitrary number of submodels in a chain, and initially split the chain into more/fewer pieces depending on the computational resources available.
 Designing such a method is complex, as it would have to:
-
-- Avoid requiring the inverse of any component of $\boldsymbol{\phi}$ with a noninvertible definition,
-- Estimate relative cost of sampling each submodel's subposterior, to split the chain of submodels into steps/jobs of approximately the same computational cost,
-- Decide the order in which pieces of the chain are combined.
-
+\begin{itemize}[nosep]
+\tightlist
+\item avoid requiring the inverse of any component of $\boldsymbol{\phi}$ with a noninvertible definition,
+\item estimate relative cost of sampling each submodel's subposterior, to split the chain of submodels into steps/jobs of approximately the same computational cost,
+\item decide the order in which pieces of the chain are combined.
+\end{itemize} \noindent
 These are substantial challenges.
 It may be possible to use combine the ideas in @lindsten_divide-and-conquer_2017, who propose a parallel Sequential Monte Carlo method, with the aforementioned constraints to obtain a generic methodology.
-Ideally we would retain the ability to use existing implementations of the submodels, however the need to recompute the weights of the particles, and hence reevaluate previously considered submodels, may make this an impossible requirement.
+Ideally we would retain the ability to use existing implementations of the submodels, however the need to recompute the weights of the particles, and hence reevaluate previously considered submodels, may preclude this requirement.
+Our currently sampler is also sensitive to large differences in location or scale of the target distribution between the stages; Sequential Monte Carlo samplers are likely to perform better in these settings.
 
 The melding methodology is general and permits any form of uncertainty in the link parameters.
 In Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
 We note that some specific forms of uncertainty have been considered in previous work.
 These include @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation data to account for measurement error in the event time.
 
-The example in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times} has two more interesting aspects to discuss.
+The example in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1} has three more interesting aspects to discuss.
 Firstly, the P/F ratio data used in the first submodel is obtained by finding all blood gas measurements from arterial blood samples.
 Approximately $20\%$ of the venous/arterial labels are missing.
-In these instances a logistic regression model, fit by the MIMIC team, is used to predict the missing label based on other covariates.
+In these instances a logistic regression model, fit by the MIMIC team[^mimiclr], is used to predict the missing label based on other covariates.
 No information is available about this model, however it is theoretically possible to refit the model in a Bayesian framework and use the chained melded model to incorporate the uncertainty in the predicted sample label.
 
-Secondly, the application of our multi-stage sampler to this example is similar to the two-stage approach used for joint longitudinal and time-to-event models [@mauff_joint_2020].
-In the two-stage approach, the longitudinal model is fit using MCMC in stage one, and the samples being reused in stage two when considering the time-to-event data.
+[^mimiclr]: The coefficients, classification threshold, and the imputation used in the case of missing data are supplied in the `blood-gasses.sql` file in the GitHub repository accompanying this paper.
+
+Secondly, the application of our multi-stage sampler to this example is similar to the two-stage approach used for joint longitudinal and time-to-event models [see @mauff_joint_2020 for a description of this approach].
+In the two-stage approach, the longitudinal model is fit using standard MCMC methods in stage one, and the samples are reused in stage two when considering the time-to-event data.
 This can significantly reduce the computational effort required to fit the joint model.
-However, unlike our multi-stage sampler, the two-stage approach does not target the full posterior distribution, which can lead to biased estimates.
+However, unlike our multi-stage sampler, the typical two-stage approach does not target the full posterior distribution, which can lead to biased estimates (though @mauff_joint_2020 extend the typical two-stage approach to reduce this bias).
 
-Several interesting extensions to our methodology are possible.
-
-1. That the linear pooling process of Section \ref{pooled-prior} results in a prior with no dependence between the components of $\boldsymbol{\phi}$ is unsatisfying. It should be possible to introduce dependence between components using multivariate or vine copulas [@kurowicka_dependence_2011; @nelsen_introduction_2006] or other techniques [@lin_recent_2014].
-1. Our methodology assumes that the practitioner is aware of all the submodels they would like to combine when specifying the chained melded model. If an additional submodel becomes available after the chained model has been fit, the practitioner has no option other than respecifying the chained melded model and re-running the multi-stage sampler. Is is possible to adjust the chained melded model such that subsequent submodels, perhaps only at either end of the chain, can be incorporated without respecifying the model[^bettertogether]?
-1. A key property of the multi-stage sampler is that previously considered submodels do not need to be reevaluated. However, if the dimension of $\boldsymbol{\phi}$ is large, or if the subposteriors differ in location or scale, then sampler can be brittle and at best the mixing will be poor. It may be possible to design a Sequential Monte Carlo algorithm that occasionally reevaluates all previous submodels. This would improve the robustness of the sampler at some computational cost.
-
-[^bettertogether]: A similar issue is discussed in Section 4.4.3 of @jacob_better_2017-1.
+Thirdly, we observe a lack of flexibility the baseline hazard, visible in Figure \ref{fig:kap_meier_pc_plot}.
+More complex hazards could be employed, e.g. modelling the (log-)hazard using a (penalised) B-spline [@royston_flexible_2002; @rosenberg_hazard_1995; @rutherford_use_2015].
+However, this increased flexibility precludes an analytic form for the survival function.
+Whilst numerical integration is possible it is not trivial, particularly when the hazard is discontinuous, as our hazard is at the breakpoint.
+Splines also have more coefficients than the single parameter of the Weibull hazard.
+Identifiability issues arise with a small number of individuals, many of whom are censored, and are compounded when there are a relatively large number of other parameters $(\alpha, \boldsymbol{\theta})$.
+Whilst we do not believe these costs are worth incurring for our example, for settings with a larger number of patients and more complicated longitudinal submodels the increased flexibility may be vital.
 
 
 <!-- This makes pandoc-citeproc put the references before the end of document. -->
@@ -710,7 +718,7 @@ Several interesting extensions to our methodology are possible.
 We can exactly compute $\pd_{\text{pool}}$ when logarithmically pooling Gaussian densities.
 Noting that, in the one dimensional case, $\text{N}(\phi; \mu, \sigma^2)^{\lambda_{\modelindex}} = \text{N}(\phi; \mu, \frac{\sigma^2}{\lambda_{\modelindex}})$, we use the results of @bromiley_products_2003 and write
 \input{tex-input/multiple-phi/0070-log-pooling-gaussian.tex}
-hence $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \text{N}(\left[\phi_{1 \cap 2} \,\, \phi_{2 \cap 3}\right]^{\top}\hspace{-0.5em};\, \mu_{\text{log}}, \, \Sigma_{\text{log}})$.
+hence $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \text{N}((\phi_{1 \cap 2}, \phi_{2 \cap 3});\, \mu_{\text{log}}, \, \Sigma_{\text{log}})$.
 The choice of $\lambda_{2}$ is critical; by controlling the contribution of $\pd_{2}$ to $\pd_{\text{pool}}$, $\lambda_{2}$ controls the degree of correlation present in the latter.
 The left hand column of Figure \ref{fig:pooled_densities_plot} illustrates this phenomena.
 When $\lambda_{1} = \lambda_{3} = 0 \implies \lambda_{2} = 1$, all correlation in $\pd_{2}$ is present in $\pd_{\text{pool}}$.
@@ -766,129 +774,6 @@ Noting that the product of independent normal densities is an unnormalised multi
 The ratio of normal densities is also an unnormalised normal density, and hence Equation \eqref{eqn:normal-approx-nu-de-form} simplifies to
 \input{tex-input/multiple-normal-approximation/0041-final-normal-approx-appendix.tex}
 
-
-## Coherency of the chained melded model
-
-- _I think a few of these results are wrong. Maybe this should just be a paragraph?_
-    - 3 ii) is definitely wrong.
-    - 3 i) doesn't required independence
-- _Some discussion of the M = 3 case in text, with reference to the general case (if I can figure out what that even means) in the appendix_
-- _I think I can also put together a discussion of what it means to be externally Bayesian in this context now?_.
-    - _no_
-
-A reasonable requirement for a modular inference method is that the final posterior distribution should not, at least theoretically, depend on the order in which data are observed or integrated into the model.
-In the context of belief distributions, @bissiri_general_2016 call this property 'coherence', which we will co-opt.
-Specifically, in the $\Nm = 3$ case, it seems desirable that the chained melded model be the same if either $\pd_{1}$ or $\pd_{3}$ are integrated with submodel $\pd_{2}$ first.
-We will show that the form proposed in Equation \eqref{eqn:melded-model-full} satisfies this property, whilst the model produced by applying the melding method of @goudie_joining_2019 is, in general, sensitive to the order of integration.
-    <!--
-        - should we also check p(13)2?
-            - (13)2 is the same as original melding with \phi = (\phi_{1 \cap 2}, \phi_{2 \cap 3}),
-            - but the strategy doesn't generalise to higher $M$ (M = 4 immediately disproves)
-
-        - say we had 9 models, and the first three formed \pd_{1}, the second three formed \pd_{2} and the remaining $\pd_{3}$. Would we apply melding here twice? No, we would think about this as chained melding with M = 9 models.
-    -->
-
-### Applying Markov melding twice
-
-The general thing I want to be able to say is
-
-
-The idea is that they can only possibly be equal if there is prior independence between the common quantities in each submodel.
-If this is missing, then for any, non product-of-experts, choice of weight functions
-
-Denote the original melding operator with $\circledast$.
-Its output is
-\input{tex-input/noncommutativity/0005-def-usual-melded-model.tex}
-where $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2}))$ for some pooling function $g^{12}$.
-We denote the parameter space of the output as $\boldsymbol{\Theta}_{12} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{1}, \psi_{2}, Y_{1}, Y_{2})$, so that any prior marginal distribution of $\pd_{\text{meld}}^{12}$ can be derived by integrating out the irrelevant components of $\boldsymbol{\Theta}_{12}$.
-For example,
-\input{tex-input/noncommutativity/0006-example-melded-marginal-definition.tex}
-where $\boldsymbol{\Theta}_{12} \setminus \phi_{2 \cap 3}$ is $\boldsymbol{\Theta}_{12}$ without $\phi_{2 \cap 3}$.
-
-To integrate third submodel, we apply the original operator to $\pd_{\text{meld}}^{12}$ and $\pd_{3}$
-\input{tex-input/noncommutativity/0007-iterated-application-melding.tex}
-so that the parentheses in the superscript of $\pd_{\text{meld}}^{(12)3}$ indicate the order in which the submodels are melded.
-As before we define $\pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3}))$, but for a potentially different choice of pooling function $g^{(12)3}$.
-
-It will be convenient to consider the following, expanded form of Equation \eqref{eqn:iterated-application-melding-two}
-\input{tex-input/noncommutativity/0013-expanded-double-melded-model.tex}
-and the equivalent expression for $\pd_{\text{meld}}^{1(23)}$, which we derive by careful inspection of the superscripts
-\input{tex-input/noncommutativity/0018-symmetric-expanded-double-melded-model.tex}
-
-### Does melding twice produce the same model as the chained melded model?
-
-For Equations \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model} to be equal to the model defined in Equation \eqref{eqn:melded-model-full}, the following equalities must hold:
-\input{tex-input/noncommutativity/0040-coinciding-equalities.tex}
-It is clear from Equation \eqref{eqn:coinciding-equalities-one} that one necessary condition is for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ to be _a priori_ independent in $\pd_{2}$.
-
-#### Melded marginal equality
-
-By inspecting Equation \eqref{eqn:coinciding-equalities-one} we note the additional necessary condition that $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
-To see when this is true, consider the following derivation
-\input{tex-input/noncommutativity/0015-verify-dictatorial-pooling.tex}
-Hence, for $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$ to hold we require $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$.
-This is _dictatorial pooling_, where one submodel's prior marginal is used as a prior in the melded model.
-An identical argument can be used to show that $\pd_{\text{meld}}^{23}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$ requires the equivalent choice of dictatorial pooling for $\phi_{2 \cap 3}$, i.e. $\pd_{\text{pool}}^{23}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
-
-#### Pooling equality
-
-Without any loss of generality, we examine only the $\pd_{\text{pool}}^{12}(\phi_{1 \cap 2}) \pd_{\text{pool}}^{(12)3}(\phi_{2 \cap 3}) = \pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ equality in Equation \eqref{eqn:coinciding-equalities-two} for further necessary conditions.
-There are three decisions to be made about the method of pooling used on the right hand side (RHS) of this equality:
-
-1. Form $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via the logarithmic pooling method of Equation \eqref{eqn:pooled-prior-overall}.
-
-    Logarithmic pooling results in a RHS proportional to $\pd_{1}(\phi_{1 \cap 2})^{\lambda_{1}} \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})^{\lambda_{2}} \pd_{3}(\phi_{2 \cap 3})^{\lambda_{3}}$.
-    Hence both $g^{12}$ and $g^{(12)3}$ are logarithmic pooling functions; if either were a linear pooling function we would get more than one term, and if either were dictatorial the left hand side (LHS) would exclude either $\pd_{1}(\phi_{1 \cap 2})$ or $\pd_{3}(\phi_{2 \cap 3})$.
-    Thus,
-    \input{tex-input/noncommutativity/0041-pooling-equality-rhs-log.tex}
-    for arbitrary positives weights $\lambda_{\cdot}$.
-    Equation \eqref{eqn:pooling-equality-rhs-log} holds iff $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2})\pd_{2}(\phi_{2 \cap 3})$ and $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$.
-    We have shown earlier that is only true if dictatorial pooling is used for $g^{12}$.
-    But if $g^{12}$ is dictatorial, then the LHS of Equation \eqref{eqn:pooling-equality-rhs-log} would not contain a $\pd_{1}(\phi_{1 \cap 2})$ term, which is a contradiction.
-    Hence, Equation \eqref{eqn:pooling-equality-rhs-log} is not true in general.
-
-    A special case of logarithmic pooling is that of product of experts, where $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{1}(\phi_{1 \cap 2})\pd_{2}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{\text{meld}}^{12}(\phi_{2 \cap 3})\pd_{3}(\phi_{2 \cap 3})$.
-    In this specific instance all prior terms cancel, and only terms containing data remain in the melded model, so Equation \eqref{eqn:pooling-equality-rhs-log} is trivially true (both sides are equal to 1).
-
-2. From $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ via the linear pooling method of Equations \eqref{eqn:silly-linear-solution-1} -- \eqref{eqn:silly-linear-overall}.
-
-    If linear pooling is used then the RHS contains 4 terms.
-    Thus both $g^{12}$ and $g^{1(23)}$ are linear -- all other combinations of pooling functions produce fewer than four terms -- and results in
-    \input{tex-input/noncommutativity/0042-pooling-equality-rhs-lin.tex}
-    Equation \eqref{eqn:pooling-equality-rhs-lin} again requires $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, which we have shown to only be possible under dictatorial pooling.
-    Thus we arrive at the same contradiction as before.
-
-3. Use dictatorial pooling.
-
-    There are two valid dictatorial pooling choices for the RHS:
-
-    i. Set $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-
-        If one chooses $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{2}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{\text{meld}}^{12}(\phi_{2 \cap 3})$, then Equation \eqref{eqn:coinciding-equalities-two} simplifies to $\pd_{2}(\phi_{1 \cap 2}) \pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$, which is true iff the prior independence assumption is satisfied.
-        Additionally, we require $\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{2 \cap 3})$, which as we have noted, is only true if $g^{12}$ is dictatorial.
-        In this case, unlike previous cases, $g^{12}$ is exactly the dictatorial pooling function we require.
-
-    i. Set $\pd_{\text{pool}}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3})$.
-
-        Satisfying Equation \eqref{eqn:coinciding-equalities-two} is possible in this case if $g^{12}(\pd_{1}(\phi_{1 \cap 2}), \pd_{2}(\phi_{1 \cap 2})) = \pd_{1}(\phi_{1 \cap 2})$ and $g^{(12)3}(\pd_{\text{meld}}^{12}(\phi_{2 \cap 3}), \pd_{3}(\phi_{2 \cap 3})) = \pd_{3}(\phi_{2 \cap 3})$.
-
-So in general, applying the original melding operator twice does not result in the same model as \eqref{eqn:melded-model-full}, except in cases where $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are a priori independent in $\pd_{2}$ and specific forms of dictatorial pooling are used.
-
-### Is the original operator commutative?
-
-Commutativity of the original operator would imply that $(\pd_{1} \circledast \pd_{2}) \circledast \pd_{3} = \pd_{1} \circledast (\pd_{2} \circledast \pd_{3})$.
-By carefully considering the indices in Equation \eqref{eqn:expanded-double-melded-model} and \eqref{eqn:symmetric-expanded-double-melded-model}, we find that the original melding operator is only commutative if
-\input{tex-input/noncommutativity/0016-commutativity-condition.tex}
-which implies the following equalities
-\input{tex-input/noncommutativity/0014-orig-melding-commutative-equalities.tex}
-Showing one of the equalities in Equation \eqref{eqn:orig-melding-commutative-equalities-1} and \eqref{eqn:orig-melding-commutative-equalities-2} implies its partner equality is also true.
-Consider the first equality
-\input{tex-input/noncommutativity/0017-pooling-equality.tex}
-Assume that $g^{12}$ and $g^{1(23)}$ are both linear or logarithmic pooling functions.
-For Equation \eqref{eqn:pooling-equality} to be true, $\pd_{2}(\phi_{1 \cap 2}) = \pd_{\text{meld}}^{23}(\phi_{1 \cap 2})$, which is the same result we require in Equation \eqref{eqn:orig-melding-commutative-equalities-2}.
-We have already shown that this is only true when using certain forms of dictatorial pooling.
-Hence, the original operator is commutative under in the same settings in which applying the original melding operator twice results in the chained melded model.
-
 ## Calculating the cumulative fluid balance from the raw fluid data
 
 In the raw fluid data each patient has $\tilde{l} = 1, \ldots, \tilde{L}_{i}$ observations.
@@ -899,41 +784,33 @@ Each patient has an enormous number of raw fluid observations $(L_{i} \ll \tilde
 We aggregate the raw fluid observations into 8-hourly changes in fluid balance.
 From these 8-hourly changes we calculate the cumulative fluid balance.
 
-Mathematically, we define an ordered integer-vector of boundary values
+Mathematically, we define an ordered vector of boundary values
 \begin{equation}
-  \boldsymbol{b}_{i} = (\lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor,  \lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor + 1, \ldots, \lceil \max\{\tilde{\boldsymbol{u}}_{i}\} \rceil),
+  \boldsymbol{v}_{i} = (\lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor,  \lfloor \min\{\tilde{\boldsymbol{u}}_{i}\} \rfloor + \frac{1}{3}, \ldots, \lceil \max\{\tilde{\boldsymbol{u}}_{i}\} \rceil),
 \end{equation}
-noting that $\dim(\boldsymbol{b}_{i}) = L_{i} + 1$.
+noting that $\dim(\boldsymbol{v}_{i}) = L_{i} + 1$.
+Because the observation times encoded as _days since ICU admission_ and we are interested in the 8-hourly changes, our floor and ceiling functions round down or up to the appropriate third respectively.
 The raw fluid observations are then divided up into $L_{i}$ subsets of $\{\tilde{\boldsymbol{x}}_{i}, \tilde{\boldsymbol{u}}_{i}\}$ based on which boundary values the observation falls in between:
 \begin{equation}
-  B_{i, l} = \left\{
+  V_{i, l} = \left\{
     \{\tilde{\boldsymbol{x}}_{i}, \tilde{\boldsymbol{u}}_{i}\}
     \mid
-    b_{i, l} \leq \tilde{\boldsymbol{u}}_{i} < b_{i, l + 1}
+    v_{i, l} \leq \tilde{\boldsymbol{u}}_{i} < v_{i, l + 1}
   \right\},
 \end{equation}
 for $l = 1, \ldots, L_{i}$.
-Denote $N^{B}_{i, l} = \lvert B_{i, l} \rvert \mathop{/} 2$ (dividing by two as $B_{i, l}$ contains both the observation and the observation time).
+Denote $N^{V}_{i, l} = \lvert V_{i, l} \rvert \mathop{/} 2$ (dividing by two as $V_{i, l}$ contains both the observation and the observation time).
 The $l$\textsuperscript{th} 8-hourly fluid change $\Delta_{i, l}$ and corresponding observation time $u_{i, l}$ can then be computed as
 \begin{equation}
-  \Delta_{i, l} = \sum_{s = 1}^{N^{B}_{i, l}} \tilde{x}_{i, s}, \,\, \text{s.t.} \,\, \tilde{x}_{i, s} \in B_{i, l}, \qquad
-  u_{i, l} = \frac{1}{N^{B}_{i, l}} \sum_{s = 1}^{N^{B}_{i, l}} \tilde{u}_{i, s}, \,\, \text{s.t.} \,\, \tilde{u}_{i, s} \in B_{i, l}.
+  \Delta_{i, l} = \sum_{s = 1}^{N^{V}_{i, l}} \tilde{x}_{i, s}, \,\, \text{s.t.} \,\, \tilde{x}_{i, s} \in V_{i, l}, \qquad
+  u_{i, l} = \frac{1}{N^{V}_{i, l}} \sum_{s = 1}^{N^{V}_{i, l}} \tilde{u}_{i, s}, \,\, \text{s.t.} \,\, \tilde{u}_{i, s} \in V_{i, l}.
 \end{equation}
 Finally, the 8-hourly cumulative fluid balance data are computed by $x_{i, l} = \sum_{s = 1}^{l} \Delta_{i, s}$, and we assume they too are observed at $u_{i, l}$.
 
-## Priors and justification for the fluid submodel
-
-We assume a weakly informative prior for the error term
-\begin{equation}
-  \epsilon_{i, l} \sim \text{N}(0, \sigma^{2}_{x, i}),  \,\, \sigma_{x, i} \sim \text{N}_{+}(0, 5^2).
-\end{equation}
+## Priors and justification for the cumulative fluid submodel
 
 The parameters for the gamma prior for $\eta^{b}_{1, i}$ and $\eta^{a}_{1, i}$ are obtained by assuming that the 2.5-, 50-, and 97.5- percentiles are at 0.5, 5, and 20 [@belgorodski_rriskdistributions_2017].
 A slope of $0.5$ (i.e. the change in cumulative fluid balance per day) is unlikely but possible due to missing data; a slope of $20$ is also unlikely but possible as extremely unwell patients can have very high respiratory rates and thus require large fluid inputs.
-Thus
-\begin{equation}
-  \eta^{b}_{1, i} \sim \text{Gamma}(1.53, 0.24), \,\, \eta^{a}_{1, i} \sim \text{Gamma}(1.53, 0.24).
-\end{equation}
 
 The prior for the breakpoint $\kappa_{i}$ is derived as follows.
 Define $u_{i, (1)} = \min(\boldsymbol{u}_{i})$ and $u_{i, (n)} = \max(\boldsymbol{u}_{i})$, with $r_{i} = u_{i, (n)} - u_{i, (1)}$.
@@ -947,7 +824,7 @@ Note that this results in the following analytic expression for $\pd_{2}(\phi_{2
 \end{equation}
 by the change of variables formula.
 
-Specifying a prior for $\eta_{0, i}$, the cumulative fluid balance at $\kappa_{i}$, is difficult because it depends on the length of stay.
+Specifying a prior for $\eta_{0, i}$, the cumulative fluid balance at $\kappa_{i}$, is difficult because it too depends on the length of stay.
 Instead, we reparameterise so that $\eta_{0, i}$ is a function of the y-intercept $\eta_{0, i}^{\text{raw}}$.
 \begin{equation}
   \eta_{0, i} =
@@ -1009,29 +886,31 @@ The model (given covariates $\boldsymbol{w}_{i}$) is
 We are interested in the following marginal
 
 \begin{equation}
+  \begin{aligned}
   \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
-  = \int \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) \text{d}\theta_{2}
-  = \int h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \pd(\theta_{2}) \text{d}\theta_{2}.
+  &= \int \pd(T_{i}, d_{i}, \boldsymbol{\theta} \mid \boldsymbol{w}_{i}) \text{d}\theta_{2} \\
+  &= \int h_{i, d_{i}}(T_{i} \mid \theta_{d_{i}}, \boldsymbol{w}_{i}) S_{i}(T_{i} \mid \boldsymbol{\theta}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \pd(\theta_{2}) \text{d}\theta_{2}.
+  \end{aligned}
 \end{equation}
 If $d_{i} = 1$
-\begin{equation}
-  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
-  = h_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2},
+\begin{multline}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i}) = \\
+    h_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2},
   \label{eqn:competing-risks-deriv-one}
-\end{equation}
+\end{multline}
 and if $d_{i} = 2$
-\begin{equation}
-  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i})
-  = S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int h_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2}.
+\begin{multline}
+  \pd(T_{i}, d_{i}, \theta_{1} \mid \boldsymbol{w}_{i}) = \\
+    S_{i, 1}(T_{i} \mid \theta_{1}, \boldsymbol{w}_{i}) \pd(\theta_{1}) \int h_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) S_{i, 2}(T_{i} \mid \theta_{2}, \boldsymbol{w}_{i}) \pd(\theta_{2}) \text{d} \theta_{2}.
   \label{eqn:competing-risks-deriv-two}
-\end{equation}
+\end{multline}
 Standard survival analyses consider $T_{i}$ as data.
 Under this assumption the integrals in \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} are constants that do not depend on the parameters of interest, and can be ignored when maximising the likelihood for $\theta_{1}$.
 The remaining components of \eqref{eqn:competing-risks-deriv-one} and \eqref{eqn:competing-risks-deriv-two} comprise the likelihood that would be obtained by considering all non $d_{i} = 1$ events as censored.
 However, in our case $T_{i}$ is a parameter, and hence the integrals are non-ignorable functions of $T_{i}$.
-This implies that the censoring model and the competing risks model are not equivalent, which we see in practice when comparing the posterior distributions for $\theta_{1}$ under both models.
+This implies that the censoring model and the competing risks model are not equivalent, which we observed when comparing the posterior distributions for $(\gamma, \boldsymbol{\theta}, \alpha)$ under both models (not shown here).
 
-## Analytic form for the survival probability
+## Analytic form for the survival function
 
 The hazard at arbitrary time $t$ is
 
@@ -1113,7 +992,7 @@ and for $t < \kappa_{i}$
     \right] \\
   &= t_{i}^{\gamma} \exp\{\boldsymbol{w}_{i}\theta + \alpha \eta^{b}_{1, i}\}.
 \end{align*}
-The survival probabilities are defined with appropriately for $t > \kappa_{i}$ and $t < \kappa_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
+The survival functions are defined with appropriately for $t > \kappa_{i}$ and $t < \kappa_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
 
 ## Survival submodel prior justification {#p2-prior-justification}
 
@@ -1138,12 +1017,12 @@ We specify a gamma distribution for $\gamma$ with the $1$\textsuperscript{th}-, 
 ### P/F submodel
 
 We approximate $\pd_{1}(\phi_{1 \cap 2})$ using a mixture of discrete and continuous distributions, with a discrete spike at $C_{i}$ for the censored events and a beta distribution for the (rescaled) event times.
-Monte Carlo samples of $T_{i}$ and $d_{i}$ are obtained from $\pd_{1, i}(T_{i}, d_{i})$ by drawing $\beta_{0, i}$ and $\boldsymbol{\zeta}_{i}$ from their respective prior distributions and then solving \eqref{eqn:event_time_model_def}.
+Monte Carlo samples of $T_{i}$ and $d_{i}$ are obtained from $\pd_{1, i}(T_{i}, d_{i})$ by drawing $\beta_{0, i}$ and $\boldsymbol{\zeta}_{i}$ from their respective prior distributions and then solving \eqref{eqn:event-time-model-def}.
 Denoting the estimated mixture weight $\widehat{\pi}_{i} \in [0, 1]$, the density estimate is
 \begin{equation}
   \widehat{\pd}_{1, i}(T_{i}, d_{i}) =
     \widehat{\pi}_{i} \, \text{Beta}\left(\frac{T_{i}}{C_{i}}; \widehat{a}, \widehat{b}\right) \frac{1}{C_{i}} \boldsymbol{1}_{\{d_{i} = 1\}} +
-    (1 - \widehat{\pi}_{i}) \boldsymbol{1}_{\{d_{i} = 2, T_{i} = C_{i}\}}
+    (1 - \widehat{\pi}_{i}) \boldsymbol{1}_{\{d_{i} = 0, T_{i} = C_{i}\}}
   \label{eqn:pf-event-time-prior-dist}
 \end{equation}
 where $\widehat{\pi}_{i}, \widehat{a}_{i}$ and $\widehat{b}_{i}$ are maximum likelihood estimates obtained using the prior samples.
@@ -1172,12 +1051,12 @@ The resulting density estimate, with estimated mixture weight $\widehat{\theta}_
     \Big[&
       (\widehat{\theta}_{i})
       \text{N}\left(
-        \left[\tilde{T}_{i}, \tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i}
+        \left[\tilde{T}_{i}, \tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\mathsf{T}}; \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i}
       \right)
       \boldsymbol{1}_{\{d_{i} = 1\}}
       + \\
       & (1 - \widehat{\theta}_{i})
-      \text{N}\left(\left[\tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\top}; \widehat{\mu}_{0, i}, \widehat{\Sigma}_{0, i} \right)
+      \text{N}\left(\left[\tilde{\kappa}_{i}, \tilde{\eta}^{b}_{1, i}, \tilde{\eta}^{a}_{1, i} \right]^{\mathsf{T}}; \widehat{\mu}_{0, i}, \widehat{\Sigma}_{0, i} \right)
       \boldsymbol{1}_{\{d_{i} = 0, T_{i} = C_{i}\}}
     \Big]
     J_{i},
@@ -1245,7 +1124,7 @@ In this appendix $i$ represents a single stay in ICU.
 
 ## Baseline covariate information
 
-The baseline covariate vector $\boldsymbol{w}_{i}$ contains the median of the measurements taken in the first 24 hours of the ICU stay, which are then stardardised, of the following covariates: Anion gap, Bicarbonate, Creatinine, Chloride, Glucose, Hematocrit, Hemoglobin, Platelet, Partial thromboplastin time, International normalized ratio, Prothrombin time, Sodium, blood Urea nitrogen, White blood cell count, Age at ICU admission, and Sex.
+The baseline covariate vector $\boldsymbol{w}_{i}$ contains the median of the measurements taken in the first 24 hours of the ICU stay, which are then stardardised, of the following covariates: Anion gap, Bicarbonate, Creatinine, Chloride, Glucose, Hematocrit, Hemoglobin, Platelet, Partial thromboplastin time, International normalized ratio, Prothrombin time, Sodium, blood Urea nitrogen, White blood cell count, Age at ICU admission, and Gender.
 
 ## Updating $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in stage two individual-at-a-time {#one-at-a-time}
 
@@ -1265,8 +1144,8 @@ Recall that
 \begin{aligned}
 \phi_{1 \cap 2} &=
   (\phi_{1 \cap 2, 1}, \ldots, \phi_{1 \cap 2, N})  \\
-  &= (\phi_{1 \cap 2, 1}(\theta_{1, 1}), \ldots, \phi_{1 \cap 2, N}(\theta_{1, N})) \\
-  &= (\{T_{1}, d_{1}\}, \ldots, \{T_{N}, d_{N}\}),
+  &= (\phi_{1 \cap 2, 1}(\chi_{1, 1}), \ldots, \phi_{1 \cap 2, N}(\chi_{1, N})) \\
+  &= \left((T_{1}, d_{1}), \ldots, (T_{N}, d_{N})\right),
 \end{aligned}
 \end{equation}
 and $\psi_{1} = (\psi_{1, 1}, \ldots, \psi_{1, N}) = (\omega_{i})_{i = 1}^{N}$.
@@ -1279,103 +1158,102 @@ Without any loss of generality we assume that we are updating individual $i = 1$
 
 Our target is
 \begin{equation}
-  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = 2}^{N})
-  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}) \mid Y_{2}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3}).
+  \pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1}, (\chi_{1, i}, \psi_{1, i})_{i = 2}^{N})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}) \mid Y_{2}, (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3}).
   \label{eqn:sub-step-target}
 \end{equation}
 The model, detailed in \eqref{eqn:pf-model-def} and \eqref{eqn:pf-model-priors-simple}, factorises such that
 \begin{equation}
-  \pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1}) = \prod_{i = 1}^{N} \pd_{1}(\theta_{1, i}, \psi_{1, i} \mid Y_{1}),
+  \pd_{1}(\chi_{1}, \psi_{1} \mid Y_{1}) = \prod_{i = 1}^{N} \pd_{1}(\chi_{1, i}, \psi_{1, i} \mid Y_{1}),
 \end{equation}
-which implies[^fluidproperty] $(\theta_{1, i}, \psi_{1, i}\indep \theta_{1, i^{'}}, \psi_{1, i^{'}}) \mid Y_{1}$ for $i \neq i^{'}$, hence
+which implies[^fluidproperty] $(\chi_{1, i}, \psi_{1, i}\indep \chi_{1, i^{'}}, \psi_{1, i^{'}}) \mid Y_{1}$ for $i \neq i^{'}$, hence
 \begin{equation}
-  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = 2}^{N}) =
-  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1}).
+  \pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1}, (\chi_{1, i}, \psi_{1, i})_{i = 2}^{N}) =
+  \pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1}).
 \end{equation}
 It will be convenient to rewrite \eqref{eqn:sub-step-target} as
 \begin{equation}
-  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1})
+  \pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1})
   \frac {
-    \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3} \mid Y_{2})
+    \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}), (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3} \mid Y_{2})
   } {
-    \pd_{2}(\{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3} \mid Y_{2})
+    \pd_{2}((\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3} \mid Y_{2})
   }.
   \label{eqn:sub-step-one-target}
 \end{equation}
 
 [^fluidproperty]: This property is also true of $\pd_{3}$.
 
-Suppose there are $K$ stage one samples from $\pd_{1}(\theta_{1}, \psi_{1} \mid Y_{1})$, and each sample has a corresponding $\phi_{1 \cap 2}$.
-We propose $\psi_{1, 1}^{*}$ and $\theta_{1, 1}^{*}$ (hence $\phi_{1 \cap 2, 1}^{*})$ by sampling a random integer $k$ from $\{1, \ldots, K\}$, retrieving the corresponding values of $\psi_{1}$ and $\theta_{1}$, and ignoring $(\theta_{1, 2}, \ldots, \theta_{1, N}, \psi_{1, 2}, \ldots, \psi_{1, N})$.
-This is equivalent to proposing from $\pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1})$
+Suppose there are $K_{1}$ stage one samples from $\pd_{1}(\chi_{1}, \psi_{1} \mid Y_{1})$, and each sample has a corresponding $\phi_{1 \cap 2}$.
+We propose $\psi_{1, 1}^{*}$ and $\chi_{1, 1}^{*}$ (hence $\phi_{1 \cap 2, 1}^{*})$ by sampling a random integer $k_{1}^{*}$ from $\{1, \ldots, K_{1}\}$, retrieving the corresponding values of $\psi_{1}$ and $\chi_{1}$, and ignoring $(\chi_{1, 2}, \ldots, \chi_{1, N}, \psi_{1, 2}, \ldots, \psi_{1, N})$.
+This is equivalent to proposing from $\pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1})$
 Under this proposal, noting that the denominator term in \eqref{eqn:sub-step-one-target} does not depend on the proposed parameters, the acceptance probability for this sub-step is
 \begin{equation}
 \begin{aligned}
-\alpha&\left(\{\theta_{1, 1}^{*}, \psi_{1}^{*}\}, \{\theta_{1, 1}, \psi_{1}\} \right) \\
+\alpha&\left((\chi_{1, 1}^{*}, \psi_{1}^{*})_{k_{1}^{*}}, (\chi_{1, 1}, \psi_{1}) \right) \\
 &=
 \frac {
-  \pd_{1}(\theta_{1, 1}^{*}, \psi_{1, 1}^{*} \mid Y_{1})
-  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+  \pd_{1}(\chi_{1, 1}^{*}, \psi_{1, 1}^{*} \mid Y_{1})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}^{*}), (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 } {
-  \pd_{1}(\theta_{1, 1}, \psi_{1, 1} \mid Y_{1})
-  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+  \pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}), (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 }
 \frac{
-  \pd_{1}(\theta_{1, 1}, \psi_{1} \mid Y_{1})
+  \pd_{1}(\chi_{1, 1}, \psi_{1} \mid Y_{1})
 } {
-  \pd_{1}(\theta_{1, 1}^{*}, \psi_{1}^{*} \mid Y_{1})
+  \pd_{1}(\chi_{1, 1}^{*}, \psi_{1}^{*} \mid Y_{1})
 } \\
 &= \frac {
-  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}^{*}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}^{*}), (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 } {
-  \pd_{2}(\phi_{1 \cap 2, 1}(\theta_{1, 1}), \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
+  \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}), (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 },
 \end{aligned}
 \end{equation}
 which does not depend on $\pd_{1}$.
-We store the value of $k$ associated with the proposal in order to resample the stage one values of $\psi_{1, 1}$ to reflect the information in the other submodels.
-
+We store the value of $k_{1}^{*}$ associated with the proposal (if it is accepted) in order to resample the stage one values of $\psi_{1, 1}$ to reflect the information in the other submodels.
 
 ### Sub-step $n$
 
-At sub-step $n$, for $1 < n \leq N$ with $\{\theta_{1, i}\}_{i = N}^{N} = \varnothing$, we have updated $(\{\theta_{1, i}, \psi_{1, i}\}_{i = 1}^{n - 1})$ to $(\{\theta_{1, i}^{[t]}, \psi_{1, i}^{[t]}\}_{i = 1}^{n - 1})$.
+At sub-step $n$, for $1 < n \leq N$ with $(\chi_{1, i})_{i = N + 1}^{N} = \varnothing$, we have updated $((\chi_{1, i}, \psi_{1, i})_{i = 1}^{n - 1})$ to $((\chi_{1, i}^{[t]}, \psi_{1, i}^{[t]})_{i = 1}^{n - 1})$.
 Thus the target is
 \begin{align}
-  \pd_{1} & \left(\theta_{1, n}, \psi_{1, n} \mid Y_{1}, \{\theta_{1, i}^{[t]}, \psi_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}, \psi_{1, i}\}_{i = n + 1}^{N}\right) \\
-  & \times \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}) \mid Y_{2}, \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N}\right)
+  \pd_{1} & \left(\chi_{1, n}, \psi_{1, n} \mid Y_{1}, (\chi_{1, i}^{[t]}, \psi_{1, i}^{[t]})_{i = 1}^{n - 1}, (\chi_{1, i}, \psi_{1, i})_{i = n + 1}^{N}\right) \\
+  & \times \pd_{2} \left(\phi_{1 \cap 2, n}(\chi_{1, n}) \mid Y_{2}, \psi_{2}, \phi_{2 \cap 3}, (\phi_{1 \cap 2, i}(\chi_{1, i}^{[t]}))_{i = 1}^{n - 1}, (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = n + 1}^{N}\right)
   \nonumber \\
-  = & \pd_{1} \left(\theta_{1, n}, \psi_{1, n}, \mid Y_{1} \right)
+  = & \pd_{1} \left(\chi_{1, n}, \psi_{1, n}, \mid Y_{1} \right)
   \frac {
-    \pd_{2} \left(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N} \mid Y_{2}\right)
+    \pd_{2} \left(\phi_{1 \cap 2, n}(\chi_{1, n}), \psi_{2}, \phi_{2 \cap 3}, (\phi_{1 \cap 2, i}(\chi_{1, i}^{[t]}))_{i = 1}^{n - 1}, (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = n + 1}^{N} \mid Y_{2}\right)
   } {
-    \pd_{2} \left(\psi_{2}, \phi_{2 \cap 3}, \{\phi_{1 \cap 2, i}(\theta_{1, i}^{[t]})\}_{i = 1}^{n - 1}, \{\phi_{1 \cap 2, i}(\theta_{1, i})\}_{i = n + 1}^{N} \mid Y_{2}\right)
+    \pd_{2} \left(\psi_{2}, \phi_{2 \cap 3}, (\phi_{1 \cap 2, i}(\chi_{1, i}^{[t]}))_{i = 1}^{n - 1}, (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = n + 1}^{N} \mid Y_{2}\right)
   }
   \label{eqn:two-to-N-target}
 \end{align}
-We propose $\theta_{1, n}^{*}, \psi_{1, n}^{*}$ in the same manner as the previous section.
+We propose $\chi_{1, n}^{*}, \psi_{1, n}^{*}$ in the same manner as the previous section.
 The corresponding acceptance probability is
 \begin{equation}
 \begin{aligned}
-\alpha (\{\theta_{1, n}^{*}, \psi_{1, n}^{*}\}, & \{\theta_{1, n}, \psi_{1, n}\} )  \\
+\alpha ((\chi_{1, n}^{*}, \psi_{1, n}^{*}), & (\chi_{1, n}, \psi_{1, n}) )  \\
 = &\frac {
-  \pd_{1} \left(\theta_{1, n}^{*}, \psi_{1, n}^{*} \mid Y_{1} \right)
+  \pd_{1} \left(\chi_{1, n}^{*}, \psi_{1, n}^{*} \mid Y_{1} \right)
 } {
-  \pd_{1} \left(\theta_{1, n}, \psi_{1, n} \mid Y_{1} \right)
+  \pd_{1} \left(\chi_{1, n}, \psi_{1, n} \mid Y_{1} \right)
 } \\
 & \times \frac {
-  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}^{*}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
+  \pd_{2}(\phi_{1 \cap 2, n}(\chi_{1, n}^{*}), \psi_{2}, \phi_{2 \cap 3}, (\chi_{1, i}^{[t]})_{i = 1}^{n - 1}, (\chi_{1, i})_{i = n + 1}^{N} \mid Y_{2})
 } {
-  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
+  \pd_{2}(\phi_{1 \cap 2, n}(\chi_{1, n}), \psi_{2}, \phi_{2 \cap 3}, (\chi_{1, i}^{[t]})_{i = 1}^{n - 1}, (\chi_{1, i})_{i = n + 1}^{N} \mid Y_{2})
 } \\
 & \times \frac{
-  \pd_{1}(\theta_{1, n}, \psi_{1, n} \mid Y_{1})
+  \pd_{1}(\chi_{1, n}, \psi_{1, n} \mid Y_{1})
 } {
-  \pd_{1}(\theta_{1, n}^{*}, \psi_{1, n}^{*} \mid Y_{1})
+  \pd_{1}(\chi_{1, n}^{*}, \psi_{1, n}^{*} \mid Y_{1})
 } \\
 = &\frac {
-  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}^{*}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
+  \pd_{2}(\phi_{1 \cap 2, n}(\chi_{1, n}^{*}), \psi_{2}, \phi_{2 \cap 3}, (\chi_{1, i}^{[t]})_{i = 1}^{n - 1}, (\chi_{1, i})_{i = n + 1}^{N} \mid Y_{2})
 } {
-  \pd_{2}(\phi_{1 \cap 2, n}(\theta_{1, n}), \psi_{2}, \phi_{2 \cap 3}, \{\theta_{1, i}^{[t]}\}_{i = 1}^{n - 1}, \{\theta_{1, i}\}_{i = n + 1}^{N} \mid Y_{2})
+  \pd_{2}(\phi_{1 \cap 2, n}(\chi_{1, n}), \psi_{2}, \phi_{2 \cap 3}, (\chi_{1, i}^{[t]})_{i = 1}^{n - 1}, (\chi_{1, i})_{i = n + 1}^{N} \mid Y_{2})
 }.
 \end{aligned}
 \end{equation}
