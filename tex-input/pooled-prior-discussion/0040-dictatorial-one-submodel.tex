@@ -1,7 +1,9 @@
 \begin{equation}
-  \pd_{\text{pool, dict}}(\boldsymbol{\phi}) = 
-    g_{1}\!\left(\pd_{1}(\phi_{1}), \ldots, \pd_{\modelindex - 2}(\phi_{\modelindex - 2})\right)
-    \pd_{\modelindex}(\phi_{\modelindex})
-    g_{2}\!\left(\pd_{\modelindex + 2}(\phi_{\modelindex + 2}), \ldots, \pd_{\Nm}(\phi_{\Nm})\right),
+  \begin{aligned}
+    \pd_{\text{pool, dict}}(\boldsymbol{\phi}) = \,\,
+      & g_{1} \! \left(\pd_{1}(\phi_{1 \cap 2}), \ldots, \pd_{\modelindex - 1}(\phi_{\modelindex - 2 \cap \modelindex - 1})\right)  \\
+      \,\, & \times \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}) \\
+      \,\, & \times g_{2}\!\left(\pd_{\modelindex + 1}(\phi_{\modelindex + 1 \cap \modelindex + 2}), \ldots, \pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm})\right),
+  \end{aligned}
   \label{eqn:dictatorial-one-submodel}
 \end{equation}

@@ -133,11 +133,11 @@ p2 <- ggplot(
     alpha = 0.3
   ) +
   facet_nested_wrap(
-    ~ plot_id + factor(value_type, levels = c('pf', 'fluids'), labels = c('P/F ratio', 'Cumulative fluid')),
+    ~ plot_id + factor(value_type, levels = c('pf', 'fluids'), labels = c('P/F ratio (mmHg)', 'Cumulative fluid (L)')),
     scales = 'free',
     ncol = 2
   ) +
-  xlab('Days since ICU admission') +
+  xlab(expression(italic(t) ~ (plain("Days since ICU admission")))) +
   theme(axis.title.y = element_blank())
 
 ggsave_fullpage(

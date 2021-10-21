@@ -5,6 +5,7 @@
 - requires MIMIC, with all the standard dependent tables, and some extra functions, on a Postgres database, running and available at the connection give in [these]() [three]() [files]().
 - The R package dependencies are managed by `renv`. Some of the packages are not available on CRAN / are my own forks, but `renv` should install the correct versions.
 - The analysis is handled by `GNU Make`, and you will need the latest version (>= 4.3) to run `make`.
+  - Running Make with `-j 2` or higher will parallelise much of the computation. The MCMC samplers run 5 parallel chains, so ensure you have at least 5 times the number of CPU cores as the requested number of `Make` jobs.
 - I think some parts of the analysis assume certain folders exist but don't necessarily check that they do indeed exist.
 
 # Diagnostics

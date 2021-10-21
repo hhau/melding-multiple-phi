@@ -1,6 +1,8 @@
 \begin{equation}
-  \pd_{\text{comb}}\left(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm}\right) =
-  \pd(\phi) \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}\left(\psi_{\modelindex}, Y_{\modelindex} \mid \phi\right) =
-  \frac{\prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}\left(\phi, \psi_{\modelindex}, Y_{\modelindex}\right)}{\pd(\phi)^{\Nm - 1}}.
+  \begin{aligned}
+    \pd_{\text{comb}}\left(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm}\right)
+    &= \pd(\phi) \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}\left(\psi_{\modelindex}, Y_{\modelindex} \mid \phi\right) \\
+    &= \frac{\prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}\left(\phi, \psi_{\modelindex}, Y_{\modelindex}\right)}{\pd(\phi)^{\Nm - 1}}.
+  \end{aligned}
   \label{eqn:markov-combination}
 \end{equation}

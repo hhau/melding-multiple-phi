@@ -1,0 +1,27 @@
+\begin{equation}
+  \begin{gathered}
+    \widehat{\mu}_{\text{nu}} = \begin{bmatrix}
+      \widehat{\mu}_{1} \\
+      \widehat{\mu}_{3}
+    \end{bmatrix}\!\!, \quad
+    \widehat{\Sigma}_{\text{nu}} = \begin{bmatrix}
+      \widehat{\Sigma}_{1} & 0 \\
+      0 & \widehat{\Sigma}_{3}
+    \end{bmatrix}\!\!, \quad
+    \widehat{\mu}_{\text{de}} = \begin{bmatrix}
+      \widehat{\mu}_{1, 0} \\
+      \widehat{\mu}_{3, 0}
+    \end{bmatrix}\!\!, \quad
+    \widehat{\Sigma}_{\text{de}} = \begin{bmatrix}
+      \widehat{\Sigma}_{1, 0} & 0 \\
+      0 & \widehat{\Sigma}_{3, 0}
+    \end{bmatrix}\!\!, \\[1.5ex]
+    \widehat{\Sigma} = \left(
+      \widehat{\Sigma}_{\text{nu}}^{-1} - \widehat{\Sigma}_{\text{de}}^{-1}
+    \right)^{-1}, \quad
+    \widehat{\mu} = \widehat{\Sigma} \left(
+      \widehat{\Sigma}_{\text{nu}}^{-1}\widehat{\mu}_{\text{nu}} - \widehat{\Sigma}_{\text{de}}^{-1}\widehat{\mu}_{\text{de}}
+    \right).
+  \end{gathered}
+  \label{eqn:in-text-normal-approx}
+\end{equation}

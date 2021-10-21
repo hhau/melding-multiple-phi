@@ -22,9 +22,12 @@ old-versions/
 multiple-phi.tex
 
 # the rmd-report cache
+rmd-reports/*_cache
 rmd-reports/*_cache/*
+rmd-reports/*_files
 rmd-reports/*_files/*
 rmd-reports/*.html
+rmd-reports/*.tex
 
 # sometimes these don't get cleaned up properly
 *.aux
@@ -33,3 +36,11 @@ rmd-reports/*.html
 .DS_Store
 bibliography/multi-phi-bib.bib.original
 rstanarm_surv_stan_code.stan
+
+# relent and use rstudio projects to get separate sessions working.
+.Rproj.user
+2019-10-11_multiple-phi.Rproj
+
+# sublime project to build with correct version of make
+multiple-phi.sublime-project
+multiple-phi.sublime-workspace

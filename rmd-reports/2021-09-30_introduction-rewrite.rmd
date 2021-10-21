@@ -1,0 +1,91 @@
+---
+title: "intro rewrite tests"
+author: "Andrew Manderson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+output:
+  tufte::tufte_html:
+    tufte_features: ["fonts", "italics"]
+---
+
+\newcommand{\pd}{\text{p}}
+\newcommand{\q}{\text{q}}
+\newcommand{\w}{\text{w}}
+\newcommand{\pdr}{\text{r}}
+\newcommand{\pdrh}{\hat{\text{r}}}
+
+\newcommand{\ppoolphi}{\pd_{\text{pool}}(\phi)}
+\newcommand{\pmeld}{\pd_{\text{meld}}}
+
+\newcommand{\s}{\text{s}}
+\newcommand{\ddest}{\text{s}}
+\newcommand{\tarw}{\text{u}}
+
+\newcommand{\Nx}{N}
+\newcommand{\Nnu}{\text{N}_{\text{nu}}}
+\newcommand{\Nde}{\text{N}_{\text{de}}}
+\newcommand{\Nmc}{\text{N}_{\text{mc}}}
+
+\newcommand{\Nw}{W}
+\newcommand{\Nm}{M}
+\newcommand{\Ns}{S}
+\newcommand{\Np}{P}
+\newcommand{\wfindex}{w}
+\newcommand{\sampleindex}{n}
+\newcommand{\modelindex}{m}
+\newcommand{\stageindex}{s}
+\newcommand{\phiindex}{p}
+
+
+# Introduction
+
+The Bayesian philosophy is appealing in part because the posterior distribution quantifies all sources of uncertainty.
+However, a joint model for all data and parameters is a prerequisite to posterior inference, and in situations where multiple, heterogeneous sources of data are available, specifying such a joint model is a formidable task.
+Models that consider such data are necessary to describe complex phenomena at a useful precision.
+One possible approach begins by specifying individual submodels for each source of data.
+These submodels could guide the statistician when directly specifying the joint model, but to use the submodels only informally seems wasteful.
+Instead, it may be preferable to construct a joint model by formally joining the individual submodels together.
+
+Some specific forms of combining data are well established.
+Meta-analyses and evidence synthesis methods are widely used to summarise data, often using hierarchical models [@ades_multiparameter_2006; @presanis_synthesising_2014].
+Outside of the statistical literature, a common name for combining multiple data is _data fusion_ [@lahat_multimodal_2015-1; @kedem_statistical_2017], though there are many distinct methods that fall under this general name.
+Interest in integrating data is not just methodological; applied researchers often collect multiple disparate data sets, or data of different modalities, and wish to combine them.
+For example, to estimate SARS-CoV-2 positivity @donnat_bayesian_2020 build an intricate hierarchical model that integrates both testing data and self-reported questionnaire data, and @parsons_bayesian_2021 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine.
+Both applications specify Bayesian models with data-specific components, which are united in a hierarchical manner.
+In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesizing_2018] are used to estimate population dynamics, e.g. reproduction and immigration rates, using multiple data on the same population.
+Such data have standard models associated with them, such as the Cormack-Jolly-Seber model [@lebreton_modeling_1992] for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
+More generally, the applications we list illustrate the importance of generic, flexible methods for combining data to applied researchers.
+
+_Markov melding_ [@goudie_joining_2019] is a general statistical methodology for combining submodels.
+Specifically, it considers $\Nm$ submodels that share some common quantity $\phi$, with each of the $\modelindex = 1, \ldots, \Nm$ submodels possessing distinct parameters $\psi_{\modelindex}$, data $Y_{\modelindex}$ and form $\pd_{\modelindex}(\phi, \psi_{\modelindex}, Y_{\modelindex})$.
+A joint _melded model_ is formed by combining the submodels, and is denoted  $\pd_{\text{meld}}(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm})$.
+However, it is unclear how to integrate models where there is no single quantity $\phi$ common to all submodels, such as for submodels that are linked in a chain structure.
+
+We propose an extension to Markov melding, which we call _chained Markov melding_[^chained], which facilitates the combination of submodels that are in a chain structure.
+Specifically, in the $\Nm = 3$ case, we address the case in which submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a different quantity $\phi_{2 \cap 3}$.
+Two examples serve to illustrate our methodology, which we introduce in the following section.
+The computational effort required to fit a complex, multi-response model is a burden to the model development process.
+We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden.
+We can parallelise aspects of the computation across the submodels, using less computationally expensive techniques for some submodels.
+Reusing existing software implementations of submodels, and where available subposterior samples, is also possible.
+Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn_fully_2013-1] and joint models [@mauff_joint_2020].
+
+[^chained]: _"Chained graphs"_ were considered by @lauritzen_chain_2002, however they are unrelated to our proposed model. We use "chained" to emphasise the nature of the relationships between submodels.
+
+# the floor
+
+More familiar to Bayesian statisticians are the family of _divide and conquer_ methods (D&C).
+These are useful in tall data settings, where the number of observations presents a computational challenge.
+D&C methods split the data into subsets, fit the same model to each subset to produce the subposteriors, and combine these subposteriors.
+Specific D&C methods include _consensus Monte Carlo_ [@scott_bayes_2016-1],
+the embarrassingly parallel MCMC algorithm of @neiswanger_asymptotically_2014, and subposterior averaging via the Wasserstein baryceter [@srivastava_scalable_2018].
+The _Bayesian Fusion_ method of @dai_monte_2019-1 combines these subposteriors exactly.
+Decomposing a joint model into distinct submodels is particularly useful when one submodel is misspecified [@liu_modularization_2009; @jacob_better_2017-1; @carmona_semi-modular_2020] and we want to limit the flow of information out of the misspecified module [@lunn_bugs_2009; @plummer_cuts_2015].
+
+
+# refs
