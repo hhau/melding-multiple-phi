@@ -26,6 +26,7 @@ abstract: |
   It may be easier to instead specify distinct submodels for each source of data, then join the submodels together.
   We consider chains of submodels, where submodels directly relate to their neighbours via common quantities which may be parameters or deterministic functions thereof.
   We propose _chained Markov melding_, an extension of Markov melding, to combine chains of submodels into a joint model.
+  One challenge in the joining process is appropriately capturing the prior dependence between common quantities within a submodel, whilst also reconciling differences in priors for the same common quantity between two adjacent submodels.
   Estimating the posterior of the resulting overall joint model is challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
   We demonstrate our methodology using two examples.
   The first example considers an ecological integrated population model, where multiple data are required to accurately estimate population immigration and reproduction rates.
@@ -82,10 +83,10 @@ Two examples serve to illustrate our methodology, which we introduce in the foll
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
 We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden.
 We can parallelise aspects of the computation across the submodels, using less computationally expensive techniques for some submodels.
-Reusing existing software implementations of submodels, and where available subposterior samples, is also possible.
+Reusing existing software implementations of submodels, and subposterior samples  where available, is also possible.
 Multi-stage samplers can aid in understanding the contribution of each submodel to the final posterior, and are used in many applied settings, including hierarchical modelling [@lunn:etal:13] and joint models [@mauff_joint_2020].
 
-One contribution of our work is to make explicit the informal process of summarising and/or approximating submodels for use in subsequent analyses.
+One contribution of our work is to clarify the informal process commonly used in applied analyses of summarising and/or approximating submodels for use in subsequent analyses.
 The two most common approximation strategies seem to be (i) approximating the subposterior of the common quantity with a normal distribution for use in subsequent models [see, e.g. @jackson_when_2018; @nicholson_interoperability_2021] and (ii) taking only a point estimate of the subposterior, and treating it as a known value in further models.
 These strategies may, but not always, produce acceptable approximations to the chained melded model.
 Both the chained melded model and these approximation strategies are examples of 'multi-phase' and 'multi-source' inference [@meng_trio_2014], with the melding approach most comprehensively accounting for uncertainty.
