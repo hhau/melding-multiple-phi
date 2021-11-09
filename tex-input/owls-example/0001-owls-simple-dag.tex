@@ -33,6 +33,6 @@
   \node (model-3) [draw = myredhighlight, fit = (phi-23-p3) (psi-3) (y-3), inner sep = 0.05cm, solid] {};
   \node (model-3-label) [yshift = 1.5ex, myredhighlight] at (model-3.north east) {$\pd_{3}$};
   \end{tikzpicture}
-  \caption{A simplified DAG of the integrated population model (IPM) for the little owls. The capture-recapture submodel is surrounded by the blue line, the population count submodel by the black line, and the fecundity submodel by the red line. The combination of all the submodels forms the IPM.}
+  \caption{A simplified DAG of the integrated population model (IPM) for the little owls. The capture-recapture submodel ($\pd_{1}$) is surrounded by the blue line, the population count submodel ($\pd_{2}$) by the black line, and the fecundity submodel ($\pd_{3}$) by the red line. The capture-recapture and population count submodels share parameters affecting the juvenile and adult survival rate ($\phi_{1 \cap 2}$), whilst the parameter for fecundity is common to both the population count and fecundity submodels ($\phi_{2 \cap 3}$). The combination of all the submodels forms the IPM.}
   \label{fig:owls-simple-dag}
 \end{figure}
