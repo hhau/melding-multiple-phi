@@ -391,7 +391,7 @@ Capture-recapture data pertain to owls that are released at time $t$ (having bee
 Define $M_{a, s, t, u}$ as the number of owls of age-group $a$ and sex $s$ last observed at time $t$, recaptured at time $u$.
 We aggregate these observations into age- and sex-specific matrices $\boldsymbol{M}_{a, s}$, with $T$ rows, corresponding to release times, and $T + 1$ columns, corresponding to recapture times.
 Let $R_{a, s, t} = \sum_{u = 1}^{T + 1} M_{a, s, t, u}$ be the number of owls released at time $t$, i.e. a vector containing the row-wise sum of the entries in $\boldsymbol{M}_{a, s}$.
-The recapture times for owls released at time $t$ follow a age- and sex-specific multinomial likelihood
+The recapture times for owls released at time $t$ follow an age- and sex-specific multinomial likelihood
 \input{tex-input/owls-example/0010-capture-recapture-submodel.tex}
 with probabilities $\boldsymbol{Q}_{a, s, t} = (Q_{a, s, t, 1}, \ldots, Q_{a, s, t, T + 1})$ such that
 \input{tex-input/owls-example/0011-multinomial-probabilities.tex}
@@ -610,7 +610,7 @@ It is interesting to see the relatively wide, multimodal distribution for $(T_{2
 The right column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel for the same individuals.
 There is little noise in these data which results in tight subposterior distributions for $\eta_{0, i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}$ and $\kappa_{i}$, and hence minimal uncertainty about the fitted value.
 
-To assess the importance of fulling accounting for the uncertainty in $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, we compare the posterior for $\psi_{2}$ obtained using the chained melding approach with the posterior obtained by fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+To assess the importance of fully accounting for the uncertainty in $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, we compare the posterior for $\psi_{2}$ obtained using the chained melding approach with the posterior obtained by fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
 Plugging in a point estimate reflects common applied statistical practice when combining submodels, particularly when a distributional approximation is nontrival to obtain (as it is for $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$).
 Standard survival models and software are also a consideration, as they typically do not permit uncertainty in event times and indicators.
 
