@@ -1,6 +1,9 @@
 \begin{equation}
-  \pd_{\text{pool, dict}}(\phi_{\modelindex - 1 \cap \modelindex})
-  \pd_{\text{pool, dict}}(\phi_{\modelindex \cap \modelindex + 1}) =
-    \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})
+  \begin{aligned}
+    \pd_{\text{pool, dict}}(\phi_{\modelindex - 1 \cap \modelindex})
+    \pd_{\text{pool, dict}}(\phi_{\modelindex \cap \modelindex + 1})
+      &= \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1}) \\
+      &= \pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}),
+  \end{aligned}
   \label{eqn:dictatorial-def-three-part-three}
 \end{equation}

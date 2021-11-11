@@ -237,7 +237,7 @@ In step two we form the pooled prior as the product of the intermediaries
 \input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
 with
 \input{tex-input/multiple-phi/00551-linear-normalising-constant.tex}
-Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present under one or more of the original sub-model priors.
+Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present under one or more of the submodel priors.
 We discuss extensions to linear pooling that enable prior dependence between the components of $\boldsymbol{\phi}$ in Section \ref{conclusion}.
 
 ### Dictatorial pooling
@@ -249,7 +249,7 @@ It seems reasonable to require any generalisation of dictatorial pooling to resu
 Such a generalisation should also retain the original intention of dictatorial pooling, i.e.&nbsp;'_the authoritative prior for_ $\phi_{\modelindex}$ _is_ $\pd_{\modelindex}(\phi_{\modelindex})$'.
 
 We propose two possible forms of dictatorial pooling that satisfy the aforementioned criteria.
-_Partial dictatorial pooling_ enforces a single original submodel prior for the relevant components of $\boldsymbol{\phi}$, with no restrictions on the pooling of the remaining components; and _complete dictatorial pooling_ which requires selecting one of the two original priors for each component of $\boldsymbol{\phi}$.
+_Partial dictatorial pooling_ enforces a single submodel prior for the relevant components of $\boldsymbol{\phi}$, with no restrictions on the pooling of the remaining components; and _complete dictatorial pooling_ which requires selecting one of the two possible submodel priors for each component of $\boldsymbol{\phi}$.
 
 Partial dictatorial pooling considers $\pd_{\modelindex}(\phi_{\modelindex})$ as the authoritative prior for $\phi_{\modelindex}= (\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$.
 This results in,
@@ -258,10 +258,10 @@ where $g_{1}$ and $g_{2}$ are linear or logarithmic pooling functions as desired
 
 [^end-of-chain]: Some care is required if the authoritative submodel is $\pd_{\modelindex}$ for $\modelindex \in \{1, 2, M - 1, M\}$. If it is taken to be $\modelindex \in \{1, 2\}$, then $g_{1}$ does not exist, and additionally in the $\modelindex = 1$ case $\pd_{1}(\phi_{0 \cap 1}, \phi_{1 \cap 2}) \coloneqq \pd_{1}(\phi_{1 \cap 2})$. The $\modelindex \in \{\Nm - 1, \Nm\}$ cases have analogous definitions.
 
-Complete dictatorial pooling requires the marginal pooled prior for each component in $\boldsymbol{\phi}$ to be chosen solely on the basis of only one of the two priors specified for it under the original submodels.
+Complete dictatorial pooling requires the marginal pooled prior for each component in $\boldsymbol{\phi}$ to be chosen solely on the basis of only one of the two priors specified for it under the submodels.
 For $\modelindex = 1, \ldots, \Nm - 1$, the $\modelindex$\textsuperscript{th} marginal of the pooled prior is either
 \input{tex-input/pooled-prior-discussion/0043-dictatorial-def-three.tex}
-If two consecutive marginals are chosen to have the same original prior then we instead define
+If two consecutive marginals are chosen to have the same submodel prior then we instead define
 \input{tex-input/pooled-prior-discussion/0045-dictatorial-def-three-part-three.tex}
 to preserve any dependence between $\phi_{\modelindex - 1 \cap \modelindex}$ and $\phi_{\modelindex \cap \modelindex + 1}$ that may be present under $\pd_{\modelindex}$.
 The complete dictatorially pooled prior is thus
@@ -617,14 +617,14 @@ Standard survival models and software are also a consideration, as they typicall
 Specifically, we fix $\phi_{1 \cap 2}$ to the median value[^median] for each individual under $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$, which we denote $\widehat{\phi}_{1 \cap 2}$.
 We fix $\phi_{2 \cap 3}$ to the subposterior mean of $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$ similarly denoted $\widehat{\phi}_{2 \cap 3}$.
 With these fixed values, we use standard MCMC methods to sample $\pd(\psi_{2} \mid \widehat{\phi}_{1 \cap 2}, \widehat{\phi}_{2 \cap 3}, Y_{2})$.
-We also compare the melded posterior to the original marginal prior $\pd_{2}(\psi_{2})$, but we note that this comparison is difficult to interpret, as the melding process alters the prior for $\psi_{2}$.
+We also compare the melded posterior to the submodel marginal prior $\pd_{2}(\psi_{2})$, but we note that this comparison is difficult to interpret, as the melding process alters the prior for $\psi_{2}$.
 Figure \ref{fig:psi_2_comparison_plot} displays the aforementioned densities for $(\theta_{3}, \theta_{17}, \gamma, \alpha) \subset \psi_{2}$, with $(\theta_{3}, \theta_{17})$ chosen as they exhibit the greatest sensitivity to the fixing of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
 For the baseline coefficients ($\theta_{3}, \theta_{17}$) the chained melding posterior differs slightly in location from $\pd(\psi_{2} \mid \widehat{\phi}_{1 \cap 2}, \widehat{\phi}_{2 \cap 3}, Y_{2})$, with a small increase in uncertainty.
 A more pronounced change is visible for $\alpha$, where the melding process has added a notable degree of uncertainty and shifted the posterior leftwards.
 
 [^median]: For each individual the samples of $(T_{i}, d_{i})_{i = 1}^{N}$-pairs are sorted by $T_{i}$, and the $\lfloor \frac{N}{2}\rfloor$\textsuperscript{th} tuple $(\widehat{T}_{i}, \widehat{d}_{i})$ is chosen as the median.
 
-```{r psi_2_comparison_plot, fig.cap = 'Density estimates for a subset of $\\psi_{2}$. The original marginal prior $\\pd_{2}(\\psi_{2})$ is shown as the grey dotted line (note that this is not the marginal prior under the melded model). The figure also contains the subposteriors obtained from chained melding using PoE pooling (red, solid line) and logarithmic pooling (blue, solid line), as well as the posterior using the fixed values $\\pd(\\psi_{2} \\mid \\widehat{\\phi}_{1 \\cap 2}, \\widehat{\\phi}_{2 \\cap 3}, Y_{2})$ (black, dashed line).'}
+```{r psi_2_comparison_plot, fig.cap = 'Density estimates for a subset of $\\psi_{2}$. The submodel marginal prior $\\pd_{2}(\\psi_{2})$ is shown as the grey dotted line (note that this is not the marginal prior under the melded model). The figure also contains the subposteriors obtained from chained melding using PoE pooling (red, solid line) and logarithmic pooling (blue, solid line), as well as the posterior using the fixed values $\\pd(\\psi_{2} \\mid \\widehat{\\phi}_{1 \\cap 2}, \\widehat{\\phi}_{2 \\cap 3}, Y_{2})$ (black, dashed line).'}
 knitr::include_graphics('plots/mimic-example/psi-2-method-comparison-small.pdf')
 ```
 
