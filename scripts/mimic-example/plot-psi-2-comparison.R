@@ -215,7 +215,8 @@ psmall <- ggplot(
 
 ggsave_halfheight(
   filename = args$output_small,
-  plot = psmall
+  plot = psmall,
+  adjust_height = -3
 )
 
 interval_tbl <- plot_tbl %>%
@@ -307,5 +308,6 @@ p_alpha <- ggplot(
 
 ggsave_halfheight(
   plot = p_alpha,
-  filename = args$output_alpha
+  filename = args$output_alpha,
+  adjust_height = -3
 )

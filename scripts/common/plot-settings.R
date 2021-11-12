@@ -20,12 +20,12 @@ bayesplot_theme_replace(
   strip.background = element_rect(fill = "#dee1e0"),
 )
 
-# Colours - should all be darkest[1] to lightest[n] 
+# Colours - should all be darkest[1] to lightest[n]
 blues <- c(
   "#00214F",
   "#2C7FB8",
   "#A6E9FF"
-) 
+)
 
 greens <- c(
   "#364723",
@@ -100,12 +100,12 @@ ggsave_fullpage <- function(filename, plot, adjust_height = 0, ...) {
   )
 }
 
-ggsave_halfheight <- function(filename, plot, ...) {
+ggsave_halfheight <- function(filename, plot, adjust_height = 0, ...) {
   ggsave_base(
     filename,
     plot,
     width = display_settings$full_page_plot_width,
-    height = display_settings$half_page_plot_height,
+    height = display_settings$half_page_plot_height + adjust_height,
     ...
   )
 }

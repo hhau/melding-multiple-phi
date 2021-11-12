@@ -431,5 +431,6 @@ p1 <- base_plot +
 
 ggsave_halfheight(
   filename = args$output,
-  plot = p1
+  plot = p1,
+  adjust_height = -3
 )
