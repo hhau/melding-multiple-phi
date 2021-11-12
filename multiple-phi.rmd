@@ -25,9 +25,9 @@ abstract: |
   A challenge for practitioners of Bayesian inference is specifying a model that incorporates multiple relevant, heterogeneous data.
   It may be easier to instead specify distinct submodels for each source of data, then join the submodels together.
   We consider chains of submodels, where submodels directly relate to their neighbours via common quantities which may be parameters or deterministic functions thereof.
-  We propose _chained Markov melding_, an extension of Markov melding, to combine chains of submodels into a joint model.
-  One challenge in the joining process is appropriately capturing the prior dependence between common quantities within a submodel, whilst also reconciling differences in priors for the same common quantity between two adjacent submodels.
-  Estimating the posterior of the resulting overall joint model is challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
+  We propose _chained Markov melding_, an extension of Markov melding, a generic method to combine chains of submodels into a joint model.
+  One challenge we address is appropriately capturing the prior dependence between common quantities within a submodel, whilst also reconciling differences in priors for the same common quantity between two adjacent submodels.
+  Estimating the posterior of the resulting overall joint model is also challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
   We demonstrate our methodology using two examples.
   The first example considers an ecological integrated population model, where multiple data are required to accurately estimate population immigration and reproduction rates.
   We also consider a joint longitudinal and time-to-event model with uncertain, submodel-derived event times.
@@ -99,7 +99,7 @@ Both the chained melded model and these approximation strategies are examples of
 In this section we provide a high-level overview of two applications that require integrating a chain of submodels.
 We will provide more details and illustrate our methodology with these examples in Sections \ref{an-integrated-population-model-for-little-owls-1} and \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1}.
 
-### An Integrated population model for little owls {-}
+### An integrated population model for little owls {-}
 
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] combine multiple data to estimate key quantities governing the dynamics of a specific population.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
@@ -109,7 +109,7 @@ Population counts $Y_{2}$ are obtained by observing the number of occupied nesti
 Finally, nest-record data $Y_{3}$ counts both the number of reproductive successes and possible breading pairs, and is associated with a submodel for fecundity $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
 The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
 No single source of data is sufficient to estimate all quantities of interest, so it is necessary to integrate the three submodels into a single joint model to produce acceptably precise estimates of fecundity and immigration rates.
-We will show that the chained Markov melding framework developed in Section \ref{chained-model-specification} encapsulates the process of integrating these submodels.
+We will show that the chained Markov melding framework developed in Section \ref{chained-model-specification} encapsulates the process of integrating these submodels, producing results that are concordant with the original joint IPM.
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
@@ -117,18 +117,18 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 Our second example considers the time to onset of respiratory failure (RF) amongst patients in intensive care units, and factors that influence the onset of RF.
 A patient can be said to be experiencing RF if the ratio of the partial pressure of arterial blood oxygen (\paoii) to the faction of inspired oxygen (\fioii) is less than 300mmHg [@the_ards_definition_task_force_acute_2012], though this is not the only definition of RF.
-Drawing arterial blood is a painful procedure, and calculating \paoii\ requires laboratory testing, so patients' \pfratio\ (P/F) ratios are not always available.
-The relatively infrequency of P/F ratio data, when combined with the intrinsic variability in each individual's blood oxygen level, results in significant uncertainty in about the time of onset of RF.
+Patients' \pfratio\ (P/F) ratios are typically measured only a few times a day.
+This relatively infrequency of P/F ratio data, when combined with the intrinsic variability in each individual's blood oxygen level, results in significant uncertainty in about the time of onset of RF.
 
 Factors that influence the time to onset of RF are both longitudinal and time invariant.
 Both types of data can be considered in _joint models_ [@rizopoulos_joint_2012], which are composed of two distinct submodels, one for each data type.
-Failing to incorporate the uncertainty surrounding the event time may result overconfident and/or biased estimates of the parameters in the joint model.
+However, existing joint models are not able to incorporate the uncertainty surrounding the event time, which may result overconfident and/or biased estimates of the parameters in the joint model.
 
 Chained Markov melding offers a conceptually straightforward, Bayesian approach to incorporating uncertain event times into joint models.
 Specifically, we consider the event time as a submodel-derived quantity from a hierarchical regression model akin to @lu_using_1993.
-We call this submodel the _uncertain event time_ submodel and denote it $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, where $\phi_{1 \cap 2}$ is the event time.
-The survival submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ uses $\phi_{1 \cap 2}$, the common quantity, as the response.
-We treat the longitudinal submodel, $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$, separately from the survival submodel, as is common in two-stage survival modelling, and denote the subject-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
+We call this submodel the _uncertain event time_ submodel and denote it $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, where $\phi_{1 \cap 2}$ incorporates the event time.
+The survival submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ uses the event time within $\phi_{1 \cap 2}$, the common quantity, as the response.
+We treat the longitudinal submodel, $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$, separately from the survival submodel, as is common in two-stage joint modelling [@mauff_joint_2020], and denote the subject-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
 The high level submodel relationships are displayed as a DAG in Figure \ref{fig:surv-simple-dag}.
 \input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
@@ -220,12 +220,12 @@ We now propose extensions to logarithmic, linear, and dictatorial pooling for us
 Extending logarithmic pooling for chained Markov melding is straightforward.
 We define the logarithmically pooled prior to be
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-for nonnegative weight vector $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$.
+with $K_{\text{log}}(\lambda) = \int \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}(\phi_{\modelindex})^{\lambda_{\modelindex}} \text{d}\boldsymbol{\phi}$ for nonnegative weight vector $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$.
 Note that \eqref{eqn:pooled-prior-overall} does not imply independence between the elements of $\boldsymbol{\phi}$ because
 \input{tex-input/multiple-phi/0051-pooled-prior-log-alt-def.tex}
 When $\lambda_{1} = \lambda_{2} = \ldots = \lambda_{\Nm} = 1$ we obtain a special case which we call product-of-experts (PoE) pooling [@hinton_training_2002].
 
-### Chained Linear pooling
+### Chained linear pooling
 
 Our generalisation of linear pooling to handle marginals of different quantities is a two step procedure.
 The first step forms intermediary pooling densities via standard linear pooling, using appropriate marginals of the relevant quantity
@@ -235,8 +235,7 @@ where $\lambda_{\modelindex} = (\lambda_{\modelindex, 1}, \lambda_{\modelindex, 
 For $\modelindex = 1$ and $\modelindex = \Nm$ the relevant marginals are $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{\Nm}(\phi_{\Nm - 1 \cap \Nm})$.
 In step two we form the pooled prior as the product of the intermediaries
 \input{tex-input/multiple-phi/0055-silly-linear-overall.tex}
-with
-\input{tex-input/multiple-phi/00551-linear-normalising-constant.tex}
+with $K_{\text{lin}}(\lambda) = \int \prod_{\modelindex = 1}^{\Nm - 1} \pd_{\text{pool}, \modelindex}(\phi_{\modelindex \cap \modelindex + 1}) \text{d}\boldsymbol{\phi}$, for $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$.
 Clearly, this assumes prior independence amongst all components of $\boldsymbol{\phi}$ which may be undesirable, particularly if this independence was not present under one or more of the submodel priors.
 We discuss extensions to linear pooling that enable prior dependence between the components of $\boldsymbol{\phi}$ in Section \ref{conclusion}.
 
@@ -352,13 +351,13 @@ The stored indices are used to appropriately resample $\psi_{1}$ and $\psi_{3}$ 
 Normal approximations are commonly employed to summarise submodels for subsequent use in more complex models.
 For example, two-stage meta-analyses often use a normal distribution centred on each studies' effect estimate [@burke_meta-analysis_2017].
 Suppose we employ such an approximation to summarise the prior and posterior of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ under $\pd_{1}$ and $\pd_{3}$ respectively.
-In addition, assume that
-\begin{itemize}[nosep]
+In addition, assume that (a) such approximations are appropriate for $\pd_{1}(\phi_{1 \cap 2}), \pd_{1}(\phi_{1 \cap 2} \mid Y_{1}), \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$, (b) we are not interested in $\psi_{1}$ and $\psi_{3}$, and can integrate them out of all relevant densities, and (c) we employ our second form of dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
+<!-- \begin{itemize}[nosep]
   \tightlist
   \item Such approximations are appropriate for $\pd_{1}(\phi_{1 \cap 2}), \pd_{1}(\phi_{1 \cap 2} \mid Y_{1}), \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{3}(\phi_{2 \cap 3} \mid Y_{3})$.
   \item We are not interested in $\psi_{1}$ and $\psi_{3}$, and can integrate them out of all relevant densities.
   \item We employ our second form of dictatorial pooling and choose $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ as the authoritative prior.
-\end{itemize} \noindent
+\end{itemize} \noindent -->
 The latter two assumptions imply that the melded posterior of interest is proportional to
 \input{tex-input/multiple-normal-approximation/0010-normal-approx-melded-posterior-target.tex}
 
@@ -372,7 +371,7 @@ where
 Standard MCMC methods can be used to sample from the approximate melded posterior.
 If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}$ and $\widehat{\Sigma}_{\text{de}}$ terms disappear from the parameter definitions in Equation \eqref{eqn:in-text-normal-approx}.
 
-# An Integrated population model for little owls
+# An integrated population model for little owls
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
 @finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010: here we consider only the variant from @finke_efficient_2019 with the highest marginal likelihood (Model 4 of their online supplement).
@@ -460,18 +459,20 @@ The top row in Figure \ref{fig:phi_subpost} indicates that the count data alone 
 The multi-stage sampler works well by producing melded posterior estimates generally similar to the original IPM estimate, and are near identical for logarithmic pooling.
 PoE pooling produces the posterior most different from the original IPM, as it yields a prior for $(\alpha_{0}, \alpha_{2})$ that is more concentrated around zero than the other pooling methods.
 The lack of large differences between the melded posteriors that use different pooled priors indicates that the prior has almost no effect on the posterior.
-The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bottom row of Figure \ref{fig:phi_subpost}) to the melding approaches suggests that the normal approximations are good summaries of the subposteriors.
+The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bottom row of Figure \ref{fig:phi_subpost}) to the melding approaches suggests that the normal approximations are good summaries of the subposteriors, and that the approximate melding procedure of Section \ref{normal-approximations-to-submodel-components} is suitable for this example.
 
 # Survival analysis with time varying covariates and uncertain event times
 
-We now return to the example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
+We return now to the respiratory failure example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
+Our intention is to illustrate the application of chained Markov melding to an example of realistic complexity, and explore empirically the importance of accounting for all sources of uncertainty by comparing chained Markov melding to equivalent analyses that use only a point estimate summary of the uncertainty.
+
 There are $i = 1, \ldots, N$ individuals in the data set.
 Each individual is admitted to the ICU at time $0$, and is discharged or dies at time $C_{i}$.
 See Appendix \ref{cohort-selection-criteria} for information on how the $N = 37$ individuals were selected from MIMIC-III [@johnson_mimic-iii_2016].
 
 ## P/F ratio submodel (B-spline): $\pd_{1}$
 
-The first submodel fits a B-spline to the \pfratio\ data to calculate if and when an individual starts experiencing respiratory failure.
+The first submodel fits a B-spline to the \pfratio\ data to calculate if and when an individual experiences respiratory failure.
 Each individual has \pfratio\ ratio observations $z_{i, j}$ (in units of mmHg) at times $t_{i, j}$, with $j = 1, \ldots, J_{i}$.
 For each individual denote the vector of observations $\boldsymbol{z}_{i} = (z_{i, 1}, \ldots, z_{i, J_{i}})$ and observation times $\boldsymbol{t}_{i} = (t_{i, 1}, \ldots, t_{i, J_{i}})$.
 To improve computational performance, we standardise the P/F ratio data for each individual such that $z_{i, j} = \frac{\tilde{z}_{i, j} - \overline{z}_{i}}{\hat{s}_{i}}$, where $\tilde{z}_{i, j}$ is the underlying unstandardised observation with mean $\overline{z}_{i}$ and standard deviation $\hat{s}_{i}$.
@@ -488,7 +489,7 @@ For the spline basis coefficients we set $\zeta_{i, 1} \sim \text{N}(0, 0.1^2)$,
 
 [^pfoutliers]: P/F data contain many outliers for, amongst many possible reasons, arterial/venous blood sample mislabelling; incorrectly recorded oxygenation support information; and differences between sample collection time, lab result time, and the observation time as recorded in the EHR.
 
-We identify that a respiratory failure event $d_{i} = 1$ occurred at event time $T_{i}$ if a solution to the following optimisation problem exists 
+We identify that a respiratory failure event occurred (which we denote by $d_{i} = 1$) at event time $T_{i}$ if a solution to the following optimisation problem exists
 \input{tex-input/mimic-example/0012-event-time-model-def.tex}
 We attempt to solve Equation \ref{eqn:event-time-model-def} using a standard multiple root finder [@soetaert_rootsolve_2020].
 If there are no roots then the individual died or was discharged before respiratory failure occurred so we set $T_{i} = C_{i}$ and $d_{i} = 0$.
@@ -506,6 +507,11 @@ The relationship between $T_{i}$ and other model coefficients is displayed in th
 \end{figure}
 
 ## Cumulative fluid submodel (piecewise linear) $\pd_{3}$
+
+The rate of fluid administration reflects the clinical management of patients by ICU staff, and hence changes to the rate reflect a decision to change treatment strategy.
+Thus the cumulative fluid balance primarily reflects these decisions rather than the underlying physiological state of a patient.
+We employ a breakpoint regression model to capture the effect of such decisions, and consider only one breakpoint as this appears sufficient to fit the observed data.
+Models with more breakpoints, or a variable number of breakpoints, are possible but their complexity puts them beyond the scope of this example.
 
 We model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
 The cumulative data are derived from the raw fluid input/output observations, which we detail in Appendix&nbsp;\ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
@@ -527,9 +533,9 @@ Figure \ref{fig:submodel-schematics} displays the parameters and their relations
 ## Survival submodel $\pd_{2}$
 
 The rate at which fluid is administered is thought to influence the time to respiratory failure [@seethala_early_2017], so we explore this relationship using a survival model.
-Individuals experience respiratory failure ($d_{i} = 1$) at arbitrary time $0 < t < C_{i}$, or are censored $(d_{i} = 0, t = C_{i})$.
+Individuals experience respiratory failure ($d_{i} = 1$) at time $0 < t < C_{i}$, or are censored $(d_{i} = 0, t = C_{i})$.
 We assume a Weibull hazard with shape parameter $\gamma$ for the event times.
-All individuals have $a = 1, \ldots, A$ baseline (time invariant) covariates $w_{i, a}$ with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, A})$(i.e. including an intercept term), and common coefficients $\boldsymbol{\theta} =  (\theta_{0}, \ldots, \theta_{A})$.
+All individuals have baseline (time invariant) covariates $w_{i, a}$, $a = 1, \ldots, A$, with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, A})$(i.e. including an intercept term), and common coefficients $\boldsymbol{\theta} =  (\theta_{0}, \ldots, \theta_{A})$.
 The hazard is assumed to be influenced by these covariates and the rate of increase $\frac{\partial}{\partial t} m_{i}(t)$ in the cumulative fluid balance.
 The strength of the latter relationship is captured by $\alpha$.
 Hence, the hazard is
@@ -567,6 +573,8 @@ Details for all the parametric mixture distribution estimates are contained in A
 
 We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2}), \,\, \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi}) \mathop{/} \left(\pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3}) \right)$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
+It is crucial for the convergence of our multi-stage sampler that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_.
+Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
 We use `Stan` to sample $\psi_{2}$ where, in every MH-within-Gibbs step, we run `Stan` for 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
@@ -574,13 +582,10 @@ Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed
 
 [^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, and disable all adaptive procedures as the default (identity) mass matrix and step size are suitable for this example.
 
-It is crucial for the convergence of our multi-stage sampler that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_.
-Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
-
 ## Results
 
-```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, left column); cumulative fluid data ($Y_{3}$, right column, in litres); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in left column) for individuals $i = 17$ and $29$.'}
-knitr::include_graphics('plots/mimic-example/combined-pf-fluid-fit-plot-small.pdf')
+```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, top row); cumulative fluid data ($Y_{3}$, bottom row); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in the top row) for individuals $i = 17$ and $29$.'}
+knitr::include_graphics('plots/mimic-example/combined-pf-fluid-small-new.pdf')
 ```
 
 We first inspect the subposterior fitted values for $\pd_{1}$ and $\pd_{3}$.
@@ -613,7 +618,7 @@ Figure \ref{fig:alpha_only_comparision_plot} displays the same distributions for
 Evident for both choices of pooling is the importance of incorporating the uncertainty in $\phi_{1 \cap 2}$.
 This is expected given the large uncertainty and multimodal nature of $\phi_{1 \cap 2}$ compared to $\phi_{2 \cap 3}$ (see Figure \ref{fig:pf_fit_and_fluid_fit_plot}).
 We suspect that it is the multimodality in $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ that produces the shift in posterior mode of $\phi_{1 \cap 2}$, with the width of $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$ affecting the increase in uncertainty.
-Because we prefer the chained melded posterior, under either pooling method, for its full accounting of uncertainty we conclude that $\pd(\alpha \mid, \widehat{\pd}_{1 \cap 2}, \widehat{\pd}_{2 \cap 3}, Y_{2})$ is both overconfident and biased.
+Because we prefer the chained melded posterior, under either pooling method, for its full accounting of uncertainty we conclude that $\pd(\alpha \mid \widehat{\phi}_{1 \cap 2}, \widehat{\phi}_{2 \cap 3}, Y_{2})$ is both overconfident and biased.
 
 ```{r alpha_only_comparision_plot, fig.cap = 'Median (vertical line), 50\\%, 80\\%, 95\\%, and 99\\% credible intervals (least transparent to most transparent) for $\\alpha$. The marginal prior (grey, top row) and posterior using fixed $\\widehat{\\phi}_{1 \\cap 2}$ and $\\widehat{\\phi}_{2 \\cap 3}$ (black, bottom row) are as in Figure \\ref{fig:psi_2_comparison_plot}. For the chained melded posteriors (red and blue, rows 2 and 3) and the melded posteriors (red and blue, rows 4 -- 7), the tick label on the y-axis denotes the type of pooling used, and which of $\\phi_{1 \\cap 2}$ and/or $\\phi_{2 \\cap 3}$ are fixed.'}
 knitr::include_graphics('plots/mimic-example/psi-2-alpha-only-compare.pdf')
@@ -634,7 +639,7 @@ knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
 # Conclusion
 
 This paper introduces the chained Markov melded model.
-In doing so we have made explicit the notion of submodels related in a chain-like way, which we illustrate with our examples.
+In doing so we make explicit the notion of submodels related in a chain-like way, describe a generic methodology for joining together any number of such submodels and illustrate its application with our examples.
 Our examples also demonstrate the importance of quantifying the uncertainty when joining submodels; not doing so can produce biased, over-confident inference.
 
 We have introduced extensions to linear and logarithmic pooling to marginals of different but overlapping quantities.
@@ -657,10 +662,11 @@ Ideally we would retain the ability to use existing implementations of the submo
 Our currently sampler is also sensitive to large differences in location or scale of the target distribution between the stages.
 The impact of these differences can be ameliorated using @manderson_numerically_2021, and, more generally, Sequential Monte Carlo samplers are likely to perform better in these settings.
 
-The melding methodology is general and permits any form of uncertainty in the common quantities.
+Our chained Markov melding methodology is general and permits any form of uncertainty in the common quantities.
 In Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
-We note that some specific forms of uncertainty have been considered in previous work.
+Some specific forms of uncertainty in the event times have been considered in previous work.
 These include @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation data to account for measurement error in the event time.
+However, the general and Bayesian nature of our methodology readily facilitates any form of uncertainty in the event times and the event indicators; uncertainty in the latter is not considered the cited papers.
 
 The example in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1} has three more interesting aspects to discuss.
 Firstly, the P/F ratio data used in the first submodel is obtained by finding all blood gas measurements from arterial blood samples.
@@ -683,6 +689,10 @@ Splines also have more coefficients than the single parameter of the Weibull haz
 Identifiability issues arise with a small number of individuals, many of whom are censored, and are compounded when there are a relatively large number of other parameters $(\alpha, \boldsymbol{\theta})$.
 Whilst we do not believe these costs are worth incurring for our example, for settings with a larger number of patients and more complicated longitudinal submodels the increased flexibility may be vital.
 
+## Acknowledgements {-}
+
+We thank Sarah L Cowan for assistance in understanding respiratory failure, and Anne Presanis and Brian Tom for many helpful discussions about the methodological aspects of this work.
+This work was supported by The Alan Turing Institute under the UK Engineering and Physical Sciences Research Council (EPSRC) [EP/N510129/1] and the UK Medical Research Council [programme code MC\_UU\_00002/2].
 
 <!-- This makes pandoc-citeproc put the references before the end of document. -->
 <!-- <div id="refs"></div> -->
@@ -691,7 +701,7 @@ Whilst we do not believe these costs are worth incurring for our example, for se
 \renewcommand{\thesubsection}{\Alph{subsection}}
 \setcounter{subsection}{0}
 
-# Appendix {-}
+# Appendices {-}
 
 ## Log pooling Gaussian densities
 
@@ -706,6 +716,9 @@ The correlation decreases for increasing values of $\lambda_{1}$ until $\lambda_
 
 ## Sequential sampler
 
+\input{tex-input/multi-stage-sampler/0001-seq-sampler-dag.tex}
+
+Figure \ref{fig:seq-sampler-dag} depicts graphically the strategy employed by the sequential sampler.
 The sequential sampler assumes that the pooled prior decomposes such that
 \input{tex-input/multi-stage-sampler/0002-sequential-sampler-decomposition.tex}
 This is necessary to avoid sampling all components of $\boldsymbol{\phi}$ in the first stage.

@@ -178,7 +178,8 @@ psmall <- ggplot(
     vars(.variable),
     scales = "free",
     labeller = label_parsed,
-    ncol = 2
+    ncol = 4,
+    nrow = 1
   ) +
   labs(colour = "", linetype = "") +
   scale_colour_manual(
@@ -194,7 +195,7 @@ psmall <- ggplot(
       "melding-log" = "Log pooling",
       "a_point" = TeX("Fixed $\\widehat{\\phi}_{1 \\bigcap 2}$ and $\\widehat{\\phi}_{2 \\bigcap 3}$")
     ),
-    guide = guide_legend(reverse = TRUE)
+    guide = guide_legend(reverse = TRUE, label.position = "bottom")
   ) +
   scale_linetype_manual(
     values = c(
@@ -209,9 +210,12 @@ psmall <- ggplot(
       "melding-log" = "Log pooling",
       "a_point" = TeX("Fixed $\\widehat{\\phi}_{1 \\bigcap 2}$ and $\\widehat{\\phi}_{2 \\bigcap 3}$")
     ),
-    guide = guide_legend(reverse = TRUE)
+    guide = guide_legend(reverse = TRUE, label.position = "bottom")
   ) +
-  theme(axis.title = element_blank())
+  theme(
+    axis.title = element_blank(),
+    legend.position = "bottom"
+  )
 
 ggsave_halfheight(
   filename = args$output_small,
