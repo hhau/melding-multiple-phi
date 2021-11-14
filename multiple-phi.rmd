@@ -96,8 +96,11 @@ Both the chained melded model and these approximation strategies are examples of
 
 ## Example introduction
 
-In this section we provide a high-level overview of two applications that require integrating a chain of submodels.
-We will provide more details and illustrate our methodology with these examples in Sections \ref{an-integrated-population-model-for-little-owls-1} and \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1}.
+In this section we provide a high-level overview of two applications that require integrating a chain of submodels, with more details in Sections \ref{an-integrated-population-model-for-little-owls-1} and \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1}.
+Our first example decomposes a joint model into its constituent submodels and rejoins them.
+This simple situation allows us to compare the output from the chained melding process to the complete joint model, and is meant to illustrate both the 'chain-of-submodels' notion and the mechanics of chained melding.
+The second example is a realistic and complex setting in which the combining of submodels without Chained melding is non-obvious.
+Our comparator is the common technique of summarising previously considered submodels with point estimates, and demonstrates the importance of fully accounting for uncertainty.
 
 ### An integrated population model for little owls {-}
 
@@ -452,6 +455,7 @@ knitr::include_graphics("plots/owls-example/subposteriors-both-patchwork.pdf")
 ```
 
 We empirically validate our methodology and sampler by comparing the melded posterior samples to a large sample -- 6 chains, each containing $1 \times 10^5$ post-warmup iterations -- from the original IPM posterior.
+Similarity in the posteriors is expected as the IPM is effectively the joint model we wish to approximate with the chained melded model. It is simply fortunate, from a modelling standpoint, that this example's joint model is easy to construct and computationally feasible with standard tools.
 Note that under logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$ the melded posterior is identical to the original IPM, so any differences are attributable to the multi-stage sampler.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the common quantities from the individual submodels, the melded models, and the original IPM.
 The top row in Figure \ref{fig:phi_subpost} indicates that the count data alone ($\pd_{2}$) contain minimal information about $\alpha_{0}, \alpha_{2}$ and $\rho$; incorporating the data from the other submodels is essential for precise estimates.
@@ -508,12 +512,9 @@ The relationship between $T_{i}$ and other model coefficients is displayed in th
 
 ## Cumulative fluid submodel (piecewise linear) $\pd_{3}$
 
-The rate of fluid administration reflects the clinical management of patients by ICU staff, and hence changes to the rate reflect a decision to change treatment strategy.
-Thus the cumulative fluid balance primarily reflects these decisions rather than the underlying physiological state of a patient.
+The rate of fluid administration reflects the clinical management of patients by ICU staff, and hence changes to the rate reflect decisions to change treatment strategy.
 We employ a breakpoint regression model to capture the effect of such decisions, and consider only one breakpoint as this appears sufficient to fit the observed data.
-Models with more breakpoints, or a variable number of breakpoints, are possible but their complexity puts them beyond the scope of this example.
-
-We model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
+Specifically, we model the 8-hourly cumulative fluid balance data $x_{i, l}$ (in litres) at times $u_{i, l}$, $l = 1, \ldots, L_{i}$.
 The cumulative data are derived from the raw fluid input/output observations, which we detail in Appendix&nbsp;\ref{calculating-the-cumulative-fluid-balance-from-the-raw-fluid-data}.
 We denote the complete vector of observations by $\boldsymbol{x}_{i} = (x_{i, 1}, \ldots, x_{i, L_{i}})$ and times by $\boldsymbol{u}_{i} = (u_{i, 1}, \ldots, u_{i, L_{i}})$.
 
@@ -589,10 +590,10 @@ knitr::include_graphics('plots/mimic-example/combined-pf-fluid-small-new.pdf')
 ```
 
 We first inspect the subposterior fitted values for $\pd_{1}$ and $\pd_{3}$.
-The left column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 17$ and $29$.
+The top row of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 17$ and $29$.
 The spline appears to fit the raw P/F data well, with the heavy tailed error term accounting for the larger deviations away from the fitted value.
 It is interesting to see the relatively wide, multimodal distribution for $(T_{29}, d_{29})$ (there is a second mode at $(T_{29} = C_{29}, d_{29} = 0)$ and for other individuals not shown here).
-The right column of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel, with the little noise in the data resulting in minimal uncertainty about the fitted value and a concentrated subposterior distribution.
+The bottom row of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the cumulative fluid data and the fitted submodel, with the little noise in the data resulting in minimal uncertainty about the fitted value and a concentrated subposterior distribution.
 
 To assess the importance of fully accounting for the uncertainty in $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, we compare the posterior for $\psi_{2}$ obtained using the chained melding approach with the posterior obtained by fixing $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
 Plugging in a point estimate reflects common applied statistical practice when combining submodels, particularly when a distributional approximation is difficult to obtain (as it is for $\pd_{1}(\phi_{1 \cap 2} \mid Y_{1})$).
