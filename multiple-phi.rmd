@@ -77,9 +77,9 @@ Specifically, it considers $\Nm$ submodels that share some common quantity $\phi
 @goudie_joining_2019 then propose to combine the submodels into a joint model, denoted  $\pd_{\text{meld}}(\phi, \psi_{1}, \ldots, \psi_{\Nm}, Y_{1}, \ldots, Y_{\Nm})$.
 However, it is unclear how to integrate models where there is no single quantity $\phi$ common to all submodels, such as for submodels that are linked in a chain structure.
 
-We propose an extension to Markov melding, which we call _chained Markov melding_[^chained], which facilitates the combination of submodels that are in a chain structure.
-Specifically, in the $\Nm = 3$ case, we address the case in which submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a different quantity $\phi_{2 \cap 3}$.
-Our extension addresses previously unconsidered complications including the distinct domains (and possibly supports) of the common quantities, and the desire to capture possible prior correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+We propose an extension to Markov melding, which we call _chained Markov melding_[^chained], which facilitates the combination of $\Nm$ submodels that are in a chain structure.
+For example, when $\Nm = 3$ we address the case in which submodel 1 and 2 share a common quantity $\phi_{1 \cap 2}$, and submodel 2 and 3 share a different quantity $\phi_{2 \cap 3}$.
+Our extension addresses previously unconsidered complications including the distinct domains (and possibly supports) of the common quantities, and the desire to capture possible prior correlation between them.
 Two examples serve to illustrate our methodology, which we introduce in the following section.
 The computational effort required to fit a complex, multi-response model is a burden to the model development process.
 We propose a multi-stage posterior estimation method that exploits the properties of our chained melded model to reduce this burden.
