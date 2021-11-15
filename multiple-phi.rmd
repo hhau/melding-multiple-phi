@@ -50,7 +50,11 @@ output:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = FALSE, comment = NA, fig.align = "center")
+knitr::opts_chunk$set(
+  echo = FALSE,
+  comment = NA,
+  fig.align = "center"
+)
 ```
 
 # Introduction
@@ -99,7 +103,7 @@ Both the chained melded model and these approximation strategies are examples of
 In this section we provide a high-level overview of two applications that require integrating a chain of submodels, with more details in Sections \ref{an-integrated-population-model-for-little-owls-1} and \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1}.
 Our first example decomposes a joint model into its constituent submodels and rejoins them.
 This simple situation allows us to compare the output from the chained melding process to the complete joint model, and is meant to illustrate both the 'chain-of-submodels' notion and the mechanics of chained melding.
-The second example is a realistic and complex setting in which the combining of submodels without Chained melding is non-obvious.
+The second example is a realistic and complex setting in which the combining of submodels without chained Markov melding is non-obvious.
 Our comparator is the common technique of summarising previously considered submodels with point estimates, and demonstrates the importance of fully accounting for uncertainty.
 
 ### An integrated population model for little owls {-}
@@ -553,6 +557,10 @@ We adopt the same priors as the cumulative fluid balance submodel for $\kappa_{i
 
 ## Chained Markov melding details
 
+```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, top row); cumulative fluid data ($Y_{3}$, bottom row); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in the top row) for individuals $i = 17$ and $29$.'}
+knitr::include_graphics('plots/mimic-example/combined-pf-fluid-small-new.pdf')
+```
+
 To combine the submodels with chained Markov melding we must define the common quantities $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
 We meld $\pd_{1}$ and $\pd_{2}$ by treating the derived event times and indicators $\{(T_{i}, d_{i})\}_{i = 1}^{N}$ under $\pd_{1}$ as the "response", i.e.&nbsp;event times, in $\pd_{2}$.
 Care is required when defining $\phi_{1 \cap 2}$ under $\pd_{1}$ as it is a deterministic function of $\beta_{0, i}$ and  $\boldsymbol{\zeta}_{i}$.
@@ -585,9 +593,6 @@ Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed
 
 ## Results
 
-```{r pf_fit_and_fluid_fit_plot, fig.cap = 'The P/F ratio data ($Y_{1}$, top row); cumulative fluid data ($Y_{3}$, bottom row); subposterior means and 95\\% credible intervals for each of the submodels (black solid lines and grey intervals); and stage one event times ($T_{i}$, red rug in the top row) for individuals $i = 17$ and $29$.'}
-knitr::include_graphics('plots/mimic-example/combined-pf-fluid-small-new.pdf')
-```
 
 We first inspect the subposterior fitted values for $\pd_{1}$ and $\pd_{3}$.
 The top row of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 17$ and $29$.
@@ -926,7 +931,7 @@ Instead we focus on specifying appropriate marginals for each of $\gamma, \alpha
 
 Before justifying our chosen marginal priors is, we note that the $\exp\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\}$ term implies that the priors for $\theta$ and $\alpha$ are on the log-scale.
 Hence the magnitude of these parameters must be small, otherwise all event times would be very near zero or at infinity.
-The non-symmetric effect of the transformation from the log scale also implies that symmetric priors are not obviously sensible.
+The nonsymmetric effect of the transformation from the log scale also implies that symmetric priors are not obviously sensible.
 From these observations we deduce that $\theta$ and $\alpha$ must not be too large in magnitude, however if they are negative then they can be slightly larger.
 Hence, we specify the skew-normal priors detailed in Section \ref{survival-submodel-pd_2}, noting that the skewness parameter for $\alpha$ is smaller, because $\frac{\partial}{\partial T_{i}} m_{i}(T_{i})$ is strictly positive and typically between 0.5 and 20, whilst $\boldsymbol{w}_{i}$ is standardised to be approximately standard normal.
 Lastly, if $\gamma$ is too far away from $1$ (in either direction), then the event times are very small either because the hazard increases rapidly ($\gamma \gg 1$), or because almost all of the cumulative hazard is in the neighbourhood of 0 ($\gamma \ll 1$).
