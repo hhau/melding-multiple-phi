@@ -1,7 +1,10 @@
 # Code to accompany _Combining chains of Bayesian models with Markov melding_
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5717455.svg)](https://doi.org/10.5281/zenodo.5717455)
+
 ## Re-running this code
 
+- The code for the little owls example is in [`scripts/owsl-example/`](scripts/owsl-example), and code for the respiratory failure example is in [`scripts/mimic-example/`](scripts/mimic-example).
 - Re-running the code requires [MIMIC-III](https://physionet.org/content/mimiciii/1.4/) with all the standard [derived concept tables](https://github.com/MIT-LCP/mimic-code/tree/main/mimic-iii/concepts) on a Postgres database, running and available at the connection give in [these](scripts/mimic-example/get-baseline-data.R) [three](scripts/mimic-example/get-blood-gasses-and-define-pf-cohort.R) [files](scripts/mimic-example/get-raw-fluids.R).
   - The first time you rerun the analysis you may need to uncomment and run the `CREATE OR REPLACE` commands at the top of [`blood-gasses.sql`](scripts/mimic-example/queries/blood-gasses.sql).
 - The R package dependencies are managed by `renv`. Some of the packages are not available on CRAN and are my own forks (the BA template is a fork of `rticles` that I haven't had the time to submit a PR for), but `renv` should install the correct versions.

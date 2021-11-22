@@ -448,10 +448,7 @@ Specifically, the capture-recapture submodel is written in BUGS [@lunn_bugs_2009
 The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2021].
 The count data submodel is also written in BUGS, and we reuse this implementation in stage two of the multi-stage sampler via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
 The approximate melded posterior obtained by Section \ref{normal-approximations-to-submodel-components} is sampled using `rjags`.
-
-Code and data for all examples are available at [https://github.com/hhau/melding-multiple-phi](https://github.com/hhau/melding-multiple-phi).
-__TODO:__ Swap this for a Zenodo DOI
-Trace plots and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process are also available in the online repository.
+Code and data for this example, as well as trace plots and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process, are available in the accompanying online repository [https://doi.org/10.5281/zenodo.5717455](https://doi.org/10.5281/zenodo.5717455).
 
 ## Results
 
@@ -588,7 +585,7 @@ Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
 We use `Stan` to sample $\psi_{2}$ where, in every MH-within-Gibbs step, we run `Stan` for 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
-Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper.
+Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper (https://doi.org/10.5281/zenodo.5717455).
 
 [^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, and disable all adaptive procedures as the default (identity) mass matrix and step size are suitable for this example.
 
