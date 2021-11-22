@@ -17,6 +17,8 @@ other-code
 renv/
 ba-template/
 old-versions/
+txt-notes/
+cover-letters/
 
 # the tex file for the rmd - useful for me, don't check into the repo
 multiple-phi.tex

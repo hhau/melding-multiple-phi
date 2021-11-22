@@ -11,4 +11,4 @@ N_CHAIN <- 5
 N_POST_WARMUP_MCMC <- 1e4
 
 ## interesting individuals to plot
-PLOT_IDS <- c(6, 15, 17, 29)
+PLOT_IDS <- c(17, 29)

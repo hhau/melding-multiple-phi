@@ -37,7 +37,7 @@ p1 <- ggplot(plot_tbl) +
   ) +
   geom_ribbon(
     data = plot_tbl %>% filter(!is.na(y_lower)),
-    aes(x = time, ymin = y_lower, ymax = y_upper), 
+    aes(x = time, ymin = y_lower, ymax = y_upper),
     alpha = 0.2
   ) +
   geom_hline(
@@ -84,9 +84,7 @@ p1 <- ggplot(plot_tbl) +
       "italic(x) ~ '--' ~ 'p'[3]" = blues[2]
     )
   ) +
-  xlab(expression(italic(t))) 
-
-p1
+  xlab(expression(italic(t)))
 
 ggsave_halfheight(
   filename = "plots/surv-example/both-longitudinal-submodels.pdf",

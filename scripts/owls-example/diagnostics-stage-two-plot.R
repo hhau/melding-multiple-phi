@@ -7,7 +7,7 @@ source("scripts/common/plot-settings.R")
 source("scripts/common/mcmc-util.R")
 
 stage_two_samples <- readRDS("rds/owls-example/melded-posterior-samples.rds")
- 
+
 vars <- c("fec", "v[1]", "v[2]")
 
 stage_two_plot_labeler <- as_labeller(
@@ -29,13 +29,11 @@ p1 <- mcmc_trace(
     scales = "free_y",
     labeller = stage_two_plot_labeler
   ) +
-  xlab("Iteration") + 
+  xlab("Iteration") +
   theme(
     legend.position = 'none'
   ) +
   bayesplot:::force_x_axis_in_facets()
-
-p1
 
 p2 <- mcmc_rank_overlay(
   x = stage_two_samples[, , vars],
@@ -44,10 +42,7 @@ p2 <- mcmc_rank_overlay(
 ) +
   facet_wrap("parameter", ncol = 1, labeller = stage_two_plot_labeler)
 
-p2
-
 res <- p1 + p2 + plot_layout(guides = 'collect')
-res
 
 ggsave_fullpage(
   filename = "plots/owls-example/stage-two-diagnostics.png",
@@ -58,7 +53,7 @@ ggsave_fullpage(
 # discrete_pars <- c(
 #   sprintf("N1[%d]", 1 : 26),
 #   sprintf("Nadimm[%d]", 1 : 26),
-#   sprintf("NadSurv[%d]", 1 : 26) 
+#   sprintf("NadSurv[%d]", 1 : 26)
 # )
 
 # discrete_trace <- mcmc_trace(

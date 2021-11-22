@@ -284,12 +284,12 @@ ggsave_base(
 p2 <- wrap_plots(
   plot_list[PLOT_IDS],
   ncol = 2,
-  nrow = 2
+  nrow = 1
 )
 
 ggsave_fullpage(
   filename = str_replace(args$output_pf_prior_plot, '.png', '-small.pdf'),
-  adjust_height = -10,
+  adjust_height = -14,
   plot = p2,
 )
 
