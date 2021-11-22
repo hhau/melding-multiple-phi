@@ -106,7 +106,7 @@ This simple situation allows us to compare the output from the chained melding p
 The second example is a realistic and complex setting in which the combining of submodels without chained Markov melding is non-obvious.
 Our comparator is the common technique of summarising previously considered submodels with point estimates, and demonstrates the importance of fully accounting for uncertainty.
 
-### An integrated population model for little owls {-}
+### An integrated population model for little owls
 
 Integrated population models (IPMs) [@zipkin_synthesizing_2018] combine multiple data to estimate key quantities governing the dynamics of a specific population.
 @schaub_local_2006 and @abadi_estimation_2010 used an IPM to estimate fecundity, immigration, and yearly survival rates for a population of little owls.
@@ -120,7 +120,7 @@ We will show that the chained Markov melding framework developed in Section \ref
 
 \input{tex-input/owls-example/0001-owls-simple-dag.tex}
 
-### Survival analysis with time varying covariates and uncertain event times {-}
+### Survival analysis with time varying covariates and uncertain event times
 
 Our second example considers the time to onset of respiratory failure (RF) amongst patients in intensive care units, and factors that influence the onset of RF.
 A patient can be said to be experiencing RF if the ratio of the partial pressure of arterial blood oxygen (\paoii) to the faction of inspired oxygen (\fioii) is less than 300mmHg [@the_ards_definition_task_force_acute_2012], though this is not the only definition of RF.
@@ -276,7 +276,6 @@ The complete dictatorially pooled prior is thus
 where, subject to the potential modification in Equation \eqref{eqn:dictatorial-def-three-part-three}, the terms in the product are as defined in Equation \eqref{eqn:dictatorial-def-three}.
 For example, if $\Nm = 5$ and we wish to ignore $\pd_{2}$ and $\pd_{4}$ when constructing the pooled prior and instead associate $\phi_{1 \cap 2}$ with $\pd_{1}$, both $\phi_{2 \cap 3}$ and $\phi_{3 \cap 4}$ with $\pd_{3}$, and $\phi_{4 \cap 5}$ with $\pd_{5}$, then
 \input{tex-input/pooled-prior-discussion/0046-dictatorial-def-two-example-one.tex}
-
 
 ### Pooling weights
 
@@ -448,7 +447,7 @@ Specifically, the capture-recapture submodel is written in BUGS [@lunn_bugs_2009
 The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2021].
 The count data submodel is also written in BUGS, and we reuse this implementation in stage two of the multi-stage sampler via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
 The approximate melded posterior obtained by Section \ref{normal-approximations-to-submodel-components} is sampled using `rjags`.
-Code and data for this example, as well as trace plots and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process, are available in the accompanying online repository [https://doi.org/10.5281/zenodo.5717455](https://doi.org/10.5281/zenodo.5717455).
+Code and data for this example, as well as trace plots and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process, are available in the accompanying online repository[^repo].
 
 ## Results
 
@@ -585,12 +584,13 @@ Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
 We use `Stan` to sample $\psi_{2}$ where, in every MH-within-Gibbs step, we run `Stan` for 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
-Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper [https://doi.org/10.5281/zenodo.5717455](https://doi.org/10.5281/zenodo.5717455).
+Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed and are available in the repository accompanying this paper[^repo].
 
 [^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, and disable all adaptive procedures as the default (identity) mass matrix and step size are suitable for this example.
 
-## Results
+[^repo]: [https://doi.org/10.5281/zenodo.5717455](https://doi.org/10.5281/zenodo.5717455)
 
+## Results
 
 We first inspect the subposterior fitted values for $\pd_{1}$ and $\pd_{3}$.
 The top row of Figure \ref{fig:pf_fit_and_fluid_fit_plot} displays the P/F data, the fitted submodel, and derived event times for individuals $i = 17$ and $29$.
