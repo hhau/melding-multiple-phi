@@ -114,7 +114,7 @@ These authors collect and model three types of data, illustrated in Figure \ref{
 Capture-recapture data $Y_{1}$, and associated capture-recapture submodel $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, are acquired by capturing and tagging owls each year, and then counting the number of tagged individuals recaptured in subsequent years.
 Population counts $Y_{2}$ are obtained by observing the number of occupied nesting sites, and are modelled in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$.
 Finally, nest-record data $Y_{3}$ counts both the number of reproductive successes and possible breading pairs, and is associated with a submodel for fecundity $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$.
-The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$.
+The population count model $\pd_{2}$ shares the parameter $\phi_{1 \cap 2}$ with the capture-recapture model $\pd_{1}$, and the parameter $\phi_{2 \cap 3}$ with the fecundity model $\pd_{3}$; each of the $\modelindex = 1, 2, 3$ submodels has distinct, submodel-specific parameters $\psi_{\modelindex}$.
 No single source of data is sufficient to estimate all quantities of interest, so it is necessary to integrate the three submodels into a single joint model to produce acceptably precise estimates of fecundity and immigration rates.
 We will show that the chained Markov melding framework developed in Section \ref{chained-model-specification} encapsulates the process of integrating these submodels, producing results that are concordant with the original joint IPM.
 
@@ -129,13 +129,14 @@ This relatively infrequency of P/F ratio data, when combined with the intrinsic 
 
 Factors that influence the time to onset of RF are both longitudinal and time invariant.
 Both types of data can be considered in _joint models_ [@rizopoulos_joint_2012], which are composed of two distinct submodels, one for each data type.
-However, existing joint models are not able to incorporate the uncertainty surrounding the event time, which may result overconfident and/or biased estimates of the parameters in the joint model.
+However, existing joint models are not able to incorporate the uncertainty surrounding the event time, which may result in overconfident and/or biased estimates of the parameters in the joint model.
 
 Chained Markov melding offers a conceptually straightforward, Bayesian approach to incorporating uncertain event times into joint models.
 Specifically, we consider the event time as a submodel-derived quantity from a hierarchical regression model akin to @lu_using_1993.
 We call this submodel the _uncertain event time_ submodel and denote it $\pd_{1}(\phi_{1 \cap 2}, \psi_{1}, Y_{1})$, where $\phi_{1 \cap 2}$ incorporates the event time.
 The survival submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ uses the event time within $\phi_{1 \cap 2}$, the common quantity, as the response.
 We treat the longitudinal submodel, $\pd_{3}(\phi_{2 \cap 3}, \psi_{3}, Y_{3})$, separately from the survival submodel, as is common in two-stage joint modelling [@mauff_joint_2020], and denote the subject-specific parameters that also appear in the survival model as $\phi_{2 \cap 3}$.
+Each of the $\modelindex = 1, 2, 3$ has submodel-specific data $Y_{\modelindex}$ and parameters $\psi_{\modelindex}$.
 The high level submodel relationships are displayed as a DAG in Figure \ref{fig:surv-simple-dag}.
 \input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
@@ -175,6 +176,7 @@ Additionally, because $\phi_{\modelindex \cap \modelindex + 1}$ may be a determi
 
 All submodels, and marginal and conditional distributions thereof, have density functions that are assumed to exist and integrate to one.
 When considering conditional distributions we assume that the parameter being conditioned on has support in the relevant region.
+We define the $\modelindex$\textsuperscript{th} _subposterior_ as $\pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex} \mid Y_{\modelindex})$.
 
 ## Extending marginal replacement
 
@@ -190,14 +192,13 @@ Each marginally replaced submodel, as defined in Equation \eqref{eqn:chained-mar
 \input{tex-input/multiple-phi/0003-chained-marginal-replacement-kl.tex}
 where $\pd_{\text{pool}}(\phi_{\modelindex}) = \int \pd_{\text{pool}}(\boldsymbol{\phi})\text{d}\boldsymbol{\phi}_{-\modelindex}$.
 We can thus interpret $\pd_{\text{repl}, \modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$ as a minimally modified $\pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$ which admits $\pd_{\text{pool}}(\phi_{\modelindex})$ as a marginal.
-Note that it is the combination of $\pd_{\text{repl}, \modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$ and $\pd(\boldsymbol{\phi}_{-\modelindex} \mid \phi_{\modelindex})$ that uniquely determine \eqref{eqn:chained-marginal-replacement}.
+Note that it is the combination of $\pd_{\text{repl}, \modelindex}(\phi_{\modelindex}, \psi_{\modelindex}, Y_{\modelindex})$ and $\pd_{\text{pool}}(\boldsymbol{\phi}_{-\modelindex} \mid \phi_{\modelindex})$ that uniquely determine \eqref{eqn:chained-marginal-replacement}.
 
 We form the chained melded model by taking the Markov combination of the marginally replaced submodels
 \input{tex-input/multiple-phi/0010-melded-model-cond.tex}
 Rewriting \eqref{eqn:melded-model-full} in terms of $\phi_{\modelindex \cap \modelindex + 1}$ for $\modelindex = 1, \ldots, \Nm - 1$ yields
 \input{tex-input/multiple-phi/0011-melded-model-general.tex}
-Finally, we use _melded posterior_ $\pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y}) \propto \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y})$ to refer to posterior of the chained melded model conditioned on all data,
-and define the $\modelindex$\textsuperscript{th} _subposterior_ as $\pd_{\modelindex}(\phi_{\modelindex}, \psi_{\modelindex} \mid Y_{\modelindex})$.
+Finally, we use _chained melded posterior_ $\pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi} \mid \boldsymbol{Y}) \propto \pd_{\text{meld}}(\boldsymbol{\phi}, \boldsymbol{\psi}, \boldsymbol{Y})$ to refer to posterior of the chained melded model conditioned on all data.
 
 [^kl-proof]: This is shown in Appendix B of the online supplement to @goudie_joining_2019.
 
@@ -207,7 +208,7 @@ Specifying \eqref{eqn:melded-model-full} requires a joint prior for $\boldsymbol
 As in Markov melding we form the joint prior by pooling the marginal priors, selecting a pooling function $g$ that appropriately represents prior knowledge about the common quantities.
 We define $\pd_{\text{pool}}(\boldsymbol{\phi})$ as a generic function of all prior marginals
 \input{tex-input/pooled-prior-discussion/0030-pooled-prior-general-def.tex}
-because we do not assume independence between the components of $\boldsymbol{\phi}$.
+because we do not always wish to assume independence between the components of $\boldsymbol{\phi}$.
 
 Two special cases of Equation \eqref{eqn:pooled-prior-general-def-two} are noteworthy.
 Firstly, if all components of $\boldsymbol{\phi}$ are independent, then we can form $\pd_{\text{pool}}(\boldsymbol{\phi})$ as the product of $\Nm - 1$ standard pooling functions $h_{\modelindex}$ defined in Section \ref{pooled-prior}
@@ -320,7 +321,7 @@ We discuss some of difficulties associated with generic, parallel methodology fo
 
 ## Parallel sampler
 
-We now devise a strategy where stage one samples submodels 1 and 3 in parallel.
+Our proposed strategy involves obtaining in stage one samples from submodels 1 and 3 in parallel.
 Stage two reuses these samples in a Metropolis-within-Gibbs sampler, which targets the full melded posterior.
 The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
 
@@ -330,7 +331,7 @@ The parallel sampler assumes that the pooled prior decomposes such that
 \input{tex-input/dc-sampler/0002-parallel-decomposition.tex}
 All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are improper, flat distributions.
 Alternatively we may choose $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, with appropriate adjustments to $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-We shall see momentarily that this ensures that the stage one targets are the subposteriors of $\pd_{1}$ and $\pd_{3}$.
+This choice targets, in stage one, the subposteriors of $\pd_{1}$ and $\pd_{3}$ under their original prior for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ respectively.
 
 #### Stage one
 
@@ -472,7 +473,7 @@ The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bott
 # Survival analysis with time varying covariates and uncertain event times
 
 We return now to the respiratory failure example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
-Our intention is to illustrate the application of chained Markov melding to an example of realistic complexity, and explore empirically the importance of accounting for all sources of uncertainty by comparing chained Markov melding to equivalent analyses that use only a point estimate summary of the uncertainty.
+Our intention is to illustrate the application of chained Markov melding to an example of realistic complexity, and explore empirically the importance of accounting for all sources of uncertainty by comparing chained Markov melding to equivalent analyses which use only a point estimate summary of the uncertainty.
 
 There are $i = 1, \ldots, N$ individuals in the data set.
 Each individual is admitted to the ICU at time $0$, and is discharged or dies at time $C_{i}$.
@@ -540,7 +541,7 @@ Figure \ref{fig:submodel-schematics} displays the parameters and their relations
 The rate at which fluid is administered is thought to influence the time to respiratory failure [@seethala_early_2017], so we explore this relationship using a survival model.
 Individuals experience respiratory failure ($d_{i} = 1$) at time $0 < t < C_{i}$, or are censored $(d_{i} = 0, t = C_{i})$.
 We assume a Weibull hazard with shape parameter $\gamma$ for the event times.
-All individuals have baseline (time invariant) covariates $w_{i, a}$, $a = 1, \ldots, A$, with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, A})$(i.e. including an intercept term), and common coefficients $\boldsymbol{\theta} =  (\theta_{0}, \ldots, \theta_{A})$.
+All individuals have baseline (time invariant) covariates $w_{i, a}$, $a = 1, \ldots, A$, with $\boldsymbol{w}_{i} = (1, w_{i, 1}, \ldots, w_{i, A})$ (i.e. including an intercept term), and common coefficients $\boldsymbol{\theta} =  (\theta_{0}, \ldots, \theta_{A})$.
 The hazard is assumed to be influenced by these covariates and the rate of increase $\frac{\partial}{\partial t} m_{i}(t)$ in the cumulative fluid balance.
 The strength of the latter relationship is captured by $\alpha$.
 Hence, the hazard is
@@ -929,13 +930,13 @@ We would like to rule out such extreme configurations a priori.
 Ideally we would encode this information a joint prior for $(\gamma, \alpha, \boldsymbol{\theta})$, but specifying the appropriate correlation structure for these parameters is prohibitively challenging.
 Instead we focus on specifying appropriate marginals for each of $\gamma, \alpha$, and $\boldsymbol{\theta}$, and create visual prior predictive checks [@gabry_visualization_2019; @gelman_bayesian_2020] to ensure the induced prior for $(T_{i}, d_{i})$ is acceptable.
 
-Before justifying our chosen marginal priors is, we note that the $\exp\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\}$ term implies that the priors for $\theta$ and $\alpha$ are on the log-scale.
+Before justifying our chosen marginal prior, we note that the $\exp\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\}$ term implies that the priors for $\theta$ and $\alpha$ are on the log-scale.
 Hence the magnitude of these parameters must be small, otherwise all event times would be very near zero or at infinity.
 The nonsymmetric effect of the transformation from the log scale also implies that symmetric priors are not obviously sensible.
 From these observations we deduce that $\theta$ and $\alpha$ must not be too large in magnitude, however if they are negative then they can be slightly larger.
 Hence, we specify the skew-normal priors detailed in Section \ref{survival-submodel-pd_2}, noting that the skewness parameter for $\alpha$ is smaller, because $\frac{\partial}{\partial T_{i}} m_{i}(T_{i})$ is strictly positive and typically between 0.5 and 20, whilst $\boldsymbol{w}_{i}$ is standardised to be approximately standard normal.
 Lastly, if $\gamma$ is too far away from $1$ (in either direction), then the event times are very small either because the hazard increases rapidly ($\gamma \gg 1$), or because almost all of the cumulative hazard is in the neighbourhood of 0 ($\gamma \ll 1$).
-We specify a gamma distribution for $\gamma$ with the $1$\textsuperscript{th}-, $50$\textsuperscript{th}-, and $99$\textsuperscript{th}-percentiles of $\pd_{2}(\gamma)$ are at $0.2, 1$, and $2$, allowing for a wide range of hazard shapes, but removing many of the extremes.
+We specify a gamma distribution for $\gamma$ with the $1$\textsuperscript{th}-, $50$\textsuperscript{th}-, and $99$\textsuperscript{th}-percentiles of $\pd_{2}(\gamma)$ at $0.2, 1$, and $2$, allowing for a wide range of hazard shapes, but removing many of the extremes.
 
 
 ## Estimating submodel prior marginal distributions
@@ -1012,7 +1013,7 @@ where $\widehat{\theta}_{i}, \widehat{\mu}_{1, i}, \widehat{\Sigma}_{1, i}, \wid
   \right].
 \end{equation}
 
-We asses the fit of this estimate by drawing samples from $\widehat{\pd}_{2, i}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ and comparing them to the Monte Carlo samples drawn using `simsurv`.
+We assess the fit of this estimate by drawing samples from $\widehat{\pd}_{2, i}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ and comparing them to the Monte Carlo samples drawn using `simsurv`.
 Our visual assessment is displayed in Figure \ref{fig:surv_prior_plot_fit} for individual $i = 19$.
 The normal approximation seems to fit the samples well, with the shape of $\pd_{2, i}(T_{i} \mid d_{i} = 1)$ closely matching that of the Monte Carlo samples, and with a similar mix of $d_{i} = 0$ and $d_{i} = 1$ samples.
 
@@ -1035,12 +1036,12 @@ In the text we speak of the $i$\textsuperscript{th} individual.
 This is because in our final data set (the data that results from applying the following criteria) we are dealing with unique individuals, however some individuals in MIMIC have multiple ICU stays.
 In this appendix $i$ represents a single stay in ICU.
 
-1. Each ICU stay must have at least 12 PF observations ($J_{i} \geq 12$), with the first 6 being greater than 350 ($z_{i, j} > 350$ for $j = 1, \dots, 1$).
+1. Each ICU stay must have at least 12 \pfratio\ observations ($J_{i} \geq 12$), with the first 6 being greater than 350 ($z_{i, j} > 350$ for $j = 1, \dots, 1$).
     - This is to ensure we have enough data to fit a B-spline with 7 internal knots. The restriction on the first 6 observations is to avoid selecting those who have already started to experience respiratory failure prior to ICU admission.
-1. The time between any 2 consecutive PF observations cannot exceed 2 days.
-    - This is because we believe this lack of PF observations is likely to be an error in the data: e.g. what appears as a single ICU stay in the data is actually two or more separate stays.
+1. The time between any 2 consecutive \pfratio\ observations cannot exceed 2 days.
+    - This is because we believe this lack of \pfratio\ observations is likely to be an error in the data: e.g. what appears as a single ICU stay in the data is actually two or more separate stays.
 1. The fluid observations must be after ICU admission (some observations are entered as 'Pre-admission intake') and cannot be associated with fluid administered in the operating room (OR). Note that this does not mean all OR fluid administrations are removed, as some are mis-labelled.
-1. There must be sufficient temporal overlap between the fluid data and the PF data. Specifically,
+1. There must be sufficient temporal overlap between the fluid data and the \pfratio\ data. Specifically,
   \begin{equation}
     \frac{
       \max\left\{0, \min\left[\max(\boldsymbol{t}_{i}), \max(\tilde{\boldsymbol{u}}_{i})\right] - \max\left[\min(\boldsymbol{t}_{i}), \min(\tilde{\boldsymbol{u}}_{i})\right]\right\}
