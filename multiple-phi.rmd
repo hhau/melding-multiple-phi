@@ -155,7 +155,7 @@ Markov melding joins the submodels via the Markov combination of the marginally 
 
 ### Pooled prior
 
-Goudie _et al._&nbsp;proposed forming $\pd_{\text{pool}}(\phi)$ using linear or logarithmic prior pooling [@ohagan_uncertain_2006]
+Goudie _et al._&nbsp;proposed forming $\pd_{\text{pool}}(\phi)$ using linear or logarithmic prior pooling [@ohagan_uncertain_2006; @genest_characterization_1986]
 \input{tex-input/orig-markov-melding/0020-orig-pooling.tex}
 where $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$ are nonnegative weights, which are chosen subjectively to ensure $\pd_{\text{pool}}(\phi)$ appropriately represents prior knowledge about the common quantity.
 Two special cases of pooling are of particular interest.
@@ -219,7 +219,7 @@ without any additional assumptions.
 That is, if any two consecutive components of $\boldsymbol{\phi}$ are independent in the submodel containing both of them, we can divide the pooled prior specification problem into two pooling functions.
 The smaller number of arguments to $g_{1}$ and $g_{2}$ make it is easier to choose appropriate forms for those functions.
 
-Selecting a specific form of $g$ is not trivial given the many choices of functional form and pooling weights (the latter we discuss momentarily).
+Selecting a specific form of $g$ is not trivial given the many choices of functional form and pooling weights (the latter of which we discuss momentarily).
 One complication is that standard linear and logarithmic pooling, as defined in Equations \eqref{eqn:orig-pooling-linear} and \eqref{eqn:orig-pooling-logarithmic}, are not immediately applicable when the submodel marginal distributions consider different quantities.
 We now propose extensions to logarithmic, linear, and dictatorial pooling for use in the case of chained melding.
 
@@ -279,7 +279,7 @@ For example, if $\Nm = 5$ and we wish to ignore $\pd_{2}$ and $\pd_{4}$ when con
 
 ### Pooling weights
 
-Choosing values for the pooling weights is an important step in specifying the pooled prior.
+Choosing values for the pooling weights is an important step in specifying the pooled prior [@de_carvalho_combining_2020; @abbas_kullback-leibler_2009; @rufo_log-linear_2012; @rufo_bayesian_2012].
 Because appropriate values for the weights depend on the submodels being pooled and the information available a priori, universal recommendations are impossible, so we illustrate the impact of different choices in a straightforward example.
 It is important that prior predictive visualisations of the pooled prior are produced [@gabry_visualization_2019; @gelman_bayesian_2020] to guide the choice of pooling weights and ensure that the result suitably represents the available information.
 Figure \ref{fig:pooled_densities_plot} illustrates how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}(\boldsymbol{\phi})$ when pooling normal distributions.
@@ -328,7 +328,7 @@ The stage specific targets are displayed in Figure \ref{fig:parallel-dag}.
 
 The parallel sampler assumes that the pooled prior decomposes such that
 \input{tex-input/dc-sampler/0002-parallel-decomposition.tex}
-All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are improper, flat distributions.
+All pooled priors trivially satisfy \eqref{eqn:parallel-decomposition} by assuming $\pd_{\text{pool}, 1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3})$ are improper and/or flat distributions.
 Alternatively we may choose $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2})$ and $\pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, with appropriate adjustments to $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 This choice targets, in stage one, the subposteriors of $\pd_{1}$ and $\pd_{3}$ under their original prior for $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ respectively.
 
