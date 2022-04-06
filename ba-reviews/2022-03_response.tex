@@ -44,6 +44,46 @@
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
 \usepackage[margin=2.25cm]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 \usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -203,31 +243,33 @@
 
 \title{Response to Reviewers}
 \author{Andrew A. Manderson and Robert J. B. Goudie}
-\date{05 April, 2022}
+\date{06 April, 2022}
 
 \begin{document}
 \maketitle
 
 \hypertarget{reviewer-1}{%
-\section{Reviewer 1}\label{reviewer-1}}
+\section*{Reviewer 1}\label{reviewer-1}}
+\addcontentsline{toc}{section}{Reviewer 1}
 
 \begin{quote}
-\emph{My main suggestion is for the authors to shorten the manuscript by
-moving one of the examples to an appendix and instead add a bit more
-detail about how the melding actually works for readers who may not have
-familiarity with the previous literature on the topic (including the
-authors' prior paper on it). I appreciate both examples in the
-manuscript, but it might be better to include details about when the
-pooling results in inference that is exact versus approximate, for
-example. There are many choices one must make to implement these methods
-for fitting models and I think it would help to provide some additional
-details about the approximation that occurs and the actual algorithms
-that are used (multi-stage) to fit the models using this approach which
-don't currently appear until the appendix.}
+\(\hookrightarrow\)\textbf{R1}: \emph{My main suggestion is for the
+authors to shorten the manuscript by moving one of the examples to an
+appendix and instead add a bit more detail about how the melding
+actually works for readers who may not have familiarity with the
+previous literature on the topic (including the authors' prior paper on
+it). I appreciate both examples in the manuscript, but it might be
+better to include details about when the pooling results in inference
+that is exact versus approximate, for example. There are many choices
+one must make to implement these methods for fitting models and I think
+it would help to provide some additional details about the approximation
+that occurs and the actual algorithms that are used (multi-stage) to fit
+the models using this approach which don't currently appear until the
+appendix.}
 \end{quote}
 
 We thank the reviewer for the kind comments. We will respond in reverse
-order to the comments raised by Reviewer 1.
+order to the points raised by Reviewer 1.
 
 We agree that there are many choices to make when implementing chained
 Markov melding, but we delineate between choices specific to chained
@@ -235,39 +277,43 @@ Markov melding and those that must be made in fitting any model. We wish
 to include in the main text the choices that we feel will \emph{always}
 be relevant to applications of chained Markov melding, with important,
 but ultimately example-specific, choices included in the appendix. To
-this point, we have clarified the the purposes of the appendices in the
-text, and have hopefully assured the reviewer that material in the
-appendices is overly specific to our second example. Our changes
-include:
+this point, we have clarified the purposes of the appendices in the
+text, and explicitly stated the chained Markov melding specific choices
+that users must make. Our changes include:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
-\tightlist
+\item
+  Adding a sentence to the end of paragraph 1 of the conclusion to that
+  reads:
+
+  ``\emph{We also present the choices, and their impacts, that users of
+  chained Markov melding must make which include: the choice of pooling
+  function, and where required the pooling weights; the choice of
+  posterior sampler and the design thereof, including the apportionment
+  of the pooled prior over the stages and stage-specific MCMC
+  techniques.}''
+\item
+  Emphasising in the text and within the appendix that the
+  individual-at-a-time sampler is only possible due to the conditional
+  independence between individuals in the posterior. Appendix K shows
+  this, but is specific to the models under consideration in the second
+  example (though other submodels may have such posterior conditional
+  independences). The generality of the individual-at-a-time sampler is
+  low, so including it in the main text seems unnecessary and likely to
+  confuse the reader.
 \item
   Clarifying in the main text that Appendix B is provided only for
   completeness. We do not use the sequential sampler in either of our
   examples.
-\item
-  Emphasising in the text and within the appendix that Appendix K is
-  only possible due to the conditional independence between individuals
-  in the posterior, which is very specific to the models under
-  consideration in the second example.
 \end{enumerate}
 
-Furthermore, we think that Appendices E, G, and H, which cover prior
+Furthermore, we think that Appendices E, G, and H, covering prior
 specification and prior marginal estimation, are important but
-ultimately routine aspects of Bayesian modelling. Specifying appropriate
-priors is a universal task when using the Bayesian paradigm, and
-performing density estimation from Monte Carlo samples should be
-familiar to most statistical practitioners. We have also introduced a
-more sophisticated methodology for density estimation in this setting in
-Manderson and Goudie
-(\protect\hyperlink{ref-manderson_numerically_2022}{2022}) for the
-particularly interested reader. Appendices D and I are decisions
-specific to the data we consider, which is more specific than the
-models, and would be made as part of any analysis of observational data
-(and would often go unreported), or would be specified in an analysis
-plan.
+ultimately routine aspects of Bayesian modelling. Appendices D and I are
+decisions specific to the data we consider, and would be made as part of
+any analysis of observational data (and would often go unreported), or
+would be specified in an analysis plan.
 
 We are unsure of the meaning of the comment describing pooling as
 producing inference that is exact or approximate. When all prior
@@ -278,7 +324,33 @@ error here. If one or more of the prior marginal densities is unknown,
 then we suggest approximating it (or a transformation of it) with a
 standard distribution, or using kernel density estimation. Regardless,
 the pooling function does not introduce any approximation in addition to
-that of the prior marginal density estimate.
+that of the prior marginal density estimate. If by `exact' the reviewer
+is instead referring to situations where the chained Markov melded model
+is the same as the original joint model, then we wish to point our that
+a suitable joint model must exist in the first place (see our response
+to Reviewer 2 for further details). Our first example is one such
+situation, and we have added the following to the start of Section 4:
+
+\begin{itemize}
+\tightlist
+\item
+  ``\emph{This example is particularly interesting to us as, for a
+  certain choice of pooling function and pooling weights, the chained
+  Markov melded model and the IPM are identical. This coincidence allows
+  us to use the posterior from the IPM as a benchmark for our
+  multi-stage sampler.}''
+\end{itemize}
+
+and the following (new in italic) to Section 4.5:
+
+\begin{itemize}
+\tightlist
+\item
+  ``We also use logarithmic pooling with
+  \(\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})\), which is
+  denoted \(\pd_{\text{meld, log}}\) \emph{and results in the chained
+  melded model being identical to the IPM.}''
+\end{itemize}
 
 To address Reviewer 1's first comment, we appreciate (and agree with)
 the inclination towards a shorter manuscript, but ultimately feel tied
@@ -303,14 +375,16 @@ comments, sufficiently convince the reviewer of the need for both
 examples.
 
 \begin{quote}
-\emph{I also have a number of minor typographical suggestions:}
+\(\hookrightarrow\)\textbf{R1}: \emph{I also have a number of minor
+typographical suggestions:}
 \end{quote}
 
 We thank the reviewer for the suggestions and have adopted them in the
 revised version.
 
 \hypertarget{reviewer-2}{%
-\section{Reviewer 2}\label{reviewer-2}}
+\section*{Reviewer 2}\label{reviewer-2}}
+\addcontentsline{toc}{section}{Reviewer 2}
 
 \begin{itemize}
 \tightlist
@@ -319,128 +393,152 @@ revised version.
 \end{itemize}
 
 \begin{quote}
-\emph{(2) I would like the authors to explain why one would not simply
-ensure that all sub-models can use the same prior, so that we are back
-in the ``Markov combination'' setting of Equation 1 (in which case no
-``pooled'' priors need to be constructed). It seems to me that a
-principled Bayesian approach would always seek to formulate a single
-prior distribution over all parameters in the model.}
+\(\hookrightarrow\)\textbf{R2}: \emph{(2) I would like the authors to
+explain why one would not simply ensure that all sub-models can use the
+same prior, so that we are back in the ``Markov combination'' setting of
+Equation 1 (in which case no ``pooled'' priors need to be constructed).
+It seems to me that a principled Bayesian approach would always seek to
+formulate a single prior distribution over all parameters in the model.}
 \end{quote}
 
-\begin{itemize}
+We agree in principle with this sentiment -- it seems desirable to have
+the same prior for the same quantity in different models. But there is a
+tension between having the individual submodels be complete and
+contained, meaning that they could be specified and understood
+independently of the chained melded model, and having the same prior for
+all common quantities under all submodels. It is of course theoretically
+possible to specify \(\pd_{\text{pool}}(\boldsymbol{\phi})\) to be
+something other than a function of the submodel marginals -- a
+``BYO-prior'' if you will. The tricky question here is how one acquires
+this prior and ensures that it is suitable for the chained melded model,
+and all its marginals are suitable for the submodels. As we note in the
+second sentence of the introduction, the difficulty in modelling
+multiple sources of information is specifying a suitable joint model,
+which includes specifying the prior for such a joint model. We choose to
+specify a prior using pooling because we find it hard, particularly as
+\(\Nm\) increases, to obtain a prior suitable for the chained melded
+model and with suitable marginals, as well as embedding appropriate
+covariance between the neighbouring components of \(\boldsymbol{\phi}\)
+which we consider important. More generally, we see the competing
+methodology for example two as not a full Bayesian joint model, but
+simply plugging-in a point estimate, or Gaussian approximation, of the
+common quantities. Our aim is to facilitate the specification of more
+sophisticated models from components/submodels that modellers likely
+already possess, and ease the sometimes onerous burden of prior
+specification.
+
+We also foresee some technical difficulties in unifying the prior across
+submodels, if we take as a starting point the existence of the submodels
+and suitably defined common quantities. In particular, perhaps our
+biggest struggle with this idea is visible in example two, where the
+common quantity \(\phi_{1 \cap 2}\) is the response in the second
+submodel \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})\)
+and \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) contains dependence
+between the common quantities. We see two approaches to ensuring
+\(\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})\),
+\(\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})\), and
+\(\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\)
+in example two.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  We agree in principle with this sentiment -- it seems desirable to
-  have the same prior for the same quantity in different models.
+  Carefully and simultaneously select the prior for the spline
+  coefficients in \(\pd_{1}\) and the prior for the piecewise-linear
+  regression parameters in \(\pd_{3}\), such that all the aforementioned
+  equalities are satisfied.
+\end{enumerate}
+
+We note here that there are no guarantees that such a set of priors
+exists\footnote{In our experience there are typically many possible
+  priors that have a specific prior predictive distribution for a
+  quantity that is a non-invertible transformation of the parameters.
+  Locating them requires both specialised methodology and a decision
+  analysis to choose between the possible priors.}, and even if they did
+it's unclear how we might actually specify them.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
 \item
-  But there is a tension between having the individual submodels be
-  complete and contained, meaning that they could be produced
-  independently of the submodels, and having the same prior for all
-  common quantities under all submodels.
-\item
-  Perhaps our biggest struggle with this idea is visible in example two,
-  where the common quantity \(\phi_{1 \cap 2}\) is the response in the
-  second submodel
-  \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})\) and
-  \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) contains dependence
-  between the common quantities.
-\item
-  There are two approaches to ensuring
-  \(\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})\),
-  \(\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})\), and
-  \(\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\)
-  in example two.
+  Externally define \(\pd_{\text{pool}}(\boldsymbol{\phi})\) and replace
+  \(\pd_{1}(\phi_{1 \cap 2})\) with
+  \(\pd_{\text{pool}}(\phi_{1 \cap 2})\),
+  \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) with
+  \(\pd_{\text{pool}}(\boldsymbol{\phi})\), and
+  \(\pd_{3}(\phi_{2 \cap 3})\) with
+  \(\pd_{\text{pool}}(\phi_{2 \cap 3})\). Alternatively we could expand
+  \(\pd_{1}\) to be aware of \(\pd_{3}\) by replacing
+  \(\pd_{1}(\phi_{1 \cap 2})\) with
+  \(\pd_{\text{pool}}(\boldsymbol{\phi})\), doing likewise for
+  \(\pd_{3}\).
+\end{enumerate}
 
-  \begin{enumerate}
-  \def\labelenumi{\arabic{enumi}.}
-  \tightlist
-  \item
-    Carefully and simultaneously select the prior for the spline
-    coefficients in \(\pd_{1}\) and the prior for the piecewise-linear
-    regression parameters in \(\pd_{3}\), such that all the
-    aforementioned equalities are satisfied.
-  \end{enumerate}
+Both proposals require some kind of pooling to account for applying the
+prior twice when combining the submodels, should such a correction be
+desirable. The second proposal requires expanding the first and third
+submodels to include a quantity unrelated to the submodel or the
+submodel's data. There is no information about e.g.~\(\phi_{2 \cap 3}\)
+in \(\pd_{1}\). This submodel expansion makes it more difficult to
+understand the submodels in isolation. One aim of our methodology is to
+enable the construction of complex joint models by combining smaller,
+easier to understand submodels. The ability to specify, and possibly fit
+and interrogate a submodel before combining it is key -- we'd like to
+understand the submodels themselves before combining them. Either option
+in the second proposal yields a very strange form for \(\pd_{2}\), which
+would contain a prior term, in addition to the likelihood, directly for
+the observational quantity as well as the prior terms for the other
+parameters. Whilst many of these properties are also true of the chained
+melded model, the key difference is that the submodels remain unmodified
+and are understandable in isolation.
 
-  \begin{itemize}
-  \tightlist
-  \item
-    There are no guarantees that such a set of priors exists\footnote{In
-      our experience there are typically many possible priors that have
-      a specific prior predictive distribution for a quantity that is a
-      non-invertible transformation of the parameters. Locating them
-      requires both specialised methodology and a decision analysis to
-      choose between the possible priors.}, and even if they did it's
-    unclear how we might actually specify them.
-  \end{itemize}
+There are also no guarantees that a prior that ``works'' for the
+submodel (appropriately represents known information and facilitates the
+computation of the subposterior) will be suitable for the chained melded
+model with its higher dimensional parameter space. Pooling allows us to
+take known priors and modify them in a transparent way to ensure they
+are suitable for the larger chained melded model.
 
-  \begin{enumerate}
-  \def\labelenumi{\arabic{enumi}.}
-  \tightlist
-  \item
-    Externally define \(\pd_{\text{pool}}(\boldsymbol{\phi})\) and
-    replace \(\pd_{1}(\phi_{1 \cap 2})\) with
-    \(\pd_{\text{pool}}(\phi_{1 \cap 2})\),
-    \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) with
-    \(\pd_{\text{pool}}(\boldsymbol{\phi})\), and
-    \(\pd_{3}(\phi_{2 \cap 3})\) with
-    \(\pd_{\text{pool}}(\phi_{2 \cap 3})\). Alternatively we could
-    expand \(\pd_{1}\) to be aware of \(\pd_{3}\) by replacing
-    \(\pd_{1}(\phi_{1 \cap 2})\) with
-    \(\pd_{\text{pool}}(\boldsymbol{\phi})\), doing likewise for
-    \(\pd_{3}\).
-  \end{enumerate}
+\par
 
-  \begin{itemize}
-  \tightlist
-  \item
-    Both proposals require some kind of pooling to account for applying
-    the prior twice when combining the submodels, should the user wish
-    to correct for this information.
-  \item
-    The second proposal requires expanding the first and third submodels
-    to include a quantity unrelated to the submodel or the submodel's
-    data. There is no information about e.g.~\(\phi_{2 \cap 3}\) in
-    \(\pd_{1}\). This submodel expansion makes it more difficult to
-    understand the submodels in isolation.
-  \item
-    One aim of our methodology is to enable the construction of complex
-    joint models by combining smaller, easier to understand submodels.
-    The ability to specify, and possibly fit and interrogate a submodel
-    before combining it is key -- we'd like to understand the submodels
-    themselves before combining them. In particular, either proposal
-    yields a very strange model for \(\pd_{2}\), which would contain an
-    prior distribution directly on the observational quantity in
-    addition to the likelihood (as well as the prior on the other
-    parameters). Whilst many of these properties are also true of the
-    chained melded model, the key difference is that the submodels
-    remain unmodified and are understandable in isolation.
-  \item
-    There are no guarantees that a prior that ``works'' (appropriately
-    represents known information and facilitates the computation of the
-    subposterior) for the submodel will be suitable for the chained
-    melded model with its higher dimensional parameter space. Pooling
-    allows us to take known priors and modify them in a transparent way
-    to ensure they are suitable for the larger chained melded model.
-  \end{itemize}
-\end{itemize}
+\noindent\hrulefill
+
+\par
+
+We address comments (3) and (4) simultaneously.
 
 \begin{quote}
-\emph{(3) The proposed methodology appears to perform well in the
-integrated-population-model (IPM) example. But, as the authors mention,
-this is just for illustration since the joint posterior distribution in
-this model can be easily and cheaply approximated using a single MCMC
-chain via standard software packages.} \emph{The model in Section 5
-appears to be realistically complex. It is great to see such non-toy
-examples in a methodological paper. However, the example is almost too
-complex: I am finding it difficult to understand how well (or poorly)
-the proposed methodology performs here. It would be really good to have
-benchmark results for the joint model without the bias induced by Markov
-melding (i.e.~in the same way as these are shown for the IPM example). I
-would expect that such results are be attainable using a sequential
-Monte Carlo sampler.}
+\(\hookrightarrow\)\textbf{R2}: \emph{(3) The proposed methodology
+appears to perform well in the integrated-population-model (IPM)
+example. But, as the authors mention, this is just for illustration
+since the joint posterior distribution in this model can be easily and
+cheaply approximated using a single MCMC chain via standard software
+packages.} \emph{The model in Section 5 appears to be realistically
+complex. It is great to see such non-toy examples in a methodological
+paper. However, the example is almost too complex: I am finding it
+difficult to understand how well (or poorly) the proposed methodology
+performs here. It would be really good to have benchmark results for the
+joint model without the bias induced by Markov melding (i.e.~in the same
+way as these are shown for the IPM example). I would expect that such
+results are be attainable using a sequential Monte Carlo sampler.}
+\end{quote}
+
+\begin{quote}
+\(\hookrightarrow\)\textbf{R2}: \emph{(4) If benchmark results cannot be
+obtained for the model from Section 5, this would also be interesting
+and mentioning this would make the paper much stronger. Because when
+reading the paper, I did not see an explanation of why the model could
+not be estimated without Markov melding (and without the bias that this
+can introduce).}
 \end{quote}
 
 \begin{itemize}
+\item
+  For benchmark results to exist there must exist a previously existing
+  and comparable joint model and a proven method for sampling this
+  model.
 \item
   We find find the meaning of the word `bias' difficult to determine in
   this comment. Does it refer to the hypothetical `bias' introduced by
@@ -514,44 +612,54 @@ Monte Carlo sampler.}
     processing step after stage one but before stage tow makes this step
     embarrassingly parallel (making the multistage sampler feasible).
   \end{itemize}
-\end{itemize}
-
-\begin{quote}
-\emph{(4) If benchmark results cannot be obtained for the model from
-Section 5, this would also be interesting and mentioning this would make
-the paper much stronger. Because when reading the paper, I did not see
-an explanation of why the model could not be estimated without Markov
-melding (and without the bias that this can introduce).}
-\end{quote}
-
-\begin{itemize}
-\tightlist
 \item
   This comment again makes us ask the question about what target or
   joint model the reviewer has in mind.
 \end{itemize}
 
 \hypertarget{handling-editor}{%
-\section{Handling Editor}\label{handling-editor}}
+\section*{Handling Editor}\label{handling-editor}}
+\addcontentsline{toc}{section}{Handling Editor}
 
 \begin{quote}
-\emph{On equation (42) what happens when} \(x_{t - 1} = 0\)?
-\emph{Shouldn't the notation accommodate this case?}
+\(\hookrightarrow\)\textbf{HE}: \emph{On equation (42) what happens
+when} \(x_{t - 1} = 0\)? \emph{Shouldn't the notation accommodate this
+case?}
 \end{quote}
 
 \begin{itemize}
 \tightlist
 \item
-  Strictly yes, but this model is ubiquitous and this issue is
-  ubiquitously ignored
+  Strictly yes, assuming the issue is is the Poisson distribution is not
+  typically defined with its parameter set to zero, but this model is
+  ubiquitous and this issue is ubiquitously ignored
   (\protect\hyperlink{ref-abadi_estimation_2010}{Abadi \emph{et al.},
   2010}; Section 17.3 of
   \protect\hyperlink{ref-king_statistical_2011}{King, 2011}; Section
   5.2.1 of \protect\hyperlink{ref-finke_efficient_2019}{Finke \emph{et
   al.}, 2019}).
 \item
-  One suspects that an additional model component is required for
-  \(x_{t - 1} = 0\), as this presumably corresponds to extinction.
+  The \texttt{R} developers, and therefore presumably most statisticians
+  without thinking, choose to define \(\text{Pois}(0)\) to be a point
+  mass at \(0\):
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{rpois}\NormalTok{(}\AttributeTok{n =} \DecValTok{10}\NormalTok{, }\AttributeTok{lambda =} \DecValTok{0}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] 0 0 0 0 0 0 0 0 0 0
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Stan} explicitly throws an error for
+  \texttt{poisson\_rng(0.0)}, whilst \texttt{NIMBLE} will sample a node
+  defined as \texttt{x\ \textasciitilde{}\ dpois(0.0)}
 \end{itemize}
 
 \hypertarget{bibliography}{%
@@ -587,12 +695,6 @@ King, R. (2011) Statistical {Ecology}. In \emph{Handbook of {Markov
 Chain Monte Carlo}} (eds S. Brooks, A. Gelman, G. Jones,et al.). Chapman
 {\(\&\)} {Hall}/{CRC Handbooks} of {Modern Statistical Methods}. {CRC
 Press}.
-
-\leavevmode\vadjust pre{\hypertarget{ref-manderson_numerically_2022}{}}%
-Manderson, A. A. and Goudie, R. J. B. (2022) A numerically stable
-algorithm for integrating {Bayesian} models using {Markov} melding.
-\emph{Statistics and Computing}, \textbf{32}, 24. DOI:
-\href{https://doi.org/10.1007/s11222-022-10086-2}{10.1007/s11222-022-10086-2}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-michaud_sequential_2020}{}}%
 Michaud, N., de Valpine, P., Turek, D., et al. (2020) Sequential {Monte

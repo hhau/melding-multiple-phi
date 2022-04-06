@@ -382,6 +382,8 @@ If instead we opt for product-of-experts pooling, all $\widehat{\mu}_{\text{de}}
 
 We now return to the integrated population model (IPM) for the little owls introduced in Section \ref{an-integrated-population-model-for-little-owls}.
 @finke_efficient_2019 consider a number of variations on the original model of @schaub_local_2006 and @abadi_estimation_2010: here we consider only the variant from @finke_efficient_2019 with the highest marginal likelihood (Model 4 of their online supplement).
+This example is particularly interesting to us as, for a certain choice of pooling function and pooling weights, the chained Markov melded model and the IPM are identical.
+This coincidence allows us to use the posterior from the IPM as a benchmark for our multi-stage sampler.
 
 Before we detail the specifics of each submodel, we must introduce some notation.
 Data and parameters are stratified into two age-groups $a \in \{J, A\}$ where $J$ denotes juvenile owls (less than one year old) and $A$ adults, two sexes $s \in \{M, F\}$, and observations occur annually at times $t \in \{1, \ldots, T\}$, with $T = 25$.
@@ -436,7 +438,7 @@ A $\text{Uniform}(0, 10)$ prior is assigned to $\rho$ in $\pd_{2}$ and $\pd_{3}$
 To completely specify $\pd_{\text{meld}}$ we must choose how to form $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 We form $\pd_\text{pool}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ using three different pooling methods and estimate the melded posterior in each case.
 The first pooling method is product-of-experts (PoE) pooling, which is logarithmic pooling with $\lambda = (1, 1, 1)$, and we denote the melded posterior as $\pd_{\text{meld, PoE}}$.
-We also use logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, which is denoted $\pd_{\text{meld, log}}$.
+We also use logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, which is denoted $\pd_{\text{meld, log}}$ and results in the chained melded model being identical to the IPM.
 The final pooling method is linear pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, denoted $\pd_{\text{meld, lin}}$.
 
 ## Posterior estimation
@@ -445,7 +447,7 @@ We estimate the melded posterior -- $\pd_{\text{meld}}(\boldsymbol{\phi}, \bolds
 This allows us to use pre-existing implementations of the submodels.
 Specifically, the capture-recapture submodel is written in BUGS [@lunn_bugs_2009] and sampled via `rjags` [@plummer_rjags_2019].
 The fecundity submodel is written in Stan [@carpenter_stan_2017] and sampled via `rstan` [@stan_development_team_rstan_2021].
-The count data submodel is also written in BUGS, and we reuse this implementation in stage two of the multi-stage sampler via `Nimble` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
+The count data submodel is also written in `BUGS`, and we reuse this implementation in stage two of the multi-stage sampler via `NIMBLE` [@de_valpine_programming_2017] and its `R` interface [@nimble_development_team_nimble_2019].
 The approximate melded posterior obtained by Section \ref{normal-approximations-to-submodel-components} is sampled using `rjags`.
 Code and data for this example, as well as trace plots and numerical convergence measures [@vehtari_rank-normalization_2020] for both stages of the parallel sampling process, are available in the accompanying online repository[^repo].
 
@@ -580,7 +582,7 @@ Details for all the parametric mixture distribution estimates are contained in A
 We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2}), \,\, \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi}) \mathop{/} \left(\pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3}) \right)$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
 It is crucial for the convergence of our multi-stage sampler that the components of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_ in stage two.
-This is only possible due to the conditional independence between individuals in the posterior, and Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
+This is possible due to the conditional independence between individuals in the posterior, and Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
 We use `Stan` to sample $\psi_{2}$ where, in every MH-within-Gibbs step, we run `Stan` for 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
@@ -645,6 +647,7 @@ knitr::include_graphics('plots/mimic-example/kaplan-meier-pc.pdf')
 This paper introduces the chained Markov melded model.
 In doing so we make explicit the notion of submodels related in a chain-like way, describe a generic methodology for joining together any number of such submodels and illustrate its application with our examples.
 Our examples also demonstrate the importance of quantifying the uncertainty when joining submodels; not doing so can produce biased, over-confident inference.
+We also present the choices, and their impacts, that users of chained Markov melding must make which include: the choice of pooling function, and where required the pooling weights; the choice of posterior sampler and the design thereof, including the apportionment of the pooled prior over the stages and stage-specific MCMC techniques.
 
 We have introduced extensions to linear and logarithmic pooling to marginals of different but overlapping quantities.
 Linear pooling, introduced in Section \ref{pooled-prior}, could be extended to induce dependence between the components of $\boldsymbol{\phi}$ using multivariate or vine copulas [@kurowicka_dependence_2011; @nelsen_introduction_2006], or other techniques [@lin_recent_2014].

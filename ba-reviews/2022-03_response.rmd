@@ -26,28 +26,39 @@ output:
 Rscript -e 'rmarkdown::render("ba-reviews/2022-03_response.rmd")'
 -->
 
-# Reviewer 1
+# Reviewer 1 {-}
 
-
-> _My main suggestion is for the authors to shorten the manuscript by moving one of the examples to an appendix and instead add a bit more detail about how the melding actually works for readers who may not have familiarity with the previous literature on the topic (including the authors' prior paper on it).  I appreciate both examples in the manuscript, but it might be better to include details about when the pooling results in inference that is exact versus approximate, for example.  There are many choices one must make to implement these methods for fitting models and I think it would help to provide some additional details about the approximation that occurs and the actual algorithms that are used (multi-stage) to fit the models using this approach which don't currently appear until the appendix._
+> $\hookrightarrow$**R1**: _My main suggestion is for the authors to shorten the manuscript by moving one of the examples to an appendix and instead add a bit more detail about how the melding actually works for readers who may not have familiarity with the previous literature on the topic (including the authors' prior paper on it).  I appreciate both examples in the manuscript, but it might be better to include details about when the pooling results in inference that is exact versus approximate, for example.  There are many choices one must make to implement these methods for fitting models and I think it would help to provide some additional details about the approximation that occurs and the actual algorithms that are used (multi-stage) to fit the models using this approach which don't currently appear until the appendix._
 
 We thank the reviewer for the kind comments.
-We will respond in reverse order to the comments raised by Reviewer 1.
+We will respond in reverse order to the points raised by Reviewer 1.
 
 We agree that there are many choices to make when implementing chained Markov melding, but we delineate between choices specific to chained Markov melding and those that must be made in fitting any model.
 We wish to include in the main text the choices that we feel will _always_ be relevant to applications of chained Markov melding, with important, but ultimately example-specific, choices included in the appendix.
-To this point, we have clarified the purposes of the appendices in the text, and have hopefully assured the reviewer that material in the appendices is overly specific to our second example.
+To this point, we have clarified the purposes of the appendices in the text, and explicitly stated the chained Markov melding specific choices that users must make.
 Our changes include:
 
-1. Clarifying in the main text that Appendix B is provided only for completeness. We do not use the sequential sampler in either of our examples.
-1. Emphasising in the text and within the appendix that Appendix K is only possible due to the conditional independence between individuals in the posterior, which is very specific to the models under consideration in the second example.
+1. Adding a sentence to the end of paragraph 1 of the conclusion to that reads:
 
-Furthermore, we think that Appendices E, G, and H, which cover prior specification and prior marginal estimation, are important but ultimately routine aspects of Bayesian modelling. Specifying appropriate priors is a universal task when using the Bayesian paradigm, and performing density estimation from Monte Carlo samples should be familiar to most statistical practitioners. We have also introduced a more sophisticated methodology for density estimation in this setting in @manderson_numerically_2022 for the particularly interested reader.
-Appendices D and I are decisions specific to the data we consider, which is more specific than the models, and would be made as part of any analysis of observational data (and would often go unreported), or would be specified in an analysis plan.
+    "_We also present the choices, and their impacts, that users of chained Markov melding must make which include: the choice of pooling function, and where required the pooling weights; the choice of posterior sampler and the design thereof, including the apportionment of the pooled prior over the stages and stage-specific MCMC techniques._"
+
+1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K shows this, but is specific to the models under consideration in the second example (though other submodels may have such posterior conditional independences). The generality of the individual-at-a-time sampler is low, so including it in the main text seems unnecessary and likely to confuse the reader.
+1. Clarifying in the main text that Appendix B is provided only for completeness. We do not use the sequential sampler in either of our examples.
+
+Furthermore, we think that Appendices E, G, and H, covering prior specification and prior marginal estimation, are important but ultimately routine aspects of Bayesian modelling.
+Appendices D and I are decisions specific to the data we consider, and would be made as part of any analysis of observational data (and would often go unreported), or would be specified in an analysis plan.
 
 We are unsure of the meaning of the comment describing pooling as producing inference that is exact or approximate.
 When all prior marginal densities are known analytically, the pooling function produces an analytic expression proportional to $\pd_{\text{pool}}(\boldsymbol{\phi})$ -- there is no approximation error here.
 If one or more of the prior marginal densities is unknown, then we suggest approximating it (or a transformation of it) with a standard distribution, or using kernel density estimation. Regardless, the pooling function does not introduce any approximation in addition to that of the prior marginal density estimate.
+If by 'exact' the reviewer is instead referring to situations where the chained Markov melded model is the same as the original joint model, then we wish to point our that a suitable joint model must exist in the first place (see our response to Reviewer 2 for further details).
+Our first example is one such situation, and we have added the following to the start of Section 4:
+
+- "_This example is particularly interesting to us as, for a certain choice of pooling function and pooling weights, the chained Markov melded model and the IPM are identical. This coincidence allows us to use the posterior from the IPM as a benchmark for our multi-stage sampler._"
+
+and the following (new in italic) to Section 4.5:
+
+- "We also use logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, which is denoted $\pd_{\text{meld, log}}$ _and results in the chained melded model being identical to the IPM._"
 
 To address Reviewer 1's first comment, we appreciate (and agree with) the inclination towards a shorter manuscript, but ultimately feel tied to including both examples in the main text.
 As Reviewer 2 notes, the first example is intentionally illustrative -- we have split an existing joint model to illustrate, in a simpler setting, the melding steps and computational tools whilst possessing a baseline set of result for comparison.
@@ -59,32 +70,59 @@ Finally, cutting the first example would save only 4 pages, so information curre
 
 We hope that these points, in addition to addressing the reviewers other comments, sufficiently convince the reviewer of the need for both examples.
 
-> _I also have a number of minor typographical suggestions:_
+> $\hookrightarrow$**R1**: _I also have a number of minor typographical suggestions:_
 
 We thank the reviewer for the suggestions and have adopted them in the revised version.
 
-# Reviewer 2
+# Reviewer 2 {-}
 
 - We thank the reviewer for the kind comments.
 
-> _(2) I would like the authors to explain why one would not simply ensure that all sub-models can use the same prior, so that we are back in the "Markov combination" setting of Equation 1 (in which case no "pooled" priors need to be constructed). It seems to me that a principled Bayesian approach would always seek to formulate a single prior distribution over all parameters in the model._
+> $\hookrightarrow$**R2**: _(2) I would like the authors to explain why one would not simply ensure that all sub-models can use the same prior, so that we are back in the "Markov combination" setting of Equation 1 (in which case no "pooled" priors need to be constructed). It seems to me that a principled Bayesian approach would always seek to formulate a single prior distribution over all parameters in the model._
 
-- We agree in principle with this sentiment -- it seems desirable to have the same prior for the same quantity in different models.
-- But there is a tension between having the individual submodels be complete and contained, meaning that they could be produced independently of the submodels, and having the same prior for all common quantities under all submodels.
-- Perhaps our biggest struggle with this idea is visible in example two, where the common quantity $\phi_{1 \cap 2}$ is the response in the second submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ contains dependence between the common quantities.
-- There are two approaches to ensuring $\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ in example two.
+We agree in principle with this sentiment -- it seems desirable to have the same prior for the same quantity in different models.
+But there is a tension between having the individual submodels be complete and contained, meaning that they could be specified and understood independently of the chained melded model, and having the same prior for all common quantities under all submodels.
+It is of course theoretically possible to specify $\pd_{\text{pool}}(\boldsymbol{\phi})$ to be something other than a function of the submodel marginals -- a "BYO-prior" if you will.
+The tricky question here is how one acquires this prior and ensures that it is suitable for the chained melded model, and all its marginals are suitable for the submodels.
+As we note in the second sentence of the introduction, the difficulty in modelling multiple sources of information is specifying a suitable joint model, which includes specifying the prior for such a joint model.
+We choose to specify a prior using pooling because we find it hard, particularly as $\Nm$ increases, to obtain a prior suitable for the chained melded model and with suitable marginals, as well as embedding appropriate covariance between the neighbouring components of $\boldsymbol{\phi}$ which we consider important.
+More generally, we see the competing methodology for example two as not a full Bayesian joint model, but simply plugging-in a point estimate, or Gaussian approximation, of the common quantities.
+Our aim is to facilitate the specification of more sophisticated models from components/submodels that modellers likely already possess, and ease the sometimes onerous burden of prior specification.
+
+We also foresee some technical difficulties in unifying the prior across submodels, if we take as a starting point the existence of the submodels and suitably defined common quantities.
+In particular, perhaps our biggest struggle with this idea is visible in example two, where the common quantity $\phi_{1 \cap 2}$ is the response in the second submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ contains dependence between the common quantities.
+We see two approaches to ensuring $\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ in example two.
+
   1. Carefully and simultaneously select the prior for the spline coefficients in $\pd_{1}$ and the prior for the piecewise-linear regression parameters in $\pd_{3}$, such that all the aforementioned equalities are satisfied.
-    - There are no guarantees that such a set of priors exists[^prior-by-ppd], and even if they did it's unclear how we might actually specify them.
-  1. Externally define $\pd_{\text{pool}}(\boldsymbol{\phi})$ and replace $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, and $\pd_{3}(\phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\phi_{2 \cap 3})$. Alternatively we could expand $\pd_{1}$ to be aware of $\pd_{3}$ by replacing $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, doing likewise for $\pd_{3}$.
-    - Both proposals require some kind of pooling to account for applying the prior twice when combining the submodels, should the user wish to correct for this information.
-    - The second proposal requires expanding the first and third submodels to include a quantity unrelated to the submodel or the submodel's data. There is no information about e.g. $\phi_{2 \cap 3}$ in $\pd_{1}$. This submodel expansion makes it more difficult to understand the submodels in isolation.
-    - One aim of our methodology is to enable the construction of complex joint models by combining smaller, easier to understand submodels. The ability to specify, and possibly fit and interrogate a submodel before combining it is key -- we'd like to understand the submodels themselves before combining them. In particular, either proposal yields a very strange model for $\pd_{2}$, which would contain an prior distribution directly on the observational quantity in addition to the likelihood (as well as the prior on the other parameters). Whilst many of these properties are also true of the chained melded model, the key difference is that the submodels remain unmodified and are understandable in isolation.
-    - There are no guarantees that a prior that "works" (appropriately represents known information and facilitates the computation of the subposterior) for the submodel will be suitable for the chained melded model with its higher dimensional parameter space. Pooling allows us to take known priors and modify them in a transparent way to ensure they are suitable for the larger chained melded model.
+
+We note here that there are no guarantees that such a set of priors exists[^prior-by-ppd], and even if they did it's unclear how we might actually specify them.
+
+  2. Externally define $\pd_{\text{pool}}(\boldsymbol{\phi})$ and replace $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, and $\pd_{3}(\phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\phi_{2 \cap 3})$. Alternatively we could expand $\pd_{1}$ to be aware of $\pd_{3}$ by replacing $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, doing likewise for $\pd_{3}$.
+
+Both proposals require some kind of pooling to account for applying the prior twice when combining the submodels, should such a correction be desirable.
+The second proposal requires expanding the first and third submodels to include a quantity unrelated to the submodel or the submodel's data. There is no information about e.g. $\phi_{2 \cap 3}$ in $\pd_{1}$.
+This submodel expansion makes it more difficult to understand the submodels in isolation.
+One aim of our methodology is to enable the construction of complex joint models by combining smaller, easier to understand submodels.
+The ability to specify, and possibly fit and interrogate a submodel before combining it is key -- we'd like to understand the submodels themselves before combining them.
+Either option in the second proposal yields a very strange form for $\pd_{2}$, which would contain a prior term, in addition to the likelihood, directly for the observational quantity as well as the prior terms for the other parameters.
+Whilst many of these properties are also true of the chained melded model, the key difference is that the submodels remain unmodified and are understandable in isolation.
+
+There are also no guarantees that a prior that "works" for the submodel (appropriately represents known information and facilitates the computation of the subposterior) will be suitable for the chained melded model with its higher dimensional parameter space.
+Pooling allows us to take known priors and modify them in a transparent way to ensure they are suitable for the larger chained melded model.
 
 [^prior-by-ppd]: In our experience there are typically many possible priors that have a specific prior predictive distribution for a quantity that is a non-invertible transformation of the parameters. Locating them requires both specialised methodology and a decision analysis to choose between the possible priors.
 
-> _(3) The proposed methodology appears to perform well in the integrated-population-model (IPM) example. But, as the authors mention, this is just for illustration since the joint posterior distribution in this model can be easily and cheaply approximated using a single MCMC chain via standard software packages._
+\par\noindent\hrulefill\par
+
+We address comments (3) and (4) simultaneously.
+
+> $\hookrightarrow$**R2**: _(3) The proposed methodology appears to perform well in the integrated-population-model (IPM) example. But, as the authors mention, this is just for illustration since the joint posterior distribution in this model can be easily and cheaply approximated using a single MCMC chain via standard software packages._
 > _The model in Section 5 appears to be realistically complex. It is great to see such non-toy examples in a methodological paper. However, the example is almost too complex: I am finding it difficult to understand how well (or poorly) the proposed methodology performs here. It would be really good to have benchmark results for the joint model without the bias induced by Markov melding (i.e. in the same way as these are shown for the IPM example). I would expect that such results are be attainable using a sequential Monte Carlo sampler._
+
+> $\hookrightarrow$**R2**: _(4) If benchmark results cannot be obtained for the model from Section 5, this would also be interesting and mentioning this would make the paper much stronger. Because when reading the paper, I did not see an explanation of why the model could not be estimated without Markov melding (and without the bias that this can introduce)._
+
+- For benchmark results to exist there must exist a previously existing and comparable joint model and a proven method for sampling this model.
+- The premise for this example, and indeed the entire methodology, is that there are situations in which it is prohibitively difficult to specify a suitable joint model.
 
 - We find find the meaning of the word 'bias' difficult to determine in this comment. Does it refer to the hypothetical 'bias' introduced by the chained Markov melding process (which produces a joint model), or the bias introduced by the computational multi-stage algorithm we propose to sample the chained melded posterior?
 - Chained Markov melding does not necessarily introduce any 'bias'. As noted in the text for the first example, the IPM and the log-pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$ are precisely the same joint model, so no possible 'bias' has been introduced by chained Markov melding in that example.
@@ -100,16 +138,20 @@ We thank the reviewer for the suggestions and have adopted them in the revised v
     - Any SMC sampler I would build would simply sample $\pd_{1}(\theta_{1} \mid Y_{1})$ and $\pd_{3}(\theta_{3} \mid Y_{3})$ first using Stan/HMC, then temper in the chained melded posterior as a target. Determining refreshment moves for the $370$ spline coefficients would probably require a sufficiently novel SMC+HMC refreshment scheme that I would also want to include it in Section 3.
   - Computing the event times and indicators is not entirely trivial computationally. Embedding this inside an SMC sampler is expensive (it is prohibitively expensive for HMC as we need to autodiff through a loop over a root-finder, which in turn repeatedly calls the b-spline basis function). Computing the event times as a processing step after stage one but before stage tow makes this step embarrassingly parallel (making the multistage sampler feasible).
 
-> _(4) If benchmark results cannot be obtained for the model from Section 5, this would also be interesting and mentioning this would make the paper much stronger. Because when reading the paper, I did not see an explanation of why the model could not be estimated without Markov melding (and without the bias that this can introduce)._
 
 - This comment again makes us ask the question about what target or joint model the reviewer has in mind.
 
-# Handling Editor
+# Handling Editor {-}
 
-> _On equation (42) what happens when_ $x_{t - 1} = 0$? _Shouldn't the notation accommodate this case?_
+> $\hookrightarrow$**HE**: _On equation (42) what happens when_ $x_{t - 1} = 0$? _Shouldn't the notation accommodate this case?_
 
-- Strictly yes, but this model is ubiquitous and this issue is ubiquitously ignored [Section 17.3 of @king_statistical_2011; @abadi_estimation_2010; Section 5.2.1 of @finke_efficient_2019].
-- One suspects that an additional model component is required for $x_{t - 1} = 0$, as this presumably corresponds to extinction.
+- Strictly yes, assuming the issue is is the Poisson distribution is not typically defined with its parameter set to zero, but this model is ubiquitous and this issue is ubiquitously ignored [Section 17.3 of @king_statistical_2011; @abadi_estimation_2010; Section 5.2.1 of @finke_efficient_2019].
+- The `R` developers, and therefore presumably most statisticians without thinking, choose to define $\text{Pois}(0)$ to be a point mass at $0$:
+
+```{r}
+rpois(n = 10, lambda = 0)
+```
+- `Stan` explicitly throws an error for `poisson_rng(0.0)`, whilst `NIMBLE` will sample a node defined as `x ~ dpois(0.0)`
 
 
 # Bibliography
