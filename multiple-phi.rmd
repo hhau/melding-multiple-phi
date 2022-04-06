@@ -22,14 +22,14 @@ affiliation:
     authorsLabels: e2
 year: "`r format(Sys.time(), '%Y')`"
 abstract: |
-  A challenge for practitioners of Bayesian inference is specifying a model that incorporates multiple relevant, heterogeneous data.
+  A challenge for practitioners of Bayesian inference is specifying a model that incorporates multiple relevant, heterogeneous data sets.
   It may be easier to instead specify distinct submodels for each source of data, then join the submodels together.
   We consider chains of submodels, where submodels directly relate to their neighbours via common quantities which may be parameters or deterministic functions thereof.
   We propose _chained Markov melding_, an extension of Markov melding, a generic method to combine chains of submodels into a joint model.
   One challenge we address is appropriately capturing the prior dependence between common quantities within a submodel, whilst also reconciling differences in priors for the same common quantity between two adjacent submodels.
   Estimating the posterior of the resulting overall joint model is also challenging, so we describe a sampler that uses the chain structure to incorporate information contained in the submodels in multiple stages, possibly in parallel.
   We demonstrate our methodology using two examples.
-  The first example considers an ecological integrated population model, where multiple data are required to accurately estimate population immigration and reproduction rates.
+  The first example considers an ecological integrated population model, where multiple data sets are required to accurately estimate population immigration and reproduction rates.
   We also consider a joint longitudinal and time-to-event model with uncertain, submodel-derived event times.
   Chained Markov melding is a conceptually appealing approach to integrating submodels in these settings.
 keywords:
@@ -72,7 +72,7 @@ Outside of the statistical literature, a common name for combining multiple data
 Interest in integrating data is not just methodological; applied researchers often collect multiple disparate data sets, or data of different modalities, and wish to combine them.
 For example, to estimate SARS-CoV-2 positivity @donnat_bayesian_2020 build an intricate hierarchical model that integrates both testing data and self-reported questionnaire data, and @parsons_bayesian_2021 specify a hierarchical model of similar complexity to estimate the number of injecting drug users in Ukraine.
 Both applications specify Bayesian models with data-specific components, which are united in a hierarchical manner.
-In conservation ecology, _integrated population models_ (IPMs) [@zipkin_synthesizing_2018] are used to estimate population dynamics, e.g. reproduction and immigration rates, using multiple data on the same population.
+In conservation ecology, _integrated population models_ (IPMs) [@besbeas_integrating_2002; @brooks_bayesian_2004; @schaub_integrated_2011; @maunder_review_2013; @zipkin_synthesizing_2018] are used to estimate population dynamics, e.g. reproduction and immigration rates, using multiple data on the same population.
 Such data have standard models associated with them, such as the Cormack-Jolly-Seber model [@lebreton_modeling_1992] for capture-recapture data, and the IPM serves as the framework in which the standard models are combined.
 More generally, the applications we list illustrate the importance of generic, flexible methods for combining data to applied researchers.
 
@@ -228,7 +228,7 @@ We now propose extensions to logarithmic, linear, and dictatorial pooling for us
 Extending logarithmic pooling for chained Markov melding is straightforward.
 We define the logarithmically pooled prior to be
 \input{tex-input/multiple-phi/0050-pooled-prior-overall.tex}
-with $K_{\text{log}}(\lambda) = \int \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}(\phi_{\modelindex})^{\lambda_{\modelindex}} \text{d}\boldsymbol{\phi}$ for nonnegative weight vector $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$.
+with $K_{\text{log}}(\lambda) = \int \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}(\phi_{\modelindex})^{\lambda_{\modelindex}} \text{d}\boldsymbol{\phi}$ for nonnegative weight vector $\lambda = (\lambda_{1}, \ldots, \lambda_{\Nm})$ and $\sum_{\modelindex = 1}^{\Nm} \lambda_{\modelindex} \geq 1$.
 Note that \eqref{eqn:pooled-prior-overall} does not imply independence between the elements of $\boldsymbol{\phi}$ because
 \input{tex-input/multiple-phi/0051-pooled-prior-log-alt-def.tex}
 When $\lambda_{1} = \lambda_{2} = \ldots = \lambda_{\Nm} = 1$ we obtain a special case which we call product-of-experts (PoE) pooling [@hinton_training_2002].
@@ -250,8 +250,8 @@ We discuss extensions to linear pooling that enable prior dependence between the
 ### Dictatorial pooling
 
 Chained Markov melding does not admit a direct analogue to dictatorial pooling as defined in Section \ref{pooled-prior} because not all submodel prior marginals contain all common quantities.
-For example, consider the logarithmically pooled prior of Equation \eqref{eqn:pooled-prior-overall} with, say, the $\modelindex^{\prime}$th entry in $\lambda$ set to $1$ and all others set to $0$.
-This choice of $\lambda$ results in $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd(\phi_{\modelindex^{\prime}})$, which is flat for $\boldsymbol{\phi}_{-\modelindex^{\prime}}$.
+For example, consider the logarithmically pooled prior of Equation \eqref{eqn:pooled-prior-overall} with, say, the $\modelindex$\textsuperscript{th} entry in $\lambda$ set to $1$ and all others set to $0$.
+This choice of $\lambda$ results in $\pd_{\text{pool}}(\boldsymbol{\phi}) = \pd(\phi_{\modelindex})$, which is flat for $\boldsymbol{\phi}_{-\modelindex}$.
 It seems reasonable to require any generalisation of dictatorial pooling to result in a reasonable prior for all components in $\boldsymbol{\phi}$.
 Such a generalisation should also retain the original intention of dictatorial pooling, i.e.&nbsp;'_the authoritative prior for_ $\phi_{\modelindex}$ _is_ $\pd_{\modelindex}(\phi_{\modelindex})$'.
 
@@ -280,7 +280,7 @@ For example, if $\Nm = 5$ and we wish to ignore $\pd_{2}$ and $\pd_{4}$ when con
 ### Pooling weights
 
 Choosing values for the pooling weights is an important step in specifying the pooled prior [@de_carvalho_combining_2020; @abbas_kullback-leibler_2009; @rufo_log-linear_2012; @rufo_bayesian_2012].
-Because appropriate values for the weights depend on the submodels being pooled and the information available a priori, universal recommendations are impossible, so we illustrate the impact of different choices in a straightforward example.
+Because appropriate values for the weights depend on the submodels being pooled and the information available _a priori_, universal recommendations are impossible, so we illustrate the impact of different choices in a straightforward example.
 It is important that prior predictive visualisations of the pooled prior are produced [@gabry_visualization_2019; @gelman_bayesian_2020] to guide the choice of pooling weights and ensure that the result suitably represents the available information.
 Figure \ref{fig:pooled_densities_plot} illustrates how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}(\boldsymbol{\phi})$ when pooling normal distributions.
 Specifically, we consider $\Nm = 3$ submodels and pool
@@ -299,7 +299,7 @@ knitr::include_graphics("plots/pooling-tests/version-two.pdf")
 For both pooling methods, as the weight $\lambda_{1}$ associated with models $\pd_{1}$ and $\pd_{3}$ increases, the relative contributions of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{3}(\phi_{2 \cap 3})$ increase.
 Note the lack of correlation in $\pd_{\text{pool}}$ under linear pooling (right column of Figure \ref{fig:pooled_densities_plot}) due to Equation \eqref{eqn:silly-linear-overall}.
 A large, near-flat plateau is visible in the $\lambda_{1} = 0.25$ and $\lambda_{1} = 0.375$ cases, which is a result of the mixture of four, 2-D normal distributions that linear pooling produces in this example.
-The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$, and does not result in a priori independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
+The logarithmic pooling process produces a more concentrated prior for small values of $\lambda_{1}$, and does not result in _a priori_ independence between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$.
 Appendix&nbsp;\ref{log-pooling-gaussian-densities} shows analytically that $\lambda_{2}$ controls the quantity of correlation present in $\pd_{\text{pool}}$ in this setting.
 
 # Posterior estimation
@@ -316,7 +316,7 @@ We consider the $\Nm = 3$ case, as this setting includes both of our examples.
 Our approach can be extended to $\Nm > 3$ settings, although we anticipate that it is unlikely to be suitable for large $\Nm$ settings.
 We discuss some of difficulties associated with generic, parallel methodology for efficient posterior sampling in Section \ref{conclusion}.
 
-[^sequential]: Appendix \ref{sequential-sampler} describes such a sequential MCMC sampler.
+[^sequential]: For completeness, Appendix \ref{sequential-sampler} describes such a sequential MCMC sampler. We do not use the sequential sampler in this paper.
 
 ## Parallel sampler
 
@@ -457,7 +457,7 @@ knitr::include_graphics("plots/owls-example/subposteriors-both-patchwork.pdf")
 
 We empirically validate our methodology and sampler by comparing the melded posterior samples to a large sample -- 6 chains, each containing $1 \times 10^5$ post-warmup iterations -- from the original IPM posterior.
 Similarity in the posteriors is expected as the IPM is effectively the joint model we wish to approximate with the chained melded model. It is simply fortunate, from a modelling standpoint, that this example's joint model is easy to construct and computationally feasible with standard tools.
-Note that under logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$ the melded posterior is identical to the original IPM, so any differences are attributable to the multi-stage sampler.
+Note that under logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$ the melded posterior is identical to the original IPM, so any differences between the two posteriors are attributable to the multi-stage sampler.
 Figure \ref{fig:phi_subpost} depicts the posterior credible intervals [@gabry_bayesplot_2021; @kay_tidybayes_2020] for the common quantities from the individual submodels, the melded models, and the original IPM.
 The top row in Figure \ref{fig:phi_subpost} indicates that the count data alone ($\pd_{2}$) contain minimal information about $\alpha_{0}, \alpha_{2}$ and $\rho$; incorporating the data from the other submodels is essential for precise estimates.
 
@@ -528,7 +528,7 @@ We assume a weakly informative prior for the error term $\epsilon_{i, l} \sim \t
 and specific, informative priors for the slope before the breakpoint $\eta^{b}_{1, i} \sim \text{Gamma}(1.53, 0.24)$ and after $\eta^{a}_{1, i} \sim \text{Gamma}(1.53, 0.24)$.
 <!-- \input{tex-input/mimic-example/0022-fluid-submodel-slope-priors.tex} -->
 An appropriate prior for $\kappa_{i}$ and $\eta_{0, i}$ is challenging to specify due to the relationship between the two parameters and the individual-specific support for $\kappa_{i}$.
-We address both challenges by reparameterisation, resulting in a prior for $\kappa_{i}$ that, in the absence of other information, places the breakpoint in the middle of an individuals ICU stay, and a prior for $\eta_{0, i}$ that captures the diverse pathways into ICU that an individual can experience.
+We address both challenges by reparameterisation, resulting in a prior for $\kappa_{i}$ that, in the absence of other information, places the breakpoint in the middle of an individual's ICU stay, and a prior for $\eta_{0, i}$ that captures the diverse pathways into ICU that an individual can experience.
 Details and justifications for all the informative priors are available in Appendix&nbsp;\ref{priors-and-justification-for-the-cumulative-fluid-submodel}.
 Figure \ref{fig:submodel-schematics} displays the parameters and their relationship to the fitted regression line.
 
@@ -579,8 +579,8 @@ Details for all the parametric mixture distribution estimates are contained in A
 
 We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2}), \,\, \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi}) \mathop{/} \left(\pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3}) \right)$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
-It is crucial for the convergence of our multi-stage sampler that $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_.
-Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
+It is crucial for the convergence of our multi-stage sampler that the components of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_ in stage two.
+This is only possible due to the conditional independence between individuals in the posterior, and Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
 We use `Stan` to sample $\psi_{2}$ where, in every MH-within-Gibbs step, we run `Stan` for 9 warm-up iterations and 1 post warm-up iteration[^initialisation].
 We run 5 chains of $10^{4}$ iterations for all stage two targets.
@@ -663,14 +663,14 @@ Designing such a method is complex, as it would have to:
 These are substantial challenges.
 It may be possible to use combine the ideas in @lindsten_divide-and-conquer_2017 and @kuntz_divide-and-conquer_2021, who propose a parallel Sequential Monte Carlo method, with the aforementioned constraints to obtain a generic methodology.
 Ideally we would retain the ability to use existing implementations of the submodels, however the need to recompute the weights of the particles, and hence reevaluate previously considered submodels, may preclude this requirement.
-Our currently sampler is also sensitive to large differences in location or scale of the target distribution between the stages.
-The impact of these differences can be ameliorated using @manderson_numerically_2021, and, more generally, Sequential Monte Carlo samplers are likely to perform better in these settings.
+Our current sampler is also sensitive to large differences in location or scale of the target distribution between the stages.
+The impact of these differences can be ameliorated using the methodology of @manderson_numerically_2022, and, more generally, Sequential Monte Carlo samplers are likely to perform better in these settings.
 
 Our chained Markov melding methodology is general and permits any form of uncertainty in the common quantities.
 In Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1} we use our chained melded model to incorporate uncertainty in the event times and indicators into a survival submodel.
 Some specific forms of uncertainty in the event times have been considered in previous work.
 These include @wang_integrative_2020, who consider uncertain event times arising from record linkage, where the event time is assumed to be one of a finite number of event times arising from the record linkage; and @giganti_accounting_2020, @oh_considerations_2018, and @oh_raking_2021, who leverage external validation data to account for measurement error in the event time.
-However, the general and Bayesian nature of our methodology readily facilitates any form of uncertainty in the event times and the event indicators; uncertainty in the latter is not considered the cited papers.
+However, the general and Bayesian nature of our methodology readily facilitates any form of uncertainty in the event times and the event indicators; uncertainty in the latter is not considered in the cited papers.
 
 The example in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1} has three more interesting aspects to discuss.
 Firstly, the P/F ratio data used in the first submodel is obtained by finding all blood gas measurements from arterial blood samples.
@@ -696,6 +696,7 @@ Whilst we do not believe these costs are worth incurring for our example, for se
 ## Acknowledgements {-}
 
 We thank Sarah L Cowan for assistance in understanding respiratory failure, and Anne Presanis and Brian Tom for many helpful discussions about the methodological aspects of this work.
+We also thank Luiz Max Carvalho for comments on an earlier version of this paper.
 This work was supported by The Alan Turing Institute under the UK Engineering and Physical Sciences Research Council (EPSRC) [EP/N510129/1] and the UK Medical Research Council [programme code MC\_UU\_00002/2].
 
 <!-- This makes pandoc-citeproc put the references before the end of document. -->
@@ -829,7 +830,7 @@ Instead, we reparameterise so that $\eta_{0, i}$ is a function of the y-intercep
     (\eta_{0, i}^{\text{raw}} + \eta^{a}_{1, i} \kappa_{i}) \boldsymbol{1}_{\{0 \geq \kappa_{i}\}}
 \end{equation}
 We place a $\text{LogNormal}(1.61, 0.47^2)$ prior on $\eta_{0, i}^{\text{raw}}$.
-These values are obtained assuming that, a priori, the $2.5\%, 50\%$, and $99\%$ percentiles of $\eta_{0, i}^{\text{raw}}$ are $0.5, 5$, and $15$ respectively [@belgorodski_rriskdistributions_2017].
+These values are obtained assuming that, _a priori_, the $2.5\%, 50\%$, and $99\%$ percentiles of $\eta_{0, i}^{\text{raw}}$ are $0.5, 5$, and $15$ respectively [@belgorodski_rriskdistributions_2017].
 This is a broad prior that reflects the numerous possible admission routes into the ICU.
 We expect those admitted from the wards to have little pre-admission fluid data.
 Those admitted from the operating theatre occasionally have their in-theatre fluid input recorded after admission into the ICU, with no easy way to distinguish these records in the data.
@@ -839,7 +840,7 @@ Those admitted from the operating theatre occasionally have their in-theatre flu
 The hazard at arbitrary time $t$ is
 
 \begin{gather*}
-  h_{i}(t) = \gamma t^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}\theta + \alpha \frac{\partial}{\partial t} m_{i}(t)\right\} \\
+  h_{i}(t) = \gamma t^{\gamma - 1} \exp\left\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta} + \alpha \frac{\partial}{\partial t} m_{i}(t)\right\} \\
   m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}} \\
   \frac{\partial}{\partial t} m_{i}(t) = \eta^{b}_{1, i}\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{t \geq \kappa_{i}\}}.
 \end{gather*}
@@ -851,12 +852,12 @@ Then, for $t > \kappa_{i}$, the cumulative hazard is
   &= \int_{0}^{t}
     \gamma u^{\gamma - 1}
     \exp\left\{
-      \boldsymbol{w}_{i}\theta +
+      \boldsymbol{w}_{i}^{\top}\boldsymbol{\theta} +
       \alpha \eta^{b}_{1, i}\boldsymbol{1}_{\{u < \kappa_{i}\}} +
       \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq \kappa_{i}\}}
     \right\}
     \text{d}u \\
-  &= \gamma \exp\{\boldsymbol{w}_{i}\theta\}
+  &= \gamma \exp\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta}\}
     \int_{0}^{t}
       u^{\gamma - 1}
       \exp\left\{
@@ -864,7 +865,7 @@ Then, for $t > \kappa_{i}$, the cumulative hazard is
         \alpha \eta^{a}_{1, i}\boldsymbol{1}_{\{u \geq \kappa_{i}\}}
       \right\}
     \text{d}u \\
-  &= \gamma \exp\{\boldsymbol{w}_{i}\theta\}
+  &= \gamma \exp\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta}\}
     \left[
       \int_{0}^{\kappa_{i}}
         u^{\gamma - 1}
@@ -880,7 +881,7 @@ Then, for $t > \kappa_{i}$, the cumulative hazard is
         \right\}
       \text{d}u
     \right] \\
-  &= \exp\{\boldsymbol{w}_{i}\theta\}
+  &= \exp\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta}\}
     \left[
       \exp\left\{
         \alpha \eta^{b}_{1, i}
@@ -898,7 +899,7 @@ and for $t < \kappa_{i}$
 
 \begin{align*}
   \int_{0}^{t} h_{i}(u) \text{d}u
-  &= \gamma \exp\{\boldsymbol{w}_{i}\theta\}
+  &= \gamma \exp\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta}\}
     \left[
       \int_{0}^{t}
         u^{\gamma - 1}
@@ -907,14 +908,14 @@ and for $t < \kappa_{i}$
         \right\}
       \text{d}u
     \right] \\
-  &= \exp\{\boldsymbol{w}_{i}\theta\}
+  &= \exp\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta}\}
     \left[
       \exp\left\{
         \alpha \eta^{b}_{1, i}
       \right\}
       t_{i}^{\gamma}
     \right] \\
-  &= t_{i}^{\gamma} \exp\{\boldsymbol{w}_{i}\theta + \alpha \eta^{b}_{1, i}\}.
+  &= t_{i}^{\gamma} \exp\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta} + \alpha \eta^{b}_{1, i}\}.
 \end{align*}
 The survival functions are defined with appropriately for $t > \kappa_{i}$ and $t < \kappa_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
 
@@ -923,7 +924,7 @@ The survival functions are defined with appropriately for $t > \kappa_{i}$ and $
 Our prior for $(\gamma, \alpha, \boldsymbol{\theta})$ must result in a plausible distribution for $\pd_{2, i}(T_{i} \mid d_{i} = 1)$, and a reasonable balance between $d_{i} = 1$ and $d_{i} = 0$ events.
 The primary concern is unintentionally specifying a prior for which the bulk of $\pd_{2, i}(T_{i} \mid d_{i} = 1)$ is very close to zero.
 In addition, certain extreme configurations of $(\gamma, \alpha, \boldsymbol{\theta})$ cause issues for the methodology of @crowther_simulating_2013, particularly the numerical root finding and numerical integration steps.
-We would like to rule out such extreme configurations a priori.
+We would like to rule out such extreme configurations _a priori_.
 Ideally we would encode this information a joint prior for $(\gamma, \alpha, \boldsymbol{\theta})$, but specifying the appropriate correlation structure for these parameters is prohibitively challenging.
 Instead we focus on specifying appropriate marginals for each of $\gamma, \alpha$, and $\boldsymbol{\theta}$, and create visual prior predictive checks [@gabry_visualization_2019; @gelman_bayesian_2020] to ensure the induced prior for $(T_{i}, d_{i})$ is acceptable.
 
@@ -1091,7 +1092,7 @@ Our target is
   \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}) \mid Y_{2}, (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \psi_{2}, \phi_{2 \cap 3}).
   \label{eqn:sub-step-target}
 \end{equation}
-The model, detailed in Section \ref{pf-ratio-submodel-b-spline-pd_1}, factorises such that
+The model, detailed in Section \ref{pf-ratio-submodel-b-spline-pd_1}, uses the conditional independence between individuals to factorise such that
 \begin{equation}
   \pd_{1}(\chi_{1}, \psi_{1} \mid Y_{1}) = \prod_{i = 1}^{N} \pd_{1}(\chi_{1, i}, \psi_{1, i} \mid Y_{1}),
 \end{equation}
@@ -1119,7 +1120,7 @@ This is equivalent to proposing from $\pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1
 Under this proposal, noting that the denominator term in \eqref{eqn:sub-step-one-target} does not depend on the proposed parameters, the acceptance probability for this sub-step is
 \begin{equation}
 \begin{aligned}
-\alpha&\left((\chi_{1, 1}^{*}, \psi_{1}^{*})_{k_{1}^{*}}, (\chi_{1, 1}, \psi_{1}) \right) \\
+\alpha&\left((\chi_{1, 1}^{*}, \psi_{1, 1}^{*})_{k_{1}^{*}}, (\chi_{1, 1}, \psi_{1, 1}) \right) \\
 &=
 \frac {
   \pd_{1}(\chi_{1, 1}^{*}, \psi_{1, 1}^{*} \mid Y_{1})
@@ -1129,9 +1130,9 @@ Under this proposal, noting that the denominator term in \eqref{eqn:sub-step-one
   \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}), (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})
 }
 \frac{
-  \pd_{1}(\chi_{1, 1}, \psi_{1} \mid Y_{1})
+  \pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1})
 } {
-  \pd_{1}(\chi_{1, 1}^{*}, \psi_{1}^{*} \mid Y_{1})
+  \pd_{1}(\chi_{1, 1}^{*}, \psi_{1, 1}^{*} \mid Y_{1})
 } \\
 &= \frac {
   \pd_{2}(\phi_{1 \cap 2, 1}(\chi_{1, 1}^{*}), (\phi_{1 \cap 2, i}(\chi_{1, i}))_{i = 2}^{N}, \phi_{2 \cap 3}, \psi_{2} \mid Y_{2})

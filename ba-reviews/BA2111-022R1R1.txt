@@ -1,0 +1,27 @@
+I congratulate the authors on a nicely written and important paper that describes a method for obtaining inference from "integrated" Bayesian models by melding their inherent submodels.  These types of approaches are becoming more useful as practioners build more complex hierarhical models with multiple data sources (such as the models the authors used for their examples).  
+
+The important contribution in this manuscript beyond their previously published paper on the topic in Bayesian Analysis is the ability to account for sets of parameters that are not shared by all submodels.  The authors' approach is to use a chaining structure and much of the practical aspects of the method relate to how the prior is pooled.  
+
+My main suggestion is for the authors to shorten the manuscript by moving one of the examples to an appendix and instead add a bit more detail about how the melding actually works for readers who may not have familiarity with the previous literature on the topic (including the authors' prior paper on it).  I appreciate both examples in the manuscript, but it might be better to include details about when the pooling results in inference that is exact versus approximate, for example.  There are many choices one must make to implement these methods for fitting models and I think it would help to provide some additional details about the approximation that occurs and the actual algorithms that are used (multi-stage) to fit the models using this approach which don't currently appear until the appendix.  
+
+I also have a number of minor typographical suggestions: 
+
+Page 1, abstract:  In a few places throughout, it seems like "data sets" would be better than "data" as used.  
+
+Page 2, line 13-14:  It would be good to cite the earlier IPM papers here instead.
+
+Page 9, line -11:  Better to use a different variable here than m'.  Maybe just m?
+
+Page 10, and after:  "a priori" should be in italics
+
+Page 20, last line:  Why is the indicator 1 bolded?
+
+Page 21, line 8:  "an individuals ICU stay"
+
+Page 26, line -3:  "currently sampler" 
+
+Page 26, last line:  "using Manderson and Goudie" 
+
+Page 27, line 13:  "not considered the cited papers" 
+
+Page 32, bottom:  I noticed that theta does not appear to be bold, but should be (and w transposed) here and on the top of the next page. 

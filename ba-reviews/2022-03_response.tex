@@ -1,0 +1,604 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode,backref,colorlinks=true}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  10pt,
+  a4paper,
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage[]{tgpagella}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Response to Reviewers},
+  pdfauthor={Andrew A. Manderson and Robert J. B. Goudie},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=2.25cm]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+\usepackage{amsmath,mathtools}
+% I always seem to need tikz for something
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes, intersections, through, backgrounds, fit, decorations.pathmorphing, angles, quotes}
+\usepackage{lineno}
+% \linenumbers
+
+
+\makeatletter
+\@ifclassloaded{imsart}{}{
+\usepackage{setspace}
+\onehalfspacing
+}
+\makeatother
+
+\usepackage{bbm}
+
+\usepackage{enumitem}
+\usepackage{relsize}
+\usepackage{placeins}
+
+% required for landscape pages. beware, they back the build very slow.
+\usepackage{pdflscape}
+
+% table - `gt' package uses these, often unimportant
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\usepackage{color}
+\definecolor{myredhighlight}{RGB}{180, 15, 32}
+\definecolor{mydarkblue}{RGB}{0, 33, 79}
+\definecolor{mymidblue}{RGB}{44, 127, 184}
+\definecolor{mylightblue}{RGB}{166, 233, 255}
+\definecolor{mygrey}{RGB}{68, 68, 68}
+
+\usepackage{colortbl}
+
+\newcommand{\semitransp}[2][35]{\color{fg!#1}#2}
+
+\setcounter{secnumdepth}{3}
+
+\let\Oldcap\cap
+\renewcommand{\cap}{\mathrel{\mathsmaller{\Oldcap}}}
+
+\renewcommand{\floatpagefraction}{0.95}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+
+% pd stands for: probability distribution and is useful to distringuish
+% marignals for probabilities specifically p(p_{1}) and the like.
+\newcommand{\pd}{\text{p}}
+\newcommand{\q}{\text{q}}
+\newcommand{\w}{\text{w}}
+\newcommand{\pdr}{\text{r}}
+\newcommand{\pdrh}{\hat{\text{r}}}
+
+% melding
+\newcommand{\ppoolphi}{\pd_{\text{pool}}(\phi)}
+\newcommand{\pmeld}{\pd_{\text{meld}}}
+
+% the q(x)w(x), "weighted target" density 
+% for the moment I'm going to call it s(x), as that is the next letter of the 
+% alphabet. Can change it later
+\newcommand{\s}{\text{s}}
+% direct density estimate - replaces lambda.
+\newcommand{\ddest}{\text{s}}
+% target weighting function
+\newcommand{\tarw}{\text{u}}
+
+% constants - usually sizes of things
+\newcommand{\Nx}{N}
+\newcommand{\Nnu}{\text{N}_{\text{nu}}}
+\newcommand{\Nde}{\text{N}_{\text{de}}}
+\newcommand{\Nmc}{\text{N}_{\text{mc}}}
+\newcommand{\Nw}{W}
+\newcommand{\Nm}{M}
+\newcommand{\Ns}{S}
+\newcommand{\Np}{P}
+
+% locales - could switch to x and x'
+\newcommand{\xnu}{x_{\text{nu}}}
+\newcommand{\xde}{x_{\text{de}}}
+\newcommand{\phinu}{\phi_{\text{nu}}}
+\newcommand{\phide}{\phi_{\text{de}}}
+
+% sugiyama stuff
+\newcommand{\pdnu}{\pd_{\text{nu}}}
+\newcommand{\pdde}{\pd_{\text{de}}}
+
+% indices 
+\newcommand{\wfindex}{w}
+\newcommand{\sampleindex}{n}
+\newcommand{\modelindex}{m}
+\newcommand{\stageindex}{s}
+\newcommand{\phiindex}{p}
+
+% independence symbol
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\setcomp}{\mathsf{c}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% ARDS example in text commands
+\newcommand{\paoii}{PaO\textsubscript{2}}
+\newcommand{\fioii}{FiO\textsubscript{2}}
+\newcommand{\spoii}{SpO\textsubscript{2}}
+\newcommand{\pfratio}{\paoii/\fioii}
+\newcommand{\sfratio}{\spoii/\fioii}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Response to Reviewers}
+\author{Andrew A. Manderson and Robert J. B. Goudie}
+\date{05 April, 2022}
+
+\begin{document}
+\maketitle
+
+\hypertarget{reviewer-1}{%
+\section{Reviewer 1}\label{reviewer-1}}
+
+\begin{quote}
+\emph{My main suggestion is for the authors to shorten the manuscript by
+moving one of the examples to an appendix and instead add a bit more
+detail about how the melding actually works for readers who may not have
+familiarity with the previous literature on the topic (including the
+authors' prior paper on it). I appreciate both examples in the
+manuscript, but it might be better to include details about when the
+pooling results in inference that is exact versus approximate, for
+example. There are many choices one must make to implement these methods
+for fitting models and I think it would help to provide some additional
+details about the approximation that occurs and the actual algorithms
+that are used (multi-stage) to fit the models using this approach which
+don't currently appear until the appendix.}
+\end{quote}
+
+We thank the reviewer for the kind comments. We will respond in reverse
+order to the comments raised by Reviewer 1.
+
+We agree that there are many choices to make when implementing chained
+Markov melding, but we delineate between choices specific to chained
+Markov melding and those that must be made in fitting any model. We wish
+to include in the main text the choices that we feel will \emph{always}
+be relevant to applications of chained Markov melding, with important,
+but ultimately example-specific, choices included in the appendix. To
+this point, we have clarified the the purposes of the appendices in the
+text, and have hopefully assured the reviewer that material in the
+appendices is overly specific to our second example. Our changes
+include:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Clarifying in the main text that Appendix B is provided only for
+  completeness. We do not use the sequential sampler in either of our
+  examples.
+\item
+  Emphasising in the text and within the appendix that Appendix K is
+  only possible due to the conditional independence between individuals
+  in the posterior, which is very specific to the models under
+  consideration in the second example.
+\end{enumerate}
+
+Furthermore, we think that Appendices E, G, and H, which cover prior
+specification and prior marginal estimation, are important but
+ultimately routine aspects of Bayesian modelling. Specifying appropriate
+priors is a universal task when using the Bayesian paradigm, and
+performing density estimation from Monte Carlo samples should be
+familiar to most statistical practitioners. We have also introduced a
+more sophisticated methodology for density estimation in this setting in
+Manderson and Goudie
+(\protect\hyperlink{ref-manderson_numerically_2022}{2022}) for the
+particularly interested reader. Appendices D and I are decisions
+specific to the data we consider, which is more specific than the
+models, and would be made as part of any analysis of observational data
+(and would often go unreported), or would be specified in an analysis
+plan.
+
+We are unsure of the meaning of the comment describing pooling as
+producing inference that is exact or approximate. When all prior
+marginal densities are known analytically, the pooling function produces
+an analytic expression proportional to
+\(\pd_{\text{pool}}(\boldsymbol{\phi})\) -- there is no approximation
+error here. If one or more of the prior marginal densities is unknown,
+then we suggest approximating it (or a transformation of it) with a
+standard distribution, or using kernel density estimation. Regardless,
+the pooling function does not introduce any approximation in addition to
+that of the prior marginal density estimate.
+
+To address Reviewer 1's first comment, we appreciate (and agree with)
+the inclination towards a shorter manuscript, but ultimately feel tied
+to including both examples in the main text. As Reviewer 2 notes, the
+first example is intentionally illustrative -- we have split an existing
+joint model to illustrate, in a simpler setting, the melding steps and
+computational tools whilst possessing a baseline set of result for
+comparison. This example is also intended to reassure the reader that
+our proposed multi-stage sampler can produce accurate results. Whilst we
+find this example informative, it is ultimately insufficiently
+compelling to justify the methodology. Example 2 is much more compelling
+for the methodology, and as Reviewer 2 notes it is this complexity that
+is ultimately the motivating aspect of the methodology. Without such
+complex submodels we might be able to directly conceive of a joint model
+for all sources of data. Without the second example we feel some readers
+will be left wondering what use, if any, there might be for our method.
+Finally, cutting the first example would save only 4 pages, so
+information currently in the appendix would remain there in either case.
+
+We hope that these points, in addition to addressing the reviewers other
+comments, sufficiently convince the reviewer of the need for both
+examples.
+
+\begin{quote}
+\emph{I also have a number of minor typographical suggestions:}
+\end{quote}
+
+We thank the reviewer for the suggestions and have adopted them in the
+revised version.
+
+\hypertarget{reviewer-2}{%
+\section{Reviewer 2}\label{reviewer-2}}
+
+\begin{itemize}
+\tightlist
+\item
+  We thank the reviewer for the kind comments.
+\end{itemize}
+
+\begin{quote}
+\emph{(2) I would like the authors to explain why one would not simply
+ensure that all sub-models can use the same prior, so that we are back
+in the ``Markov combination'' setting of Equation 1 (in which case no
+``pooled'' priors need to be constructed). It seems to me that a
+principled Bayesian approach would always seek to formulate a single
+prior distribution over all parameters in the model.}
+\end{quote}
+
+\begin{itemize}
+\tightlist
+\item
+  We agree in principle with this sentiment -- it seems desirable to
+  have the same prior for the same quantity in different models.
+\item
+  But there is a tension between having the individual submodels be
+  complete and contained, meaning that they could be produced
+  independently of the submodels, and having the same prior for all
+  common quantities under all submodels.
+\item
+  Perhaps our biggest struggle with this idea is visible in example two,
+  where the common quantity \(\phi_{1 \cap 2}\) is the response in the
+  second submodel
+  \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})\) and
+  \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) contains dependence
+  between the common quantities.
+\item
+  There are two approaches to ensuring
+  \(\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})\),
+  \(\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})\), and
+  \(\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\)
+  in example two.
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Carefully and simultaneously select the prior for the spline
+    coefficients in \(\pd_{1}\) and the prior for the piecewise-linear
+    regression parameters in \(\pd_{3}\), such that all the
+    aforementioned equalities are satisfied.
+  \end{enumerate}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    There are no guarantees that such a set of priors exists\footnote{In
+      our experience there are typically many possible priors that have
+      a specific prior predictive distribution for a quantity that is a
+      non-invertible transformation of the parameters. Locating them
+      requires both specialised methodology and a decision analysis to
+      choose between the possible priors.}, and even if they did it's
+    unclear how we might actually specify them.
+  \end{itemize}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Externally define \(\pd_{\text{pool}}(\boldsymbol{\phi})\) and
+    replace \(\pd_{1}(\phi_{1 \cap 2})\) with
+    \(\pd_{\text{pool}}(\phi_{1 \cap 2})\),
+    \(\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})\) with
+    \(\pd_{\text{pool}}(\boldsymbol{\phi})\), and
+    \(\pd_{3}(\phi_{2 \cap 3})\) with
+    \(\pd_{\text{pool}}(\phi_{2 \cap 3})\). Alternatively we could
+    expand \(\pd_{1}\) to be aware of \(\pd_{3}\) by replacing
+    \(\pd_{1}(\phi_{1 \cap 2})\) with
+    \(\pd_{\text{pool}}(\boldsymbol{\phi})\), doing likewise for
+    \(\pd_{3}\).
+  \end{enumerate}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Both proposals require some kind of pooling to account for applying
+    the prior twice when combining the submodels, should the user wish
+    to correct for this information.
+  \item
+    The second proposal requires expanding the first and third submodels
+    to include a quantity unrelated to the submodel or the submodel's
+    data. There is no information about e.g.~\(\phi_{2 \cap 3}\) in
+    \(\pd_{1}\). This submodel expansion makes it more difficult to
+    understand the submodels in isolation.
+  \item
+    One aim of our methodology is to enable the construction of complex
+    joint models by combining smaller, easier to understand submodels.
+    The ability to specify, and possibly fit and interrogate a submodel
+    before combining it is key -- we'd like to understand the submodels
+    themselves before combining them. In particular, either proposal
+    yields a very strange model for \(\pd_{2}\), which would contain an
+    prior distribution directly on the observational quantity in
+    addition to the likelihood (as well as the prior on the other
+    parameters). Whilst many of these properties are also true of the
+    chained melded model, the key difference is that the submodels
+    remain unmodified and are understandable in isolation.
+  \item
+    There are no guarantees that a prior that ``works'' (appropriately
+    represents known information and facilitates the computation of the
+    subposterior) for the submodel will be suitable for the chained
+    melded model with its higher dimensional parameter space. Pooling
+    allows us to take known priors and modify them in a transparent way
+    to ensure they are suitable for the larger chained melded model.
+  \end{itemize}
+\end{itemize}
+
+\begin{quote}
+\emph{(3) The proposed methodology appears to perform well in the
+integrated-population-model (IPM) example. But, as the authors mention,
+this is just for illustration since the joint posterior distribution in
+this model can be easily and cheaply approximated using a single MCMC
+chain via standard software packages.} \emph{The model in Section 5
+appears to be realistically complex. It is great to see such non-toy
+examples in a methodological paper. However, the example is almost too
+complex: I am finding it difficult to understand how well (or poorly)
+the proposed methodology performs here. It would be really good to have
+benchmark results for the joint model without the bias induced by Markov
+melding (i.e.~in the same way as these are shown for the IPM example). I
+would expect that such results are be attainable using a sequential
+Monte Carlo sampler.}
+\end{quote}
+
+\begin{itemize}
+\item
+  We find find the meaning of the word `bias' difficult to determine in
+  this comment. Does it refer to the hypothetical `bias' introduced by
+  the chained Markov melding process (which produces a joint model), or
+  the bias introduced by the computational multi-stage algorithm we
+  propose to sample the chained melded posterior?
+\item
+  Chained Markov melding does not necessarily introduce any `bias'. As
+  noted in the text for the first example, the IPM and the log-pooling
+  with \(\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})\) are
+  precisely the same joint model, so no possible `bias' has been
+  introduced by chained Markov melding in that example.
+\item
+  If it is this type of bias the reviewer has in mind, then the question
+  is what joint model the reviewer wishes to target? The product of the
+  individual submodels is already a form of chained Markov melding (with
+  product-of-experts pooling), and thus would likewise possess any
+  possible `bias' present in the PoE case presented in Section 5.6.
+\item
+  Additionally, in the PoE case, there is no bias due to marginal
+  density approximation as these terms all cancel in the second stage
+  acceptance probability (so we do not use the marginal approximations).
+\item
+  If it is the bias in the multi-stage algorithm then:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Any finite sample, finite time approximation method will posses some
+    form of bias.
+  \item
+    The joint model parameter space is quite high dimensional (648). The
+    HMC within Stan is key to getting reliable posterior samples from
+    the first and third subposteriors.
+  \item
+    The proposed multi-stage parallel sampler is a crude SMC sampler
+    (with no particle refreshment step and an immediate tempering
+    schedule).
+  \item
+    there genuinely are no generic tools for sampling the joint (melded)
+    model in one step (Stan and a TMB-based/\texttt{RcppSmc} SMC
+    (\protect\hyperlink{ref-eddelbuettel_rcppsmc_2021}{Eddelbuettel
+    \emph{et al.}, 2021};
+    \protect\hyperlink{ref-johansen_smctc_2009}{Johansen, 2009}) lack
+    access to a multiple root finder, as does the BUGS language (in
+    addition to its insufficient flexibility) rendering the SMC inside
+    \texttt{Nimble}
+    (\protect\hyperlink{ref-michaud_sequential_2020}{Michaud \emph{et
+    al.}, 2020}) unsuitable).
+
+    \begin{itemize}
+    \tightlist
+    \item
+      We'd have to build it ourselves, and I'm not convinced I could
+      code one that would converge.
+    \item
+      Any SMC sampler I would build would simply sample
+      \(\pd_{1}(\theta_{1} \mid Y_{1})\) and
+      \(\pd_{3}(\theta_{3} \mid Y_{3})\) first using Stan/HMC, then
+      temper in the chained melded posterior as a target. Determining
+      refreshment moves for the \(370\) spline coefficients would
+      probably require a sufficiently novel SMC+HMC refreshment scheme
+      that I would also want to include it in Section 3.
+    \end{itemize}
+  \item
+    Computing the event times and indicators is not entirely trivial
+    computationally. Embedding this inside an SMC sampler is expensive
+    (it is prohibitively expensive for HMC as we need to autodiff
+    through a loop over a root-finder, which in turn repeatedly calls
+    the b-spline basis function). Computing the event times as a
+    processing step after stage one but before stage tow makes this step
+    embarrassingly parallel (making the multistage sampler feasible).
+  \end{itemize}
+\end{itemize}
+
+\begin{quote}
+\emph{(4) If benchmark results cannot be obtained for the model from
+Section 5, this would also be interesting and mentioning this would make
+the paper much stronger. Because when reading the paper, I did not see
+an explanation of why the model could not be estimated without Markov
+melding (and without the bias that this can introduce).}
+\end{quote}
+
+\begin{itemize}
+\tightlist
+\item
+  This comment again makes us ask the question about what target or
+  joint model the reviewer has in mind.
+\end{itemize}
+
+\hypertarget{handling-editor}{%
+\section{Handling Editor}\label{handling-editor}}
+
+\begin{quote}
+\emph{On equation (42) what happens when} \(x_{t - 1} = 0\)?
+\emph{Shouldn't the notation accommodate this case?}
+\end{quote}
+
+\begin{itemize}
+\tightlist
+\item
+  Strictly yes, but this model is ubiquitous and this issue is
+  ubiquitously ignored
+  (\protect\hyperlink{ref-abadi_estimation_2010}{Abadi \emph{et al.},
+  2010}; Section 17.3 of
+  \protect\hyperlink{ref-king_statistical_2011}{King, 2011}; Section
+  5.2.1 of \protect\hyperlink{ref-finke_efficient_2019}{Finke \emph{et
+  al.}, 2019}).
+\item
+  One suspects that an additional model component is required for
+  \(x_{t - 1} = 0\), as this presumably corresponds to extinction.
+\end{itemize}
+
+\hypertarget{bibliography}{%
+\section*{Bibliography}\label{bibliography}}
+\addcontentsline{toc}{section}{Bibliography}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-abadi_estimation_2010}{}}%
+Abadi, F., Gimenez, O., Ullrich, B., et al. (2010) Estimation of
+immigration rate using integrated population models. \emph{Journal of
+Applied Ecology}, \textbf{47}, 393--400. DOI:
+\href{https://doi.org/10.1111/j.1365-2664.2010.01789.x}{10.1111/j.1365-2664.2010.01789.x}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-eddelbuettel_rcppsmc_2021}{}}%
+Eddelbuettel, D., Johansen, A. M. and Zarubin, L. F. S. and I. (2021)
+{RcppSMC}: {Rcpp Bindings} for {Sequential Monte Carlo}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-finke_efficient_2019}{}}%
+Finke, A., King, R., Beskos, A., et al. (2019) Efficient sequential
+{Monte Carlo} algorithms for integrated population models. \emph{Journal
+of Agricultural, Biological and Environmental Statistics}, \textbf{24},
+204--224. DOI:
+\href{https://doi.org/10.1007/s13253-018-00349-9}{10.1007/s13253-018-00349-9}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-johansen_smctc_2009}{}}%
+Johansen, A. M. (2009) {SMCTC}: {Sequential Monte Carlo} in {C}++.
+\emph{Journal of Statistical Software}, \textbf{30}, 1--41. DOI:
+\href{https://doi.org/10.18637/jss.v030.i06}{10.18637/jss.v030.i06}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-king_statistical_2011}{}}%
+King, R. (2011) Statistical {Ecology}. In \emph{Handbook of {Markov
+Chain Monte Carlo}} (eds S. Brooks, A. Gelman, G. Jones,et al.). Chapman
+{\(\&\)} {Hall}/{CRC Handbooks} of {Modern Statistical Methods}. {CRC
+Press}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-manderson_numerically_2022}{}}%
+Manderson, A. A. and Goudie, R. J. B. (2022) A numerically stable
+algorithm for integrating {Bayesian} models using {Markov} melding.
+\emph{Statistics and Computing}, \textbf{32}, 24. DOI:
+\href{https://doi.org/10.1007/s11222-022-10086-2}{10.1007/s11222-022-10086-2}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-michaud_sequential_2020}{}}%
+Michaud, N., de Valpine, P., Turek, D., et al. (2020) Sequential {Monte
+Carlo Methods} in the nimble {R Package}. \emph{arXiv:1703.06206
+{[}stat{]}}. Available at: \url{https://arxiv.org/abs/1703.06206}.
+
+\end{CSLReferences}
+
+\end{document}

@@ -1,0 +1,21 @@
+SUMMARY
+
+The work "Combining chains of Bayesian models with Markov melding", submitted to Bayesian Analysis, proposes methodology for reconciling the posterior distributions of multiple (sub-)models which are such that consecutive submodels may have some of their parameters in common.
+
+The basic idea is to define a joint "melded" model as the product of:
+(a) a user-specified joint "pooled" prior over all parameters that are shared across two or more of the submodels and 
+(b) the product of all unnormalised sub-model posterior densities each conditioned on any parameters that are part of the pool in (a).
+
+The work then discusses a number of ways in which the pooled prior may be constructed and proposes a staged Markov chain Monte Carlo scheme which exploits the structure of the melded posterior distribution in the special case of three submodels.
+
+COMMENTS
+
+(1) I think the manuscript is very clear and well written. The methodology is novel to my knowledge.
+
+(2) I would like the authors to explain why one would not simply ensure that all sub-models can use the same prior, so that we are back in the "Markov combination" setting of Equation 1 (in which case no "pooled" priors need to be constructed). It seems to me that a principled Bayesian approach would always seek to formulate a single prior distribution over all parameters in the model.
+
+(3) The proposed methodology appears to perform well in the integrated-population-model (IPM) example. But, as the authors mention, this is just for illustration since the joint posterior distribution in this model can be easily and cheaply approximated using a single MCMC chain via standard software packages.
+
+The model in Section 5 appears to be realistically complex. It is great to see such non-toy examples in a methodological paper. However, the example is almost too complex: I am finding it difficult to understand how well (or poorly) the proposed methodology performs here. It would be really good to have benchmark results for the joint model without the bias induced by Markov melding (i.e. in the same way as these are shown for the IPM example). I would expect that such results are be attainable using a sequential Monte Carlo sampler.
+
+(4) If benchmark results cannot be obtained for the model from Section 5, this would also be interesting and mentioning this would make the paper much stronger. Because when reading the paper, I did not see an explanation of why the model could not be estimated without Markov melding (and without the bias that this can introduce).
