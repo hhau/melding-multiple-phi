@@ -243,7 +243,7 @@
 
 \title{Response to Reviewers}
 \author{Andrew A. Manderson and Robert J. B. Goudie}
-\date{06 April, 2022}
+\date{11 April, 2022}
 
 \begin{document}
 \maketitle
@@ -386,11 +386,7 @@ revised version.
 \section*{Reviewer 2}\label{reviewer-2}}
 \addcontentsline{toc}{section}{Reviewer 2}
 
-\begin{itemize}
-\tightlist
-\item
-  We thank the reviewer for the kind comments.
-\end{itemize}
+We thank the reviewer for the kind comments.
 
 \begin{quote}
 \(\hookrightarrow\)\textbf{R2}: \emph{(2) I would like the authors to
@@ -422,9 +418,11 @@ covariance between the neighbouring components of \(\boldsymbol{\phi}\)
 which we consider important. More generally, we see the competing
 methodology for example two as not a full Bayesian joint model, but
 simply plugging-in a point estimate, or Gaussian approximation, of the
-common quantities. Our aim is to facilitate the specification of more
-sophisticated models from components/submodels that modellers likely
-already possess, and ease the sometimes onerous burden of prior
+common quantities (e.g.~Section 4.2.4 of
+\protect\hyperlink{ref-nicholson_interoperability_2021}{Nicholson
+\emph{et al.}, 2021}). Our aim is to facilitate the specification of
+more sophisticated models from components/submodels that modellers
+likely already possess, and ease the sometimes onerous burden of prior
 specification.
 
 We also foresee some technical difficulties in unifying the prior across
@@ -507,7 +505,7 @@ are suitable for the larger chained melded model.
 
 \par
 
-We address comments (3) and (4) simultaneously.
+We address points (3) and (4) simultaneously.
 
 \begin{quote}
 \(\hookrightarrow\)\textbf{R2}: \emph{(3) The proposed methodology
@@ -534,88 +532,102 @@ not be estimated without Markov melding (and without the bias that this
 can introduce).}
 \end{quote}
 
-\begin{itemize}
-\item
-  For benchmark results to exist there must exist a previously existing
-  and comparable joint model and a proven method for sampling this
-  model.
-\item
-  We find find the meaning of the word `bias' difficult to determine in
-  this comment. Does it refer to the hypothetical `bias' introduced by
-  the chained Markov melding process (which produces a joint model), or
-  the bias introduced by the computational multi-stage algorithm we
-  propose to sample the chained melded posterior?
-\item
-  Chained Markov melding does not necessarily introduce any `bias'. As
-  noted in the text for the first example, the IPM and the log-pooling
-  with \(\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})\) are
-  precisely the same joint model, so no possible `bias' has been
-  introduced by chained Markov melding in that example.
-\item
-  If it is this type of bias the reviewer has in mind, then the question
-  is what joint model the reviewer wishes to target? The product of the
-  individual submodels is already a form of chained Markov melding (with
-  product-of-experts pooling), and thus would likewise possess any
-  possible `bias' present in the PoE case presented in Section 5.6.
-\item
-  Additionally, in the PoE case, there is no bias due to marginal
-  density approximation as these terms all cancel in the second stage
-  acceptance probability (so we do not use the marginal approximations).
-\item
-  If it is the bias in the multi-stage algorithm then:
+To obtain benchmark results there must exist 1) a comparable joint model
+and 2) a proven method for sampling/approximating the posterior of this
+model.
 
-  \begin{itemize}
-  \tightlist
-  \item
-    Any finite sample, finite time approximation method will posses some
-    form of bias.
-  \item
-    The joint model parameter space is quite high dimensional (648). The
-    HMC within Stan is key to getting reliable posterior samples from
-    the first and third subposteriors.
-  \item
-    The proposed multi-stage parallel sampler is a crude SMC sampler
-    (with no particle refreshment step and an immediate tempering
-    schedule).
-  \item
-    there genuinely are no generic tools for sampling the joint (melded)
-    model in one step (Stan and a TMB-based/\texttt{RcppSmc} SMC
-    (\protect\hyperlink{ref-eddelbuettel_rcppsmc_2021}{Eddelbuettel
-    \emph{et al.}, 2021};
-    \protect\hyperlink{ref-johansen_smctc_2009}{Johansen, 2009}) lack
-    access to a multiple root finder, as does the BUGS language (in
-    addition to its insufficient flexibility) rendering the SMC inside
-    \texttt{Nimble}
-    (\protect\hyperlink{ref-michaud_sequential_2020}{Michaud \emph{et
-    al.}, 2020}) unsuitable).
+With respect to the first prerequisite, the premise for this example,
+and indeed the methodology, is that there are situations in which it is
+prohibitively difficult to specify a suitable joint model. Some of these
+difficulties are covered in our response to point (2). The point we wish
+to make, and is a clear response to (4), is that there is no other
+existing joint model in this example, and that the joint model formed by
+multiplying the individuals submodels \emph{is} a form of chained Markov
+melding (using product-of-experts pooling). Given this, we find find the
+meaning of `bias induced by Markov melding' difficult to determine in
+this comment. Chained Markov melding does not necessarily introduce any
+`bias'. As noted in the text for the first example, the IPM and the
+log-pooling with \(\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})\)
+are precisely the same joint model, so no possible `bias' has been
+introduced by chained Markov melding in that example. When no other
+joint model exists there is no baseline against which results could be
+declared biased. Additionally, in the PoE case, there is no bias due to
+finite-sample marginal density approximation as these terms all cancel
+in the second stage acceptance probability (so we do not use the
+marginal approximations). If it is this type of bias the reviewer has in
+mind, then it is unclear to us what joint model the reviewer wishes to
+target.
 
-    \begin{itemize}
-    \tightlist
-    \item
-      We'd have to build it ourselves, and I'm not convinced I could
-      code one that would converge.
-    \item
-      Any SMC sampler I would build would simply sample
-      \(\pd_{1}(\theta_{1} \mid Y_{1})\) and
-      \(\pd_{3}(\theta_{3} \mid Y_{3})\) first using Stan/HMC, then
-      temper in the chained melded posterior as a target. Determining
-      refreshment moves for the \(370\) spline coefficients would
-      probably require a sufficiently novel SMC+HMC refreshment scheme
-      that I would also want to include it in Section 3.
-    \end{itemize}
-  \item
-    Computing the event times and indicators is not entirely trivial
-    computationally. Embedding this inside an SMC sampler is expensive
-    (it is prohibitively expensive for HMC as we need to autodiff
-    through a loop over a root-finder, which in turn repeatedly calls
-    the b-spline basis function). Computing the event times as a
-    processing step after stage one but before stage tow makes this step
-    embarrassingly parallel (making the multistage sampler feasible).
-  \end{itemize}
+For the second prerequisite, there are a number of additional
+difficulties to do with implementing such an SMC sampler (once a
+target/joint model has been decided upon) 1. Simultaneously evaluating
+all the terms in the chained melded model is necessary and
+computationally challenging in a SMC/MCMC environment. This is a
+secondary motivation for the sampler, as complex evidence synthesis /
+joint models often cannot be readily evaluated in this manner (see, for
+example, the models in
+\protect\hyperlink{ref-nicholson_interoperability_2021}{Nicholson
+\emph{et al.}, 2021}). One complication of this variety in paper is the
+calculation of
+\(\phi_{1 \cap 2} = (f(\chi_{1 \cap 2, 1}), \ldots, f(\chi_{1 \cap 2, N}))\).
+The mathematics belies much complexity, specifically because we rely on
+a multiple root finder. Implementing this within an HMC, or SMC with HMC
+refreshment, setting involves massively increasing the number of times
+this problem must be solved. Using our multi-stage sampler turns this
+into an embarrassingly parallel, post-stage-one processing problem. 1.
+Our preoccupation with HMC is because the example depends on a
+relatively high number (\(5 \times 10^{4}\)) of high-quality samples
+from \(\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})\), which is
+\(N(2 + 10) = 444\)-dimensional and highly correlated within each of the
+12-dimensional individual subposteriors. This is made possible by the
+efficient dynamic HMC implementation within \texttt{Stan}. 1. There are
+no sufficiently flexible off the shelf SMC packages. \texttt{NIMBLE}
+(\protect\hyperlink{ref-michaud_sequential_2020}{Michaud \emph{et al.},
+2020}) does not support either the B-spline basis function nor
+multiple-root finder, and whilst one could in theory recode both in
+\texttt{Rcpp} to make use of \texttt{RcppSMC}
+(\protect\hyperlink{ref-eddelbuettel_rcppsmc_2021}{Eddelbuettel \emph{et
+al.}, 2021}; \protect\hyperlink{ref-johansen_smctc_2009}{Johansen,
+2009}), this would be an enormous undertaking. We also point out the
+difficult in implementing an SMC sampler for the considerably simpler
+first example encountered by Finke \emph{et al.}
+(\protect\hyperlink{ref-finke_efficient_2019}{2019}) (with details
+discussed in the online appendix). 1. A complete set of numerical and
+visual diagnostics for the multistage samplers are contained in the
+online repository, should there be any concern about the MCMC
+performance.
+
+With the above points in mind, we have made the following modifications
+to the manuscript to emphasise the key aspects of this example,
+including:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
 \item
-  This comment again makes us ask the question about what target or
-  joint model the reviewer has in mind.
-\end{itemize}
+  To the end of section 1.1 ``\emph{It is in examples such as this one
+  that we foresee the most use for chained Markov melding; a fully
+  Bayesian approach is desired and the submodels are non-trivial in
+  complexity, with no previously existing or obvious joint model.}''
+\item
+  To the end of the first paragraph of Section 5.1 ``\emph{The
+  complexity of both the submodels and the definition of the event time
+  complicates the specification of a joint model. Event times and
+  indicators are a non-invertible function of other parameters in the
+  first submodel, and are an uncertain response in the survival
+  submodel. Chained Markov melding enables us to specify a suitable
+  joint model despite these complications.}''
+\item
+  As the new third and forth sentences of paragraph 2 in Section 5.5
+  ``\emph{Targeting} \(\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})\)
+  \emph{in stage one alleviates the need to solve Equation (46) within
+  an MCMC iteration, instead turning the production of}
+  \(\phi_{1 \cap 2}\) \emph{into an embarrassingly parallel,
+  post-stage-one processing step. Attempting to sample the melded
+  posterior directly would involve solving (46) many times within each
+  iteration, presenting a sizeable computational hurdle which we
+  avoid.}''
+\end{enumerate}
 
 \hypertarget{handling-editor}{%
 \section*{Handling Editor}\label{handling-editor}}
@@ -627,22 +639,15 @@ when} \(x_{t - 1} = 0\)? \emph{Shouldn't the notation accommodate this
 case?}
 \end{quote}
 
-\begin{itemize}
-\tightlist
-\item
-  Strictly yes, assuming the issue is is the Poisson distribution is not
-  typically defined with its parameter set to zero, but this model is
-  ubiquitous and this issue is ubiquitously ignored
-  (\protect\hyperlink{ref-abadi_estimation_2010}{Abadi \emph{et al.},
-  2010}; Section 17.3 of
-  \protect\hyperlink{ref-king_statistical_2011}{King, 2011}; Section
-  5.2.1 of \protect\hyperlink{ref-finke_efficient_2019}{Finke \emph{et
-  al.}, 2019}).
-\item
-  The \texttt{R} developers, and therefore presumably most statisticians
-  without thinking, choose to define \(\text{Pois}(0)\) to be a point
-  mass at \(0\):
-\end{itemize}
+Strictly yes, assuming the issue is that the Poisson distribution is not
+typically defined when its parameter is equal to zero, but this model is
+ubiquitous and this issue is ubiquitously ignored (Section 17.3 of
+\protect\hyperlink{ref-king_statistical_2011}{King, 2011}; ``Materials
+and methods'' in \protect\hyperlink{ref-abadi_estimation_2010}{Abadi
+\emph{et al.}, 2010}; Section 5.2.1 of
+\protect\hyperlink{ref-finke_efficient_2019}{Finke \emph{et al.},
+2019}). Interestingly, the \texttt{R} developers choose to define
+\(\text{Pois}(0)\) to be a point mass at \(0\):
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -654,12 +659,16 @@ case?}
 ##  [1] 0 0 0 0 0 0 0 0 0 0
 \end{verbatim}
 
+\texttt{Stan} explicitly throws an error for \texttt{poisson\_rng(0.0)},
+whilst \texttt{NIMBLE} will sample a node defined as
+\texttt{x\ \textasciitilde{}\ dpois(0.0)} We have added the following
+sentence to the end of Section 4.2 reading
+
 \begin{itemize}
 \tightlist
 \item
-  \texttt{Stan} explicitly throws an error for
-  \texttt{poisson\_rng(0.0)}, whilst \texttt{NIMBLE} will sample a node
-  defined as \texttt{x\ \textasciitilde{}\ dpois(0.0)}
+  ``\emph{If} \(x_{t - 1} = 0\) \emph{then we assume that the Poisson
+  and binomial distributions become point masses at zero.}''
 \end{itemize}
 
 \hypertarget{bibliography}{%
@@ -676,7 +685,7 @@ Applied Ecology}, \textbf{47}, 393--400. DOI:
 
 \leavevmode\vadjust pre{\hypertarget{ref-eddelbuettel_rcppsmc_2021}{}}%
 Eddelbuettel, D., Johansen, A. M. and Zarubin, L. F. S. and I. (2021)
-{RcppSMC}: {Rcpp Bindings} for {Sequential Monte Carlo}.
+{RcppSMC}: {Rcpp} bindings for sequential {Monte Carlo}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-finke_efficient_2019}{}}%
 Finke, A., King, R., Beskos, A., et al. (2019) Efficient sequential
@@ -691,15 +700,21 @@ Johansen, A. M. (2009) {SMCTC}: {Sequential Monte Carlo} in {C}++.
 \href{https://doi.org/10.18637/jss.v030.i06}{10.18637/jss.v030.i06}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-king_statistical_2011}{}}%
-King, R. (2011) Statistical {Ecology}. In \emph{Handbook of {Markov
-Chain Monte Carlo}} (eds S. Brooks, A. Gelman, G. Jones,et al.). Chapman
+King, R. (2011) Statistical ecology. In \emph{Handbook of {Markov Chain
+Monte Carlo}} (eds S. Brooks, A. Gelman, G. Jones,et al.). Chapman
 {\(\&\)} {Hall}/{CRC Handbooks} of {Modern Statistical Methods}. {CRC
 Press}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-michaud_sequential_2020}{}}%
 Michaud, N., de Valpine, P., Turek, D., et al. (2020) Sequential {Monte
-Carlo Methods} in the nimble {R Package}. \emph{arXiv:1703.06206
+Carlo} methods in the {NIMBLE R} package. \emph{arXiv:1703.06206
 {[}stat{]}}. Available at: \url{https://arxiv.org/abs/1703.06206}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-nicholson_interoperability_2021}{}}%
+Nicholson, G., Blangiardo, M., Briers, M., et al. (2021)
+Interoperability of statistical models in pandemic preparedness:
+Principles and reality. \emph{Statistical Science (forthcoming)}.
+Available at: \url{https://arxiv.org/abs/2109.13730}.
 
 \end{CSLReferences}
 

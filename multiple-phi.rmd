@@ -140,6 +140,8 @@ Each of the $\modelindex = 1, 2, 3$ has submodel-specific data $Y_{\modelindex}$
 The high level submodel relationships are displayed as a DAG in Figure \ref{fig:surv-simple-dag}.
 \input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
+It is in examples such as this one that we foresee the most use for chained Markov melding; a fully Bayesian approach is desired and the submodels are non-trivial in complexity, with no previously existing or obvious joint model.
+
 ## Markov melding
 
 We now review Markov melding [@goudie_joining_2019] before detailing our proposed extension.
@@ -410,6 +412,7 @@ If $\text{sur}_{t}$ adult females survive from time $t - 1$ to time $t$, and $\t
 \input{tex-input/owls-example/0020-count-data-submodel.tex}
 where $\eta_{t}$ is the immigration rate.
 The initial population sizes $x_{J, 1}$ and $x_{A, 1}$ have independent discrete uniform priors on $\{0, 1, \ldots, 50\}$.
+If $x_{t - 1} = 0$ then we assume that the Poisson and binomial distributions become point masses at zero.
 
 ## Fecundity: $\pd_{3}$
 
@@ -581,6 +584,8 @@ Details for all the parametric mixture distribution estimates are contained in A
 
 We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2}), \,\, \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi}) \mathop{/} \left(\pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3}) \right)$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
+Targeting $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ in stage one alleviates the need to solve Equation \eqref{eqn:event-time-model-def} within an MCMC iteration, instead turning the production of $\phi_{1 \cap 2}$ into an embarrassingly parallel, post-stage-one processing step.
+Attempting to sample the melded posterior directly would involve solving \eqref{eqn:event-time-model-def} many times within each iteration, presenting a sizeable computational hurdle which we avoid.
 It is crucial for the convergence of our multi-stage sampler that the components of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ are updated _individual-at-a-time_ in stage two.
 This is possible due to the conditional independence between individuals in the posterior, and Appendix&nbsp;\ref{one-at-a-time} contains the details of this scheme.
 The stage one subposteriors are sampled using `Stan`, using 5 chains with $10^{3}$ warm-up iterations and $10^{4}$ post warm-up iterations.
