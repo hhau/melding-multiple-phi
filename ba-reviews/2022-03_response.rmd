@@ -33,24 +33,33 @@ Rscript -e 'rmarkdown::render("ba-reviews/2022-03_response.rmd")'
 We thank the reviewer for the kind comments.
 We will respond in reverse order to the points raised by Reviewer 1.
 
-We agree that there are many choices to make when implementing chained Markov melding, but we delineate between choices specific to chained Markov melding and those that must be made in fitting any model.
-We wish to include in the main text the choices that we feel will _always_ be relevant to applications of chained Markov melding, with important, but ultimately example-specific, choices included in the appendix.
-To this point, we have clarified the purposes of the appendices in the text, and explicitly stated the chained Markov melding specific choices that users must make.
-Our changes include:
+We agree that there are many choices to make when implementing chained Markov melding, but we delineate between choices specific to chained Markov melding and those that must be made when fitting any model.
+We wish to include in the main text the choices that we feel will _always_ be important in applications of chained Markov melding, with related, but ultimately example-specific, choices included in the appendix.
+To this point we have clarified the purposes of the appendices in the text, and explicitly stated the choices specific to chained Markov melding that users must make.
+Our changes are:
 
 1. Adding a sentence to the end of paragraph 1 of the conclusion to that reads:
 
     "_We also present the choices, and their impacts, that users of chained Markov melding must make which include: the choice of pooling function, and where required the pooling weights; the choice of posterior sampler and the design thereof, including the apportionment of the pooled prior over the stages and stage-specific MCMC techniques._"
 
-1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K shows this, but is specific to the models under consideration in the second example (though other submodels may have such posterior conditional independences). The generality of the individual-at-a-time sampler is low, so including it in the main text seems unnecessary and likely to confuse the reader.
-1. Clarifying in the main text that Appendix B is provided only for completeness. We do not use the sequential sampler in either of our examples.
+1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K establishes the validity of our sampler, but the argument is specific to the submodels in the second example (though other submodels may have such posterior conditional independences). The general applicability of the individual-at-a-time sampler is low, so including it in the main text seems unnecessary and likely to confuse the reader. Specifically, we have added a sentence in Section 5.5 that reads:
+
+    "_This is possible due to the conditional independence between individuals in the posterior, and Appendix K contains the details of this scheme._"
+
+    and modified subsection "sub-step 1" of Appendix K to include:
+
+    "_The model, detailed in Section 5.1, uses the conditional independence between individuals to factorise such that \textellipsis_".
+
+1. Noting in the main text that Appendix B is provided only for completeness. We do not use the sequential sampler in either of our examples. The footnote on page 13 now reads:
+
+    "_For completeness, Appendix B describes such a sequential MCMC sampler. We do not use the sequential sampler in this paper._"
 
 Furthermore, we think that Appendices E, G, and H, covering prior specification and prior marginal estimation, are important but ultimately routine aspects of Bayesian modelling.
 Appendices D and I are decisions specific to the data we consider, and would be made as part of any analysis of observational data (and would often go unreported), or would be specified in an analysis plan.
 
 We are unsure of the meaning of the comment describing pooling as producing inference that is exact or approximate.
 When all prior marginal densities are known analytically, the pooling function produces an analytic expression proportional to $\pd_{\text{pool}}(\boldsymbol{\phi})$ -- there is no approximation error here.
-If one or more of the prior marginal densities is unknown, then we suggest approximating it (or a transformation of it) with a standard distribution, or using kernel density estimation. Regardless, the pooling function does not introduce any approximation in addition to that of the prior marginal density estimate.
+If one or more of the prior marginal densities is unknown, then we suggest approximating it with a standard distribution or using kernel density estimation. Regardless, the pooling function does not introduce any approximation in addition to that of the prior marginal density estimate.
 If by 'exact' the reviewer is instead referring to situations where the chained Markov melded model is the same as the original joint model, then we wish to point our that a suitable joint model must exist in the first place (see our response to Reviewer 2 for further details).
 Our first example is one such situation, and we have added the following to the start of Section 4:
 
@@ -60,13 +69,14 @@ and the following (new in italic) to Section 4.5:
 
 - "We also use logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, which is denoted $\pd_{\text{meld, log}}$ _and results in the chained melded model being identical to the IPM._"
 
-To address Reviewer 1's first comment, we appreciate (and agree with) the inclination towards a shorter manuscript, but ultimately feel tied to including both examples in the main text.
-As Reviewer 2 notes, the first example is intentionally illustrative -- we have split an existing joint model to illustrate, in a simpler setting, the melding steps and computational tools whilst possessing a baseline set of result for comparison.
+To address Reviewer 1's first comment, we appreciate  the inclination towards a shorter manuscript, but ultimately feel tied to including both examples in the main text.
+As Reviewer 2 notes, the first example is intentionally illustrative -- we have split an existing joint model to make clear, in a simpler setting, the chained Markov melding steps and proposed computational tools, whilst possessing a baseline result for comparison.
 This example is also intended to reassure the reader that our proposed multi-stage sampler can produce accurate results.
 Whilst we find this example informative, it is ultimately insufficiently compelling to justify the methodology.
-Example 2 is much more compelling for the methodology, and as Reviewer 2 notes it is this complexity that is ultimately the motivating aspect of the methodology. Without such complex submodels we might be able to directly conceive of a joint model for all sources of data.
+The second example is much more compelling for the methodology, and as Reviewer 2 notes it is the example's complexity that motivates the methodology.
+If such complex submodels were not necessary we might be able to immediately conceive of a joint model for all sources of data.
 Without the second example we feel some readers will be left wondering what use, if any, there might be for our method.
-Finally, cutting the first example would save only 4 pages, so information currently in the appendix would remain there in either case.
+Finally, moving the first example to the appendix would save only 4 pages, so information currently in the appendix would remain there in either case.
 
 We hope that these points, in addition to addressing the reviewers other comments, sufficiently convince the reviewer of the need for both examples.
 

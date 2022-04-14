@@ -243,7 +243,7 @@
 
 \title{Response to Reviewers}
 \author{Andrew A. Manderson and Robert J. B. Goudie}
-\date{11 April, 2022}
+\date{14 April, 2022}
 
 \begin{document}
 \maketitle
@@ -273,13 +273,13 @@ order to the points raised by Reviewer 1.
 
 We agree that there are many choices to make when implementing chained
 Markov melding, but we delineate between choices specific to chained
-Markov melding and those that must be made in fitting any model. We wish
-to include in the main text the choices that we feel will \emph{always}
-be relevant to applications of chained Markov melding, with important,
-but ultimately example-specific, choices included in the appendix. To
-this point, we have clarified the purposes of the appendices in the
-text, and explicitly stated the chained Markov melding specific choices
-that users must make. Our changes include:
+Markov melding and those that must be made when fitting any model. We
+wish to include in the main text the choices that we feel will
+\emph{always} be important in applications of chained Markov melding,
+with related, but ultimately example-specific, choices included in the
+appendix. To this point we have clarified the purposes of the appendices
+in the text, and explicitly stated the choices specific to chained
+Markov melding that users must make. Our changes are:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -296,16 +296,31 @@ that users must make. Our changes include:
 \item
   Emphasising in the text and within the appendix that the
   individual-at-a-time sampler is only possible due to the conditional
-  independence between individuals in the posterior. Appendix K shows
-  this, but is specific to the models under consideration in the second
-  example (though other submodels may have such posterior conditional
-  independences). The generality of the individual-at-a-time sampler is
-  low, so including it in the main text seems unnecessary and likely to
-  confuse the reader.
+  independence between individuals in the posterior. Appendix K
+  established the validity of our sampler, but the argument is specific
+  to the submodels in the second example (though other submodels may
+  have such posterior conditional independences). The general
+  applicability of the individual-at-a-time sampler is low, so including
+  it in the main text seems unnecessary and likely to confuse the
+  reader. Specifically, we have added a sentence in Section 5.5 that
+  reads:
+
+  ``\emph{This is possible due to the conditional independence between
+  individuals in the posterior, and Appendix K contains the details of
+  this scheme.}''
+
+  and modified subsection ``sub-step 1'' of Appendix K to include:
+
+  ``\emph{The model, detailed in Section 5.1, uses the conditional
+  independence between individuals to factorise such that
+  \textellipsis}''.
 \item
   Clarifying in the main text that Appendix B is provided only for
   completeness. We do not use the sequential sampler in either of our
-  examples.
+  examples. The footnote on page 13 now reads:
+
+  ``\emph{For completeness, Appendix B describes such a sequential MCMC
+  sampler. We do not use the sequential sampler in this paper.}''
 \end{enumerate}
 
 Furthermore, we think that Appendices E, G, and H, covering prior
