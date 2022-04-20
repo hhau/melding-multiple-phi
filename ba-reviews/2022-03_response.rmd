@@ -90,35 +90,42 @@ We thank the reviewer for the kind comments.
 
 > $\hookrightarrow$**R2**: _(2) I would like the authors to explain why one would not simply ensure that all sub-models can use the same prior, so that we are back in the "Markov combination" setting of Equation 1 (in which case no "pooled" priors need to be constructed). It seems to me that a principled Bayesian approach would always seek to formulate a single prior distribution over all parameters in the model._
 
-We agree in principle with this sentiment -- it seems desirable to have the same prior for the same quantity in different models.
-But there is a tension between having the individual submodels be complete and contained, meaning that they could be specified and understood independently of the chained melded model, and having the same prior for all common quantities under all submodels.
-It is of course theoretically possible to specify $\pd_{\text{pool}}(\boldsymbol{\phi})$ to be something other than a function of the submodel marginals -- a "BYO-prior" if you will.
-The tricky question here is how one acquires this prior and ensures that it is suitable for the chained melded model, and all its marginals are suitable for the submodels.
-As we note in the second sentence of the introduction, the difficulty in modelling multiple sources of information is specifying a suitable joint model, which includes specifying the prior for such a joint model.
-We choose to specify a prior using pooling because we find it hard, particularly as $\Nm$ increases, to obtain a prior suitable for the chained melded model and with suitable marginals, as well as embedding appropriate covariance between the neighbouring components of $\boldsymbol{\phi}$ which we consider important.
-More generally, we see the competing methodology for example two as not a full Bayesian joint model, but simply plugging-in a point estimate, or Gaussian approximation, of the common quantities [e.g. Section 4.2.4 of @nicholson_interoperability_2021].
+We agree with this principle -- it does seem desirable to have the same prior for the same quantity in different models.
+But there is a tension between having the submodels be complete and contained, meaning they could be specified and understood independently of the chained melded model, and having the same prior for all common quantities under all submodels.
+
+The challenge in modelling multiple sources of information is specifying a suitable joint model, which includes specifying the prior for this joint model.
+It is possible to specify $\pd_{\text{pool}}(\boldsymbol{\phi})$ to be something other than a function of the submodel marginals, the difficulty is in acquiring this prior and ensuring its suitability for the chained melded model and, simultaneously, that all its marginals are satisfactory for the submodels.
+We use pooling because we find it hard to specify such a prior, particularly as the number of submodels increases, which also has appropriate dependence between the neighbouring components of $\boldsymbol{\phi}$.
+
+More generally, we see the competing methodology for chained Markov melding, particularly in settings like Example two, as not a full Bayesian joint model, but simply plugging-in a point estimate or Gaussian approximation of the common quantities [e.g. Section 4.2.4 of @nicholson_interoperability_2021].
 Our aim is to facilitate the specification of more sophisticated models from components/submodels that modellers likely already possess, and ease the sometimes onerous burden of prior specification.
 
-We also foresee some technical difficulties in unifying the prior across submodels, if we take as a starting point the existence of the submodels and suitably defined common quantities.
-In particular, perhaps our biggest struggle with this idea is visible in example two, where the common quantity $\phi_{1 \cap 2}$ is the response in the second submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ contains dependence between the common quantities.
+(_cut below if technical points undesirable_)
+
+We also foresee some technical difficulties in unifying the prior across submodels.
+Take as a starting point the existence of the submodels and suitably defined common quantities.
+Our struggles with this idea are visible in example two, where the common quantity $\phi_{1 \cap 2}$ is 1) a noninvertible function of other submodel parameters in $\pd_{1}$, 2) the response in the second submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$, and 3) $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ contains dependence between the common quantities.
 We see two approaches to ensuring $\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ in example two.
 
   1. Carefully and simultaneously select the prior for the spline coefficients in $\pd_{1}$ and the prior for the piecewise-linear regression parameters in $\pd_{3}$, such that all the aforementioned equalities are satisfied.
 
-We note here that there are no guarantees that such a set of priors exists[^prior-by-ppd], and even if they did it's unclear how we might actually specify them.
+We note here that there are no guarantees that such a choice prior exists[^prior-by-ppd], and even if it did it is unclear how we might actually specify such a prior.
 
-  2. Externally define $\pd_{\text{pool}}(\boldsymbol{\phi})$ and replace $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, and $\pd_{3}(\phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\phi_{2 \cap 3})$. Alternatively we could expand $\pd_{1}$ to be aware of $\pd_{3}$ by replacing $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, doing likewise for $\pd_{3}$.
+  2. Externally define $\pd_{\text{pool}}(\boldsymbol{\phi})$ and replace $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, and $\pd_{3}(\phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\phi_{2 \cap 3})$.
+  3. Alternatively we could expand $\pd_{1}$ to be aware of $\pd_{3}$ by replacing $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, doing likewise for $\pd_{3}$.
 
-Both proposals require some kind of pooling to account for applying the prior twice when combining the submodels, should such a correction be desirable.
-The second proposal requires expanding the first and third submodels to include a quantity unrelated to the submodel or the submodel's data. There is no information about e.g. $\phi_{2 \cap 3}$ in $\pd_{1}$.
-This submodel expansion makes it more difficult to understand the submodels in isolation.
-One aim of our methodology is to enable the construction of complex joint models by combining smaller, easier to understand submodels.
+Difficulties include:
+
+- Proposals 2 and 3 require some kind of pooling to account for applying the prior twice when combining the submodels, should such a correction be desirable.
+- The submodel expansion proposals 3 makes it more difficult to understand the submodels in isolation. Specifically, it requires expanding the first and third submodels to include a quantity unrelated to the submodel or the submodel's data. That is to say it seems strange to include, e.g. $\phi_{2 \cap 3}$ in $\pd_{1}$, as there is no information about this quantity in the first submodel.
+- Both proposals 2 and 3 yield a very strange form for $\pd_{2}$, which would contain a prior term, in addition to the likelihood, directly for the observational quantity as well as the prior terms for the other parameters.
+
+More generally, one aim of our methodology is to enable the construction of complex joint models by combining smaller, easier to understand submodels.
 The ability to specify, and possibly fit and interrogate a submodel before combining it is key -- we'd like to understand the submodels themselves before combining them.
-Either option in the second proposal yields a very strange form for $\pd_{2}$, which would contain a prior term, in addition to the likelihood, directly for the observational quantity as well as the prior terms for the other parameters.
-Whilst many of these properties are also true of the chained melded model, the key difference is that the submodels remain unmodified and are understandable in isolation.
+Whilst the final difficulty is also true of the chained melded model, the key difference is that the submodels remain unmodified and are understandable in isolation.
 
-There are also no guarantees that a prior that "works" for the submodel (appropriately represents known information and facilitates the computation of the subposterior) will be suitable for the chained melded model with its higher dimensional parameter space.
-Pooling allows us to take known priors and modify them in a transparent way to ensure they are suitable for the larger chained melded model.
+Finally, there are also no guarantees that a prior that "works" for the submodel (appropriately represents known information and facilitates computation of the subposterior) will be suitable for the chained melded model with its higher dimensional parameter space.
+Pooling allows us to take submodels priors and modify them in a transparent way to obtain a suitable prior for the higher dimensional chained melded model.
 
 [^prior-by-ppd]: In our experience there are typically many possible priors that have a specific prior predictive distribution for a quantity that is a non-invertible transformation of the parameters. Locating them requires both specialised methodology and a decision analysis to choose between the possible priors.
 
@@ -159,16 +166,19 @@ With the above points in mind, we have made the following modifications to the m
 
 > $\hookrightarrow$**HE**: _On equation (42) what happens when_ $x_{t - 1} = 0$? _Shouldn't the notation accommodate this case?_
 
-Strictly yes, assuming the issue is that the Poisson distribution is not typically defined when its parameter is equal to zero, but this model is ubiquitous and this issue is ubiquitously ignored [Section 17.3 of @king_statistical_2011; "Materials and methods" in @abadi_estimation_2010; Section 5.2.1 of @finke_efficient_2019].
+Strictly yes, assuming the issue is that the $\text{Poisson}(\lambda)$ distribution is not typically defined when $\lambda = 0$, but this model is ubiquitous and this issue is ubiquitously ignored [Section 17.3 of @king_statistical_2011; the "Materials and methods" section in @abadi_estimation_2010; Section 5.2.1 of @finke_efficient_2019].
+We have added the following sentence to the end of Section 4.2 reading
+
+- "_If_ $x_{t - 1} = 0$ _then we assume that the Poisson and binomial distributions become point masses at zero._"
+
 Interestingly, the `R` developers choose to define $\text{Pois}(0)$ to be a point mass at $0$:
 
 ```{r}
 rpois(n = 10, lambda = 0)
+dpois(x = 0 : 1, lambda = 0)
 ```
 
-`Stan` explicitly throws an error for `poisson_rng(0.0)`, whilst `NIMBLE` will sample a node defined as `x ~ dpois(0.0)`
-We have added the following sentence to the end of Section 4.2 reading
+`Stan` explicitly throws an error for `poisson_rng(0.0)`, whilst `NIMBLE` will sample a node $x$ defined as `x ~ dpois(0.0)` with all samples being $0$.
 
-- "_If_ $x_{t - 1} = 0$ _then we assume that the Poisson and binomial distributions become point masses at zero._"
 
 # Bibliography
