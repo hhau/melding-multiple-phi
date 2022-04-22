@@ -281,7 +281,7 @@ For example, if $\Nm = 5$ and we wish to ignore $\pd_{2}$ and $\pd_{4}$ when con
 
 ### Pooling weights
 
-Choosing values for the pooling weights is an important step in specifying the pooled prior [@de_carvalho_combining_2020; @abbas_kullback-leibler_2009; @rufo_log-linear_2012; @rufo_bayesian_2012].
+Choosing values for the pooling weights is an important step in specifying the pooled prior [@carvalho_bayesian_2022; @abbas_kullback-leibler_2009; @rufo_log-linear_2012; @rufo_bayesian_2012].
 Because appropriate values for the weights depend on the submodels being pooled and the information available _a priori_, universal recommendations are impossible, so we illustrate the impact of different choices in a straightforward example.
 It is important that prior predictive visualisations of the pooled prior are produced [@gabry_visualization_2019; @gelman_bayesian_2020] to guide the choice of pooling weights and ensure that the result suitably represents the available information.
 Figure \ref{fig:pooled_densities_plot} illustrates how $\lambda$ and the choice of pooling method impacts $\pd_{\text{pool}}(\boldsymbol{\phi})$ when pooling normal distributions.
@@ -488,7 +488,7 @@ For each individual denote the vector of observations $\boldsymbol{z}_{i} = (z_{
 To improve computational performance, we standardise the P/F ratio data for each individual such that $z_{i, j} = \frac{\tilde{z}_{i, j} - \overline{z}_{i}}{\hat{s}_{i}}$, where $\tilde{z}_{i, j}$ is the underlying unstandardised observation with mean $\overline{z}_{i}$ and standard deviation $\hat{s}_{i}$.
 Similarly we rescale the threshold for respiratory failure: $\tau_{i} = \frac{300 - \overline{z}_{i}}{\hat{s}_{i}}$.
 
-We choose to model the P/F ratio using cubic B-splines and 7 internal knots, and do not include an intercept column in the spline basis [for background on B-splines see: Chapter 2 in @hastie_generalized_1999; and the supplementary material of @wang_shape-restricted_2021-1].
+We choose to model the P/F ratio using cubic B-splines and 7 internal knots, and do not include an intercept column in the spline basis [for background on B-splines see: Chapter 2 in @hastie_generalized_1999; and the supplementary material of @wang_shape-restricted_2021].
 The internal knots are evenly spaced between two additional boundary knots at $\min(\boldsymbol{t}_{i})$ and $\max(\boldsymbol{t}_{i})$.
 These choices result in $k = 1, \ldots, 10$ spline basis terms per individual, with coefficients $\zeta_{i, k}$ where $\boldsymbol{\zeta}_{i} = (\zeta_{i, 1}, \ldots, \zeta_{i, 10})$.
 We denote the individual specific B-spline basis evaluated at time $t_{i, j}$ as $B_{i}(t_{i, j}) \in [0, \infty)^{10}$ so that the submodel can be written as
