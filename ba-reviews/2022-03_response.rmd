@@ -93,18 +93,20 @@ We thank the reviewer for the kind comments.
 We agree with this principle -- it does seem desirable to have the same prior for the same quantity in different models.
 But there is a tension between having the submodels be complete and contained, meaning they could be specified and understood independently of the chained melded model, and having the same prior for all common quantities under all submodels.
 
-Our starting point for our methodology is multiple complete submodels, which may be specified by separate practitioners with different priors.
-If these practitioners could be tasked with specifying a single prior, then the fact that one of the common quantities is a complex, non-invertible function of other submodel parameters poses a significant technical challenge to specifying such a prior.
+Our starting point for our methodology is multiple complete submodels, which may be specified by separate practitioners with distinct priors for the submodels they are each concerned with.
+If these practitioners could be tasked with specifying a single prior for the joint/chained Markov melding model, then the fact that one of the common quantities is a complex, noninvertible function of other submodel parameters poses a significant technical challenge to specifying such a prior.
 In our second example, this would involve carefully and simultaneously specifying  the prior for the spline coefficients in $\pd_{1}$ and the prior for the piecewise-linear regression parameters in $\pd_{3}$, such that $\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 There are no guarantees that such a choice of prior exists.
-In our experience there are typically many possible priors that have a specific prior predictive distribution for a quantity that is a non-invertible transformation of the parameters.
-If such a prior does theoretically exists, it is unclear how we might actually specify such a prior (particularly in non-trivial dimensions).
+In our experience there are typically many possible priors that have a specific prior predictive distribution for a quantity that is a noninvertible transformation of the parameters.
+Even if such a prior does theoretically exist it is unclear how we might actually specify such a prior.
 
 From our starting point of multiple submodel priors, we then ask ourselves "how can we reformulate the problem of chained submodel combination to be as similar as possible to Markov combination?"
 The goal -- implicit in this question, and as the reviewer suggests -- is to acquire a common prior for $\boldsymbol{\phi}$.
-We could choose exactly one of the submodel priors for use in the melded model.
-This is dictatorial pooling, and thus Markov combination is the special case of Markov melding + dictatorial pooling where all submodel prior marginals are identical.
-In the chained melding case, this is unappealing for the reasons we discuss in the dictatorial pooling section in 2.2: that choosing one prior does not "span" all the quantities in $\boldsymbol{\phi}$.
+Indeed, one motivation for marginal replacement in @goudie_joining_2019 is to  make Markov combination more widely applicable, and the marginal replacement procedure we propose in Section 2.1 shares this intention.
+Consider an alternative approach where we choose exactly one of the submodel priors for use in the melded model.
+This is dictatorial pooling, and thus Markov combination is the special case of Markov melding with dictatorial pooling where all submodel prior marginals are identical.
+For chained Markov melding this is unappealing for the reasons we discuss in the dictatorial pooling subsection of Section 2.2.
+Specifically, that choosing one prior does not "span" all the quantities in $\boldsymbol{\phi}$.
 Our dictatorial pooling proposal for chained Markov melding is our proposal for a joint model as similar to Markov combination as possible in the chained model setting.
 Our logarithmic and linear proposals are transparent methods for obtaining a single common prior $\pd_{\text{pool}}(\boldsymbol{\phi})$ in situations where the dictatorially pooled prior is unacceptable.
 
