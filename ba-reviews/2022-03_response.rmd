@@ -93,41 +93,26 @@ We thank the reviewer for the kind comments.
 We agree with this principle -- it does seem desirable to have the same prior for the same quantity in different models.
 But there is a tension between having the submodels be complete and contained, meaning they could be specified and understood independently of the chained melded model, and having the same prior for all common quantities under all submodels.
 
-The challenge in modelling multiple sources of information is specifying a suitable joint model, which includes specifying the prior for this joint model.
-It is possible to specify $\pd_{\text{pool}}(\boldsymbol{\phi})$ to be something other than a function of the submodel marginals, the difficulty is in acquiring this prior and ensuring its suitability for the chained melded model and, simultaneously, that all its marginals are satisfactory for the submodels.
-We use pooling because we find it hard to specify such a prior, particularly as the number of submodels increases, which also has appropriate dependence between the neighbouring components of $\boldsymbol{\phi}$.
+Our starting point for our methodology is multiple complete submodels, which may be specified by separate practitioners with different priors.
+If these practitioners could be tasked with specifying a single prior, then the fact that one of the common quantities is a complex, non-invertible function of other submodel parameters poses a significant technical challenge to specifying such a prior.
+In our second example, this would involve carefully and simultaneously specifying  the prior for the spline coefficients in $\pd_{1}$ and the prior for the piecewise-linear regression parameters in $\pd_{3}$, such that $\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
+There are no guarantees that such a choice of prior exists.
+In our experience there are typically many possible priors that have a specific prior predictive distribution for a quantity that is a non-invertible transformation of the parameters.
+If such a prior does theoretically exists, it is unclear how we might actually specify such a prior (particularly in non-trivial dimensions).
 
-More generally, we see the competing methodology for chained Markov melding, particularly in settings like Example two, as not a full Bayesian joint model, but simply plugging-in a point estimate or Gaussian approximation of the common quantities [e.g. Section 4.2.4 of @nicholson_interoperability_2021].
-Our aim is to facilitate the specification of more sophisticated models from components/submodels that modellers likely already possess, and ease the sometimes onerous burden of prior specification.
+From our starting point of multiple submodel priors, we then ask ourselves "how can we reformulate the problem of chained submodel combination to be as similar as possible to Markov combination?"
+The goal -- implicit in this question, and as the reviewer suggests -- is to acquire a common prior for $\boldsymbol{\phi}$.
+We could choose exactly one of the submodel priors for use in the melded model.
+This is dictatorial pooling, and thus Markov combination is the special case of Markov melding + dictatorial pooling where all submodel prior marginals are identical.
+In the chained melding case, this is unappealing for the reasons we discuss in the dictatorial pooling section in 2.2: that choosing one prior does not "span" all the quantities in $\boldsymbol{\phi}$.
+Our dictatorial pooling proposal for chained Markov melding is our proposal for a joint model as similar to Markov combination as possible in the chained model setting.
+Our logarithmic and linear proposals are transparent methods for obtaining a single common prior $\pd_{\text{pool}}(\boldsymbol{\phi})$ in situations where the dictatorially pooled prior is unacceptable.
 
-(_cut below if technical points undesirable_)
-
-We also foresee some technical difficulties in unifying the prior across submodels.
-Take as a starting point the existence of the submodels and suitably defined common quantities.
-Our struggles with this idea are visible in example two, where the common quantity $\phi_{1 \cap 2}$ is 1) a noninvertible function of other submodel parameters in $\pd_{1}$, 2) the response in the second submodel $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}, \psi_{2}, Y_{2})$, and 3) $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ contains dependence between the common quantities.
-We see two approaches to ensuring $\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ in example two.
-
-  1. Carefully and simultaneously select the prior for the spline coefficients in $\pd_{1}$ and the prior for the piecewise-linear regression parameters in $\pd_{3}$, such that all the aforementioned equalities are satisfied.
-
-We note here that there are no guarantees that such a choice prior exists[^prior-by-ppd], and even if it did it is unclear how we might actually specify such a prior.
-
-  2. Externally define $\pd_{\text{pool}}(\boldsymbol{\phi})$ and replace $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, and $\pd_{3}(\phi_{2 \cap 3})$ with $\pd_{\text{pool}}(\phi_{2 \cap 3})$.
-  3. Alternatively we could expand $\pd_{1}$ to be aware of $\pd_{3}$ by replacing $\pd_{1}(\phi_{1 \cap 2})$ with $\pd_{\text{pool}}(\boldsymbol{\phi})$, doing likewise for $\pd_{3}$.
-
-Difficulties include:
-
-- Proposals 2 and 3 require some kind of pooling to account for applying the prior twice when combining the submodels, should such a correction be desirable.
-- The submodel expansion proposals 3 makes it more difficult to understand the submodels in isolation. Specifically, it requires expanding the first and third submodels to include a quantity unrelated to the submodel or the submodel's data. That is to say it seems strange to include, e.g. $\phi_{2 \cap 3}$ in $\pd_{1}$, as there is no information about this quantity in the first submodel.
-- Both proposals 2 and 3 yield a very strange form for $\pd_{2}$, which would contain a prior term, in addition to the likelihood, directly for the observational quantity as well as the prior terms for the other parameters.
-
-More generally, one aim of our methodology is to enable the construction of complex joint models by combining smaller, easier to understand submodels.
-The ability to specify, and possibly fit and interrogate a submodel before combining it is key -- we'd like to understand the submodels themselves before combining them.
-Whilst the final difficulty is also true of the chained melded model, the key difference is that the submodels remain unmodified and are understandable in isolation.
-
-Finally, there are also no guarantees that a prior that "works" for the submodel (appropriately represents known information and facilitates computation of the subposterior) will be suitable for the chained melded model with its higher dimensional parameter space.
-Pooling allows us to take submodels priors and modify them in a transparent way to obtain a suitable prior for the higher dimensional chained melded model.
-
-[^prior-by-ppd]: In our experience there are typically many possible priors that have a specific prior predictive distribution for a quantity that is a non-invertible transformation of the parameters. Locating them requires both specialised methodology and a decision analysis to choose between the possible priors.
+Finally, whilst we would like to undertake a fully principled approach akin to the reviewers suggestion, in some applications this can be too lofty a goal.
+Often the number of information sources are too numerous, with some having standard models and others not, and the computational/time constraints are so apparent that to start building a suitable joint model is infeasible.
+Our aim is to make it possible to be more Bayesian.
+That is, we would like to start incorporating uncertainty from many information sources in a more transparent fashion than the alternative of 1) fixing a common quantity to a point estimate or 2) specifying a Gaussian distribution for said quantity [e.g. Section 4.2.4 of @nicholson_interoperability_2021].
+We posit that the construction of a complex joint models by combining smaller, easier to understand submodels results in a better quantification of uncertainty (whilst also retaining the ability to specify, possibly fit, and interrogate the submodels before combining them).
 
 \par\noindent\hrulefill\par
 
