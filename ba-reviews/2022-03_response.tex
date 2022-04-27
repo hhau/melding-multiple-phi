@@ -656,8 +656,9 @@ This assumption is ecologically reasonable -- if there are no owls alive
 at time \(t - 1\), i.e.~\(x_{t - 1} = 0\), then the local population has
 gone extinct and there will no more owls at times \(t, \ldots, T\). It
 also aligns with the behaviour of \texttt{NIMBLE}/\texttt{rjags}, which
-we use for this example. Both will sample a node \texttt{x} defined as
-\texttt{x\ \textasciitilde{}\ dpois(0.0)} with all samples being \(0\):
+we use for this part of the example. Both will sample a node \texttt{x}
+defined as \texttt{x\ \textasciitilde{}\ dpois(0.0)} with all samples
+being \(0\):
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -670,9 +671,10 @@ we use for this example. Both will sample a node \texttt{x} defined as
 \NormalTok{\}) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{nimbleModel}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{nimbleMCMC}\NormalTok{(}\AttributeTok{niter =} \DecValTok{10}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{suppressMessages}\NormalTok{()}
+  \FunctionTok{suppressMessages}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{as.numeric}\NormalTok{()}
 
-\FunctionTok{as.numeric}\NormalTok{(samples\_nimble)}
+\NormalTok{samples\_nimble}
 \end{Highlighting}
 \end{Shaded}
 
