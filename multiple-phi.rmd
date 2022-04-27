@@ -925,7 +925,7 @@ and for $t < \kappa_{i}$
     \right] \\
   &= t_{i}^{\gamma} \exp\{\boldsymbol{w}_{i}^{\top}\boldsymbol{\theta} + \alpha \eta^{b}_{1, i}\}.
 \end{align*}
-The survival functions are defined with appropriately for $t > \kappa_{i}$ and $t < \kappa_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
+The survival functions then have corresponding definitions for $t > \kappa_{i}$ and $t < \kappa_{i}$ as $S_{i}(t) = \exp\{-\int_{0}^{t} h_{i}(u) \text{d}u\}$.
 
 ## Survival submodel prior justification {#p2-prior-justification}
 
