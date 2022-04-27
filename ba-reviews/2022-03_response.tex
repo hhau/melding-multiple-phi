@@ -243,7 +243,7 @@
 
 \title{Response to Reviewers}
 \author{Andrew A. Manderson and Robert J. B. Goudie}
-\date{20 April, 2022}
+\date{27 April, 2022}
 
 \begin{document}
 \maketitle
@@ -689,9 +689,9 @@ case?}
 \end{quote}
 
 Strictly yes, assuming the issue is that the \(\text{Poisson}(\lambda)\)
-distribution is not typically defined when \(\lambda = 0\), but this
-model is ubiquitous and this issue is ubiquitously ignored (Section 17.3
-of \protect\hyperlink{ref-king_statistical_2011}{King, 2011}; the
+distribution is not typically defined when \(\lambda = 0\). We note that
+this model is ubiquitous and this issue is ubiquitously ignored (Section
+17.3 of \protect\hyperlink{ref-king_statistical_2011}{King, 2011}; the
 ``Materials and methods'' section in
 \protect\hyperlink{ref-abadi_estimation_2010}{Abadi \emph{et al.},
 2010}; Section 5.2.1 of
@@ -706,12 +706,28 @@ reading
   and binomial distributions become point masses at zero.}''
 \end{itemize}
 
-Interestingly, the \texttt{R} developers choose to define
-\(\text{Pois}(0)\) to be a point mass at \(0\):
+This assumption is ecologically reasonable -- if there are no owls alive
+at time \(t - 1\), i.e.~\(x_{t - 1} = 0\), then the local population has
+gone extinct and there will no more owls at times \(t, \ldots, T\). It
+also aligns with the behaviour of \texttt{NIMBLE}/\texttt{rjags}, which
+we use for this submodel/example, as \texttt{NIMBLE} will sample a node
+\texttt{x} defined as \texttt{x\ \textasciitilde{}\ dpois(0.0)} with all
+samples being \(0\).
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{rpois}\NormalTok{(}\AttributeTok{n =} \DecValTok{10}\NormalTok{, }\AttributeTok{lambda =} \DecValTok{0}\NormalTok{)}
+\FunctionTok{suppressPackageStartupMessages}\NormalTok{(}\FunctionTok{library}\NormalTok{(nimble))}
+\FunctionTok{suppressPackageStartupMessages}\NormalTok{(}\FunctionTok{library}\NormalTok{(dplyr))}
+\FunctionTok{suppressPackageStartupMessages}\NormalTok{(}\FunctionTok{library}\NormalTok{(rjags))}
+
+\NormalTok{samples\_nimble }\OtherTok{\textless{}{-}}\NormalTok{ nimble}\SpecialCharTok{::}\FunctionTok{nimbleCode}\NormalTok{(\{}
+\NormalTok{  x }\SpecialCharTok{\textasciitilde{}} \FunctionTok{dpois}\NormalTok{(}\FloatTok{0.0}\NormalTok{)}
+\NormalTok{\}) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{nimbleModel}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{nimbleMCMC}\NormalTok{(}\AttributeTok{niter =} \DecValTok{10}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{suppressMessages}\NormalTok{()}
+
+\FunctionTok{as.numeric}\NormalTok{(samples\_nimble)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -721,17 +737,22 @@ Interestingly, the \texttt{R} developers choose to define
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{dpois}\NormalTok{(}\AttributeTok{x =} \DecValTok{0} \SpecialCharTok{:} \DecValTok{1}\NormalTok{, }\AttributeTok{lambda =} \DecValTok{0}\NormalTok{)}
+\NormalTok{tf }\OtherTok{\textless{}{-}} \FunctionTok{tempfile}\NormalTok{()}
+\NormalTok{mod }\OtherTok{\textless{}{-}} \StringTok{"model \{x \textasciitilde{} dpois(0.0)\}"} \SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{writeLines}\NormalTok{(}\AttributeTok{con =}\NormalTok{ tf)}
+
+\NormalTok{samples\_jags }\OtherTok{\textless{}{-}} \FunctionTok{jags.model}\NormalTok{(tf, }\AttributeTok{quiet =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{jags.samples}\NormalTok{(}\AttributeTok{variable.names =} \StringTok{"x"}\NormalTok{, }\AttributeTok{n.iter =} \DecValTok{10}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  magrittr}\SpecialCharTok{::}\FunctionTok{extract2}\NormalTok{(}\StringTok{"x"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  magrittr}\SpecialCharTok{::}\FunctionTok{extract}\NormalTok{(, }\DecValTok{1} \SpecialCharTok{:} \DecValTok{10}\NormalTok{, )}
+
+\NormalTok{samples\_jags}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] 1 0
+##  [1] 0 0 0 0 0 0 0 0 0 0
 \end{verbatim}
-
-\texttt{Stan} explicitly throws an error for \texttt{poisson\_rng(0.0)},
-whilst \texttt{NIMBLE} will sample a node \(x\) defined as
-\texttt{x\ \textasciitilde{}\ dpois(0.0)} with all samples being \(0\).
 
 \hypertarget{bibliography}{%
 \section*{Bibliography}\label{bibliography}}
@@ -793,7 +814,11 @@ Available at: \url{https://arxiv.org/abs/2109.13730}.
 \addcontentsline{toc}{section}{Appendix}
 
 \begin{figure}
-\includegraphics[width=24.6in]{plots/indiv-18-subset} \caption{Pairs plot for individual $i = 18$ in Example 2. The displayed are parameters are $\beta_{0, i}$ and $\xi_{i, 1}, \ldots, \xi_{i, 3}$.}\label{fig:coef_pairs}
+\centering
+\includegraphics{plots/indiv-18-subset.png}
+\caption{Pairs plot for individual \(i = 18\) in Example 2. The
+displayed are parameters are \(\beta_{0, i}\) and
+\(\xi_{i, 1}, \ldots, \xi_{i, 3}\).}
 \end{figure}
 
 \end{document}

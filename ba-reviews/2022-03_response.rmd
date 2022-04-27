@@ -167,20 +167,41 @@ With the above points in mind, we have made the following modifications to the m
 
 > $\hookrightarrow$**HE**: _On equation (42) what happens when_ $x_{t - 1} = 0$? _Shouldn't the notation accommodate this case?_
 
-Strictly yes, assuming the issue is that the $\text{Poisson}(\lambda)$ distribution is not typically defined when $\lambda = 0$, but this model is ubiquitous and this issue is ubiquitously ignored [Section 17.3 of @king_statistical_2011; the "Materials and methods" section in @abadi_estimation_2010; Section 5.2.1 of @finke_efficient_2019].
+Strictly yes, assuming the issue is that the $\text{Poisson}(\lambda)$ distribution is not typically defined when $\lambda = 0$.
+We note that this model is ubiquitous and this issue is ubiquitously ignored [Section 17.3 of @king_statistical_2011; the "Materials and methods" section in @abadi_estimation_2010; Section 5.2.1 of @finke_efficient_2019].
 We have added the following sentence to the end of Section 4.2 reading
 
 - "_If_ $x_{t - 1} = 0$ _then we assume that the Poisson and binomial distributions become point masses at zero._"
 
-Interestingly, the `R` developers choose to define $\text{Pois}(0)$ to be a point mass at $0$:
+This assumption is ecologically reasonable -- if there are no owls alive at time $t - 1$, i.e. $x_{t - 1} = 0$, then the local population has gone extinct and there will no more owls at times $t, \ldots, T$.
+It also aligns with the behaviour of `NIMBLE`/`rjags`, which we use for this example.
+Both will sample a node `x` defined as `x ~ dpois(0.0)` with all samples being $0$:
 
-```{r}
-rpois(n = 10, lambda = 0)
-dpois(x = 0 : 1, lambda = 0)
+```{r zero_pois_demo}
+suppressPackageStartupMessages(library(nimble))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(rjags))
+
+samples_nimble <- nimbleCode({
+  x ~ dpois(0.0)
+}) %>%
+  nimbleModel() %>%
+  nimbleMCMC(niter = 10) %>%
+  suppressMessages()
+
+as.numeric(samples_nimble)
+
+tf <- tempfile()
+mod <- "model {x ~ dpois(0.0)}" %>%
+  writeLines(con = tf)
+
+samples_jags <- jags.model(tf, quiet = TRUE) %>%
+  jags.samples(variable.names = "x", n.iter = 10) %>%
+  magrittr::extract2("x") %>%
+  magrittr::extract(, 1 : 10, )
+
+samples_jags
 ```
-
-`Stan` explicitly throws an error for `poisson_rng(0.0)`, whilst `NIMBLE` will sample a node $x$ defined as `x ~ dpois(0.0)` with all samples being $0$.
-
 
 # Bibliography {-}
 
