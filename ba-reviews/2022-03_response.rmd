@@ -162,7 +162,7 @@ This assumption is ecologically reasonable -- if there are no owls alive at time
 It also aligns with the behaviour of `NIMBLE`/`rjags`, which we use for this example.
 Both will sample a node `x` defined as `x ~ dpois(0.0)` with all samples being $0$:
 
-```{r zero_pois_demo}
+```{r zero_pois_demo, cache = TRUE}
 suppressPackageStartupMessages(library(nimble))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(rjags))

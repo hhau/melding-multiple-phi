@@ -32,6 +32,7 @@ rmd-reports/*_files/*
 rmd-reports/*.html
 rmd-reports/*.tex
 
+ba-reviews/*_cache
 # sometimes these don't get cleaned up properly
 *.aux
 *.out
