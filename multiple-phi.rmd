@@ -475,6 +475,8 @@ The similarity of the approximate approach ($\widehat{\pd}_{\text{meld}}$ - bott
 
 We return now to the respiratory failure example introduced in Section \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times}.
 Our intention is to illustrate the application of chained Markov melding to an example of realistic complexity, and explore empirically the importance of accounting for all sources of uncertainty by comparing chained Markov melding to equivalent analyses which use only a point estimate summary of the uncertainty.
+Specifically, event times and indicators are a noninvertible function of other parameters in the first submodel, and are an uncertain response in the survival submodel.
+Chained Markov melding enables us to specify a suitable joint model despite these complications.
 
 There are $i = 1, \ldots, N$ individuals in the data set.
 Each individual is admitted to the ICU at time $0$, and is discharged or dies at time $C_{i}$.
