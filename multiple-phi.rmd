@@ -311,6 +311,7 @@ Whilst the melded posterior is a standard Bayesian posterior and so can, in prin
 More specifically, it may be feasible to fit each submodel separately using standard methods, but when the submodels are combined -- either through Markov melding, or by expanding the definition of one submodel to include another -- the computation required to estimate the posterior in a single step poses an insurmountable barrier.
 In such settings we can employ multi-stage posterior estimation methods including @tom:etal:10, @lunn:etal:13, @hooten_making_2019, and @mauff_joint_2020.
 We propose a multi-stage strategy that uses the chain-like relationship to both avoid evaluating all submodels simultaneously, and parallelise the computation required in the first stage to produce posterior samples in less time than an equivalent sequential method[^sequential].
+Avoiding concurrently evaluating all submodels also enables the reuse of existing software, minimising the need for custom submodel and/or sampler implementations.
 
 We also describe an approximate method, where stage one submodels are summarised by normal distributions for use in stage two.
 
