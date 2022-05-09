@@ -42,7 +42,7 @@ Our changes are:
 
     "_We also present the choices, and their impacts, that users of chained Markov melding must make which include: the choice of pooling function, and where required the pooling weights; the choice of posterior sampler and the design thereof, including the apportionment of the pooled prior over the stages and stage-specific MCMC techniques._"
 
-1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K establishes the validity of our sampler, but the argument is specific to the submodels in the second example (though other submodels may have such posterior conditional independences). The general applicability of the individual-at-a-time sampler is low, so including it in the main text seems unnecessary and likely to confuse the reader. Specifically, we have added a sentence in Section 5.5 that reads:
+1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K establishes the validity of our sampler, but the argument is fairly routine and specific to the submodels in the second example (though other submodels may have such posterior conditional independences), so including it in the main text seems unnecessary. Specifically, we have added a sentence in Section 5.5 that reads:
 
     "_This is possible due to the conditional independence between individuals in the posterior, and Appendix K contains the details of this scheme._"
 
@@ -60,7 +60,7 @@ Appendices D and I are decisions specific to the data we consider, and would be 
 We are unsure of the meaning of the comment describing pooling as producing inference that is exact or approximate.
 When all prior marginal densities are known analytically, the pooling function produces an analytic expression proportional to $\pd_{\text{pool}}(\boldsymbol{\phi})$ -- there is no approximation error here.
 If one or more of the prior marginal densities is unknown, then we suggest approximating it with a standard distribution or using kernel density estimation. Regardless, the pooling function does not introduce any approximation in addition to that of the prior marginal density estimate.
-If by 'exact' the reviewer is instead referring to situations where the chained Markov melded model is the same as the original joint model, then we wish to point our that a suitable joint model must exist in the first place (see our response to Reviewer 2 for further details).
+If by 'exact' the reviewer is instead referring to situations where the chained Markov melded model is the same as the original joint model, then we wish to point our that a suitable joint model must exist in the first place.
 Our first example is one such situation, and we have added the following to the start of Section 4:
 
 - "_This example is particularly interesting to us as, for a certain choice of pooling function and pooling weights, the chained Markov melded model and the IPM are identical. This coincidence allows us to use the posterior from the IPM as a benchmark for our multi-stage sampler._"
@@ -69,7 +69,9 @@ and the following (new in italic) to Section 4.5:
 
 - "We also use logarithmic pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$, which is denoted $\pd_{\text{meld, log}}$ _and results in the chained melded model being identical to the IPM._"
 
-To address Reviewer 1's first comment, we appreciate  the inclination towards a shorter manuscript, but ultimately feel tied to including both examples in the main text.
+In contrast, there is no obvious alternative joint model in the second example (see our response to Reviewer 2 for further details).
+
+To address Reviewer 1's first comment, we appreciate  the inclination towards a shorter manuscript and contemplated whether we could follow the reviewer’s suggestion, but ultimately feel it is preferable to include both examples in the main text.
 As Reviewer 2 notes, the first example is intentionally illustrative -- we have split an existing joint model to make clear, in a simpler setting, the chained Markov melding steps and proposed computational tools, whilst possessing a baseline result for comparison.
 This example is also intended to reassure the reader that our proposed multi-stage sampler can produce accurate results.
 Whilst we find this example informative, it is ultimately insufficiently compelling to justify the methodology.
@@ -91,28 +93,32 @@ We thank the reviewer for the kind comments.
 > $\hookrightarrow$**R2**: _(2) I would like the authors to explain why one would not simply ensure that all sub-models can use the same prior, so that we are back in the "Markov combination" setting of Equation 1 (in which case no "pooled" priors need to be constructed). It seems to me that a principled Bayesian approach would always seek to formulate a single prior distribution over all parameters in the model._
 
 We agree with this principle -- it does seem desirable to have the same prior for the same quantity in different models.
-But there is a tension between having the submodels be complete and contained, meaning they could be specified and understood independently of the chained melded model, and having the same prior for all common quantities under all submodels.
 
-Our starting point for our methodology is multiple complete submodels, which may be specified by separate practitioners with distinct priors for the submodels they are each concerned with.
-If these practitioners could be tasked with specifying a single prior for the joint/chained Markov melding model, then the fact that one of the common quantities is a complex, noninvertible function of other submodel parameters poses a significant technical challenge to specifying such a prior.
+However, the starting point for our methodology is multiple complete submodels, which may be specified by separate practitioners.
+Since each practitioner is considering a separate submodel, it is likely that each will choose a distinct prior.
+Indeed there is a tension between having complete and self-contained submodels, meaning they could be specified and understood independently of the chained melded model, and having the same prior for all common quantities under all submodels.
+This is particularly the case when one of the common quantities is a complex, noninvertible function of other submodel parameters.
 In our second example, this would involve carefully and simultaneously specifying  the prior for the spline coefficients in $\pd_{1}$ and the prior for the piecewise-linear regression parameters in $\pd_{3}$, such that $\pd_{1}(\phi_{1 \cap 2}) = \pd_{2}(\phi_{1 \cap 2})$, $\pd_{2}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$, and $\pd_{1}(\phi_{1 \cap 2})\pd_{3}(\phi_{2 \cap 3}) = \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
-There are no guarantees that such a choice of prior exists.
-In our experience there are typically many possible priors that have a specific prior predictive distribution for a quantity that is a noninvertible transformation of the parameters.
-Even if such a prior does theoretically exist it is unclear how we might actually specify such a prior.
+It is unclear to us how a prior satisfying these conditions could be directly specified without the perspective and methodology that we propose in the manuscript.
 
-From our starting point of multiple submodel priors, we then ask ourselves "how can we reformulate the problem of chained submodel combination to be as similar as possible to Markov combination?"
-The goal -- implicit in this question, and as the reviewer suggests -- is to acquire a common prior for $\boldsymbol{\phi}$.
-Indeed, one motivation for marginal replacement in @goudie_joining_2019 is to  make Markov combination more widely applicable, and the marginal replacement procedure we propose in Section 2.1 shares this intention.
-Consider an alternative approach where we choose exactly one of the submodel priors for use in the melded model.
+If we do not start from a single common prior, one perspective on our manuscript is that it exactly matches the referee's desire to "ensure that all sub-models can use the same prior, so that we are back in the 'Markov combination' setting".
+From this viewpoint, our manuscript answers the question "how can we reformulate the problem of chained submodel combination to be as similar as possible to Markov combination?" via the following steps:
+
+1. Acquiring a common prior $\pd_{\text{pool}}(\boldsymbol{\phi})$ via one of the following methods:
+    - We could choose exactly one of the submodel priors for use in the melded model.
 This is dictatorial pooling, and thus Markov combination is the special case of Markov melding with dictatorial pooling where all submodel prior marginals are identical.
 For chained Markov melding this is unappealing for the reasons we discuss in the dictatorial pooling subsection of Section 2.2.
 Specifically, that choosing one prior does not "span" all the quantities in $\boldsymbol{\phi}$.
 Our dictatorial pooling proposal for chained Markov melding is our proposal for a joint model as similar to Markov combination as possible in the chained model setting.
-Our logarithmic and linear proposals are transparent methods for obtaining a single common prior $\pd_{\text{pool}}(\boldsymbol{\phi})$ in situations where the dictatorially pooled prior is unacceptable.
+    - Alternatively, our logarithmic and linear pooling proposals are transparent methods for obtaining a single common prior $\pd_{\text{pool}}(\boldsymbol{\phi})$ in situations where the dictatorially pooled prior is unacceptable.
+    - If a common prior were available from an alternative source (not based upon pooling) then clearly this could be a sensible choice.
 
-Finally, whilst we would like to undertake a fully principled approach akin to the reviewers suggestion, in some applications this can be too lofty a goal.
+2. Adapt each submodel to use this common prior, using marginal replacement
+3. Form the Markov melding model by using Markov combination on these marginally-replaced submodels
+
+Finally, it is important to bear in mind that, whilst we might aspire to undertake a fully "principled Bayesian approach", such as the referee alludes to, in some applications this can be too lofty a goal.
 Often the number of information sources are too numerous, with some having standard models and others not, and the computational/time constraints are so apparent that to start building a suitable joint model is infeasible.
-Our aim is to make it possible to be more Bayesian.
+Our aim is to make it possible to be "more Bayesian" in such difficult settings.
 That is, we would like to start incorporating uncertainty from many information sources in a more transparent fashion than the alternative of 1) fixing a common quantity to a point estimate or 2) specifying a Gaussian distribution for said quantity [e.g. Section 4.2.4 of @nicholson_interoperability_2021].
 We posit that the construction of a complex joint models by combining smaller, easier to understand submodels results in a better quantification of uncertainty (whilst also retaining the ability to specify, possibly fit, and interrogate the submodels before combining them).
 
@@ -125,35 +131,38 @@ We address points (3) and (4) simultaneously.
 
 > $\hookrightarrow$**R2**: _(4) If benchmark results cannot be obtained for the model from Section 5, this would also be interesting and mentioning this would make the paper much stronger. Because when reading the paper, I did not see an explanation of why the model could not be estimated without Markov melding (and without the bias that this can introduce)._
 
-To obtain benchmark results there must exist 1) a comparable joint model and 2) a "default" method for sampling/approximating the posterior of this model.
+We do not think there is any reasonable benchmark for the model in Section 5. To obtain benchmark results there must exist
+
+1. a comparable joint model 
+2. a "default" method for sampling/approximating the posterior of this model. 
+
+We do not believe that anything exists that reasonably satisfies these conditions.
 
 With respect to the first prerequisite, the premise for the respiratory failure (RF) example, and indeed the methodology, is that there are situations in which it is prohibitively difficult to specify a suitable joint model.
 Without such a joint model there is no baseline against which we could declare a model biased.
-Additionally, the joint model formed by multiplying the individuals submodels is a form of chained Markov melding (using product-of-experts pooling); to use it as a baseline would be circular.
-Note that we use "bias" here to refer to, for example, the difference between $\pd_{\text{meld, PoE}}$ and $\pd_{\text{IPM}}$ in the IPM example for $\alpha_{0}$ and $\alpha_{2}$ (see Figure 5).
-That is, bias arising due to the use of different joint models.
+Without such a joint model there is no baseline against which we could compare our results.
+In particular, the joint model formed by multiplying the individuals submodels is a form of chained Markov melding (using product-of-experts pooling); to use it as a baseline would be circular.
 
-This kind of bias is not an immediate consequence of chained Markov melding.
-As noted in the text for the IPM example, and in response to Reviewer 1, the IPM and the chained model using log-pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$ are precisely the same joint model, so no bias of this type is introduced by chained Markov melding in that example.
+Even if a comparable target/joint model could nevertheless be decided upon, then we are skeptical of the referee’s expectation that an alternative sampler could easily be implemented.
+In particular regarding the referee’s suggestion of an SMC sampler, we wish to highlight a number of implementation difficulties that would be faced, as well as reasons why it is not an immediate perfect fit for our problem setting:
 
-Another type of bias arises due to using only finitely many samples in estimating the prior marginal distributions $\hat{\pd}_{\modelindex}(\phi_{\modelindex})$.
-However, should these prior marginals be known or PoE pooling used, such estimates do not appear in the chained melded model and so finite sample bias is of no concern.
-Moreover, any joint model partially comprised of finite sample estimates will be affected by such biases, it is not unique to chained Markov melding.
-
-It is not clear to us which of these two types of bias, or perhaps another type altogether, the referee is referring to.
-As such, we find the meaning of 'bias induced by Markov melding' difficult to determine in this comment and it is unclear to us what joint model the reviewer wishes to target.
-
-For the second prerequisite, there are a number of additional difficulties to do with implementing such an SMC sampler (once a target/joint model has been decided upon):
-
-1. Simultaneously evaluating all the terms in the chained melded model is necessary and computationally challenging in a SMC/MCMC environment. This is a secondary motivation for the sampler, as complex evidence synthesis / joint models often cannot be readily evaluated in this manner [see, for example, the models in @nicholson_interoperability_2021].
+1. Simultaneously evaluating all the terms in the chained melded model is necessary and computationally challenging in a SMC/MCMC environment. This is a secondary motivation for the multi-stage sampler, as complex evidence synthesis / joint models often cannot be readily evaluated in this manner [see, for example, the models in @nicholson_interoperability_2021].
 
     Avoiding concurrently evaluating all submodels also enables the reuse of existing software, minimising the need for custom submodel and/or sampler implementations (and the effort the construction/tuning of them entails). We see this as an advantage of our multi-stage estimation method, as it reduces the effort required to be "more Bayesian" and better quantify uncertainty. We state this in both the introduction and in Section 4.6, and have added additional text to the first paragraph of Section 3.
 
     One complication of this variety in the second example is the calculation of $\phi_{1 \cap 2} = (f(\chi_{1 \cap 2, 1}), \ldots, f(\chi_{1 \cap 2, N}))$. The mathematics belies much complexity, specifically because we rely on a multiple root finder. Implementing this within an HMC, or SMC with HMC refreshment, setting involves massively increasing the number of times this problem must be solved. Using our multi-stage sampler turns this into an embarrassingly parallel, post-stage-one processing problem.
 
-1. Our preoccupation with HMC is because the example depends on a relatively high number ($5 \times 10^{4}$) of high-quality samples from $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$, which is $N(2 + 10) = 444$-dimensional and highly correlated within each of the 12-dimensional individual subposteriors (see Figure \ref{fig:coef_pairs} at the end of this document). This is made possible by the efficient dynamic HMC implementation within `Stan`.
+1. Our preference for HMC is because the example depends on a relatively high number ($5 \times 10^{4}$) of high-quality samples from $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$, which is $N(2 + 10) = 444$-dimensional and highly correlated within each of the 12-dimensional individual subposteriors (see Figure \ref{fig:coef_pairs} at the end of this document). This is made possible by the efficient dynamic HMC implementation within `Stan`.
 1. There are no sufficiently flexible off the shelf SMC packages. `NIMBLE` [@michaud_sequential_2020] does not support either the B-spline basis function nor multiple-root finder, and whilst one could in theory recode both in `Rcpp` to make use of `RcppSMC` [@eddelbuettel_rcppsmc_2021; @johansen_smctc_2009], this would be an enormous undertaking. We also point out the difficultly in implementing an SMC sampler for the considerably simpler first example encountered by @finke_efficient_2019 (with details discussed in the online appendix). Tuning these types of samplers is nontrivial [@buchholz_adaptive_2021].
 1. A complete set of numerical and visual diagnostics for the multistage samplers are contained in the online repository, should there be any concern about the MCMC performance.
+
+For the reasons above we do believe there is a reasonable and implementable comparator for the results in Section 5.
+We feel this complex example is forms an ideal complement to the simple IPM example, in which a direct comparator is easily available and via which we demonstrate that our methodology can reproduce a joint model in a more straightforward setting.
+
+Finally, we are not sure we understand the referee's discussion of "bias" in this context.
+We infer from their comments that the referee may mean a difference between between the results of a directly-specified joint model and the Markov melding model.
+As noted in the text for the IPM example, and in response to Reviewer 1, the IPM and the chained model using log-pooling with $\lambda = (\frac{1}{2}, \frac{1}{2}, \frac{1}{2})$ are precisely the same joint model, so no bias of this type is introduced by chained Markov melding in that example.
+In the RF example, as we have explained, no obvious comparator joint model is available, so we are unclear what "bias" the referee thinks may be induced.
 
 With the above points in mind, we have made the following modifications to the manuscript to emphasise the key aspects of this example, including:
 
