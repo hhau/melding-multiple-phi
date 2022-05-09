@@ -103,7 +103,7 @@ Both the chained melded model and these approximation strategies are examples of
 In this section we provide a high-level overview of two applications that require integrating a chain of submodels, with more details in Sections \ref{an-integrated-population-model-for-little-owls-1} and \ref{survival-analysis-with-time-varying-covariates-and-uncertain-event-times-1}.
 Our first example decomposes a joint model into its constituent submodels and rejoins them.
 This simple situation allows us to compare the output from the chained melding process to the complete joint model, and is meant to illustrate both the 'chain-of-submodels' notion and the mechanics of chained melding.
-The second example is a realistic and complex setting in which the combining of submodels without chained Markov melding is non-obvious.
+The second example is a realistic and complex setting in which the combining of submodels without chained Markov melding is nonobvious.
 Our comparator is the common technique of summarising previously considered submodels with point estimates, and demonstrates the importance of fully accounting for uncertainty.
 
 ### An integrated population model for little owls
@@ -140,7 +140,7 @@ Each of the $\modelindex = 1, 2, 3$ has submodel-specific data $Y_{\modelindex}$
 The high level submodel relationships are displayed as a DAG in Figure \ref{fig:surv-simple-dag}.
 \input{tex-input/surv-example/0001-surv-simple-dag.tex}
 
-It is in examples such as this one that we foresee the most use for chained Markov melding; a fully Bayesian approach is desired and the submodels are non-trivial in complexity, with no previously existing or obvious joint model.
+It is in examples such as this one that we foresee the most use for chained Markov melding; a fully Bayesian approach is desired and the submodels are nontrivial in complexity, with no previously existing or obvious joint model.
 
 ## Markov melding
 
@@ -183,7 +183,10 @@ We define the $\modelindex$\textsuperscript{th} _subposterior_ as $\pd_{\modelin
 ## Extending marginal replacement
 
 We now define the chained melded model by extending the marginal replacement procedure to submodels linked in a chain-like way.
-The $\modelindex$\textsuperscript{th} marginally replaced submodel is
+The proposed chained marginal replacement operation modifies the submodels to enforce that they share a common prior for $\boldsymbol{\phi}$.
+This consistency allows us to employ Markov combination to unite the submodels.
+
+Specifically, the $\modelindex$\textsuperscript{th} marginally replaced submodel is
 \input{tex-input/multiple-phi/0001-chained-marginal-replacement.tex}
 where $\pd_{\text{pool}}(\boldsymbol{\phi}) = g(\pd_{1}(\phi_{1}), \pd_{2}(\phi_{2}), \ldots, \pd_{\modelindex}(\phi_{\modelindex}))$ is a pooling function that appropriately summarises all submodel prior marginals.
 The second equality in Equation \eqref{eqn:chained-marginal-replacement} is because of the conditional independence $(\psi_{\modelindex}, Y_{\modelindex} \indep \boldsymbol{\phi}_{-\modelindex}) \mid \phi_{\modelindex}$ that exists due to the chained relationship between submodels.
