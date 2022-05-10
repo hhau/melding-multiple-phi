@@ -183,7 +183,7 @@ We define the $\modelindex$\textsuperscript{th} _subposterior_ as $\pd_{\modelin
 ## Extending marginal replacement
 
 We now define the chained melded model by extending the marginal replacement procedure to submodels linked in a chain-like way.
-The proposed chained marginal replacement operation modifies the submodels to enforce that they share a common prior for $\boldsymbol{\phi}$.
+The proposed chained marginal replacement operation modifies the submodels to enforce a common prior for $\boldsymbol{\phi}$.
 This consistency allows us to employ Markov combination to unite the submodels.
 
 Specifically, the $\modelindex$\textsuperscript{th} marginally replaced submodel is

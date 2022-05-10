@@ -32,10 +32,10 @@ Rscript -e 'rmarkdown::render("ba-reviews/2022-03_response.rmd")'
 
 We thank the reviewer for the kind comments.
 
-To address Reviewer 1's first comment, we appreciate  the inclination towards a shorter manuscript and contemplated whether we could follow the reviewer’s suggestion, but ultimately feel it is preferable to include both examples in the main text.
+To address Reviewer 1's first comment, we appreciate the inclination towards a shorter manuscript and contemplated whether we could follow the reviewer’s suggestion, but ultimately feel it is preferable to include both examples in the main text.
 As Reviewer 2 notes, the first example is intentionally illustrative -- we have split an existing joint model to make clear, in a simpler setting, the chained Markov melding steps and proposed computational tools, whilst possessing a baseline result for comparison.
 This example is also intended to reassure the reader that our proposed multi-stage sampler can produce accurate results.
-Whilst we find this example informative, it is ultimately insufficiently compelling to justify the methodology.
+Although we find this example informative, it is ultimately insufficiently compelling to justify the methodology.
 The second example is much more compelling for the methodology, and as Reviewer 2 notes it is the example's complexity that motivates the methodology.
 If such complex submodels were not necessary we might be able to immediately conceive of a joint model for all sources of data.
 Without the second example we feel some readers will be left wondering what use, if any, there might be for our method.
@@ -64,7 +64,7 @@ Our changes are:
 
     "_We also present the choices, and their impacts, that users of chained Markov melding must make which include: the choice of pooling function, and where required the pooling weights; the choice of posterior sampler and the design thereof, including the apportionment of the pooled prior over the stages and stage-specific MCMC techniques._"
 
-1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K establishes the validity of our sampler, but the argument is fairly routine and specific to the submodels in the second example (though other submodels may have such posterior conditional independences, such as the hierarchical meta-analysis model in @lunn_fully_2013), so including it in the main text seems unnecessary. Specifically, we have added a sentence in Section 5.5 that reads:
+1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K establishes the validity of our sampler, but the argument is fairly routine and specific to the submodels in the second example (though other submodels may have such posterior conditional independences, such as the hierarchical meta-analysis model in @lunn:etal:13), so including it in the main text seems unnecessary. Specifically, we have added a sentence in Section 5.5 that reads:
 
     "_This is possible due to the conditional independence between individuals in the posterior, and Appendix K contains the details of this scheme._"
 
@@ -117,7 +117,7 @@ Our dictatorial pooling proposal for chained Markov melding is our proposal for 
 
 We now emphasise these steps at the start of Section 2.1 by stating:
 
-- "_The proposed chained marginal replacement operation modifies the submodels to enforce that they share a common prior for $\boldsymbol{\phi}$. This consistency allows us to use Markov combination to unite the submodels._"
+- "_The proposed chained marginal replacement operation modifies the submodels to enforce a common prior for $\boldsymbol{\phi}$. This consistency allows us to use Markov combination to unite the submodels._"
 
 
 Finally, it is important to bear in mind that whilst we might aspire to undertake a fully "principled Bayesian approach", such as the referee alludes to, in some applications this can be too lofty a goal.
@@ -157,7 +157,6 @@ In particular regarding the referee’s suggestion of an SMC sampler, we wish to
     One complication of this variety in the second example is the calculation of $\phi_{1 \cap 2} = (f(\chi_{1 \cap 2, 1}), \ldots, f(\chi_{1 \cap 2, N}))$. The mathematics belies much complexity, specifically because we rely on a multiple root finder. Implementing this within an HMC, or SMC with HMC refreshment, setting involves massively increasing the number of times this problem must be solved. Using our multi-stage sampler turns this into an embarrassingly parallel, post-stage-one processing problem.
 
 1. Our preference for HMC is because the example depends on a relatively high number ($5 \times 10^{4}$) of high-quality samples from $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$, which is $N(2 + 10) = 444$-dimensional and highly correlated within each of the 12-dimensional individual subposteriors (see Figure \ref{fig:coef_pairs} at the end of this document). This is made possible by the efficient dynamic HMC implementation within `Stan`.
-
 
 For the reasons above we do believe there is a reasonable and implementable comparator for the results in Section 5.
 We feel this complex example is forms an ideal complement to the simple IPM example, in which a direct comparator is easily available and via which we demonstrate that our methodology can reproduce a joint model in a more straightforward setting.

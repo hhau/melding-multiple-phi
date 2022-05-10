@@ -243,7 +243,7 @@
 
 \title{Response to Reviewers}
 \author{Andrew A. Manderson and Robert J. B. Goudie}
-\date{09 May, 2022}
+\date{10 May, 2022}
 
 \begin{document}
 \maketitle
@@ -279,7 +279,7 @@ model to make clear, in a simpler setting, the chained Markov melding
 steps and proposed computational tools, whilst possessing a baseline
 result for comparison. This example is also intended to reassure the
 reader that our proposed multi-stage sampler can produce accurate
-results. Whilst we find this example informative, it is ultimately
+results. Although we find this example informative, it is ultimately
 insufficiently compelling to justify the methodology. The second example
 is much more compelling for the methodology, and as Reviewer 2 notes it
 is the example's complexity that motivates the methodology. If such
@@ -358,10 +358,10 @@ Markov melding that users must make. Our changes are:
   establishes the validity of our sampler, but the argument is fairly
   routine and specific to the submodels in the second example (though
   other submodels may have such posterior conditional independences,
-  such as the hierarchical meta-analysis model in
-  (\protect\hyperlink{ref-lunn_fully_2013}{\textbf{lunn\_fully\_2013?}})),
-  so including it in the main text seems unnecessary. Specifically, we
-  have added a sentence in Section 5.5 that reads:
+  such as the hierarchical meta-analysis model in Lunn \emph{et al.}
+  (\protect\hyperlink{ref-lunn:etal:13}{2013})), so including it in the
+  main text seems unnecessary. Specifically, we have added a sentence in
+  Section 5.5 that reads:
 
   ``\emph{This is possible due to the conditional independence between
   individuals in the posterior, and Appendix K contains the details of
@@ -489,9 +489,9 @@ We now emphasise these steps at the start of Section 2.1 by stating:
 \tightlist
 \item
   ``\emph{The proposed chained marginal replacement operation modifies
-  the submodels to enforce that they share a common prior for
-  \(\boldsymbol{\phi}\). This consistency allows us to use Markov
-  combination to unite the submodels.}''
+  the submodels to enforce a common prior for \(\boldsymbol{\phi}\).
+  This consistency allows us to use Markov combination to unite the
+  submodels.}''
 \end{itemize}
 
 Finally, it is important to bear in mind that whilst we might aspire to
@@ -806,6 +806,13 @@ King, R. (2011) Statistical ecology. In \emph{Handbook of {Markov Chain
 Monte Carlo}} (eds S. Brooks, A. Gelman, G. Jones,et al.). Chapman
 {\(\&\)} {Hall}/{CRC Handbooks} of {Modern Statistical Methods}. {CRC
 Press}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-lunn:etal:13}{}}%
+Lunn, D., Barrett, J., Sweeting, M., et al. (2013) Fully {Bayesian}
+hierarchical modelling in two stages, with application to meta-analysis.
+\emph{Journal of the Royal Statistical Society Series C}, \textbf{62},
+551--572. DOI:
+\href{https://doi.org/10.1111/rssc.12007}{10.1111/rssc.12007}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-michaud_sequential_2020}{}}%
 Michaud, N., de Valpine, P., Turek, D., et al. (2020) Sequential {Monte
