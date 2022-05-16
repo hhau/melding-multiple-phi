@@ -66,9 +66,9 @@ Our changes are:
 
     "_We also present the choices, and their impacts, that users of chained Markov melding must make which include: the choice of pooling function, and where required the pooling weights; the choice of posterior sampler and the design thereof, including the apportionment of the pooled prior over the stages and stage-specific MCMC techniques._"
 
-1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posterior. Appendix K establishes the validity of our sampler, but the argument is fairly routine and specific to the submodels in the second example (though other submodels may have such posterior conditional independences, such as the hierarchical meta-analysis model in @lunn:etal:13), so including it in the main text seems unnecessary. Specifically, we have added a sentence in Section 5.5 that reads:
+1. Emphasising in the text and within the appendix that the individual-at-a-time sampler is only possible due to the conditional independence between individuals in the posteriors in stage one. Appendix K establishes the validity of our sampler, but the argument is fairly routine and specific to the submodels in the second example (though other submodels may have such posterior conditional independences, such as the hierarchical meta-analysis model in @lunn:etal:13), so including it in the main text seems unnecessary. Specifically, we have added a sentence in Section 5.5 that reads:
 
-    "_This is possible due to the conditional independence between individuals in the posterior, and Appendix K contains the details of this scheme._"
+    "_This is possible due to the conditional independence between individuals in the stage one posterior, and Appendix K contains the details of this scheme._"
 
     and modified subsection "sub-step 1" of Appendix K to include:
 
