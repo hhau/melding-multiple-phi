@@ -1,6 +1,7 @@
 # Code to accompany _Combining chains of Bayesian models with Markov melding_
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5717455.svg)](https://doi.org/10.5281/zenodo.5717455)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6552714.svg)](https://doi.org/10.5281/zenodo.6552714)
+
 
 ## Re-running this code
 

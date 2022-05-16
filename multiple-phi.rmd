@@ -601,7 +601,7 @@ Visual and numerical diagnostics [@vehtari_rank-normalization_2020] are assessed
 
 [^initialisation]: We also initialise Stan at the previous value of $\psi_{2}$, and disable all adaptive procedures as the default (identity) mass matrix and step size are suitable for this example.
 
-[^repo]: [https://doi.org/10.5281/zenodo.5717455](https://doi.org/10.5281/zenodo.5717455)
+[^repo]: [https://doi.org/10.5281/zenodo.6552714](https://doi.org/10.5281/zenodo.6552714)
 
 ## Results
 
