@@ -243,7 +243,7 @@
 
 \title{Response to Reviewers}
 \author{Andrew A. Manderson and Robert J. B. Goudie}
-\date{10 May, 2022}
+\date{16 May, 2022}
 
 \begin{document}
 \maketitle
@@ -289,6 +289,12 @@ example we feel some readers will be left wondering what use, if any,
 there might be for our method. Finally, moving the first example to the
 appendix would save only 4 pages, so information currently in the
 appendix would remain there in either case.
+
+We believe the paper covers all steps in the chained melding process
+(construction of pooled prior and chained melded model; sampling from
+the subsequent posterior) for both examples, and are unclear on what
+additional, melding-specific details the reviewer would like to see
+added to the paper.
 
 We are unsure of the meaning of the comment describing pooling as
 producing inference that is exact or approximate. When all prior
@@ -580,6 +586,7 @@ reasons why it is not an immediate perfect fit for our problem setting:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
+\tightlist
 \item
   There are no sufficiently flexible off the shelf SMC packages.
   \texttt{NIMBLE}
@@ -590,20 +597,29 @@ reasons why it is not an immediate perfect fit for our problem setting:
   (\protect\hyperlink{ref-eddelbuettel_rcppsmc_2021}{Eddelbuettel
   \emph{et al.}, 2021};
   \protect\hyperlink{ref-johansen_smctc_2009}{Johansen, 2009}), this
-  would be an enormous undertaking. We also point out the difficultly in
-  implementing an SMC sampler for the considerably simpler first example
-  encountered by Finke \emph{et al.}
+  would be an enormous undertaking.
+\item
+  We also wish to point out the difficultly in implementing an SMC
+  sampler for the considerably simpler first example encountered by
+  Finke \emph{et al.}
   (\protect\hyperlink{ref-finke_efficient_2019}{2019}) (with details
   discussed in the online appendix). Tuning these types of samplers is
   also nontrivial
   (\protect\hyperlink{ref-buchholz_adaptive_2021}{Buchholz \emph{et
   al.}, 2021}).
+\end{enumerate}
+
+Our multi-stage sampler arises from additional considerations, and has
+properties not immediately apparent in an SMC sampler, including:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
 \item
   Simultaneously evaluating all the terms in the chained melded model is
   necessary and computationally challenging in a SMC/MCMC environment.
-  This is a secondary motivation for the multi-stage sampler, as complex
-  evidence synthesis / joint models often cannot be readily evaluated in
-  this manner (see, for example, the models in
+  This is relevant for complex evidence synthesis / joint models, as
+  they often cannot be readily evaluated in this manner (see, for
+  example, the models in
   \protect\hyperlink{ref-nicholson_interoperability_2021}{Nicholson
   \emph{et al.}, 2021}).
 
@@ -636,10 +652,10 @@ reasons why it is not an immediate perfect fit for our problem setting:
   \texttt{Stan}.
 \end{enumerate}
 
-For the reasons above we do believe there is a reasonable and
+For the reasons above we do not believe there is a reasonable and easily
 implementable comparator for the results in Section 5. We feel this
-complex example is forms an ideal complement to the simple IPM example,
-in which a direct comparator is easily available and via which we
+complex example forms an ideal complement to the simple IPM example, in
+which a direct comparator is easily available and via which we
 demonstrate that our methodology can reproduce a joint model in a more
 straightforward setting.
 

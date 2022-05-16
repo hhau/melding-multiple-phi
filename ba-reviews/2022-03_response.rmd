@@ -41,6 +41,8 @@ If such complex submodels were not necessary we might be able to immediately con
 Without the second example we feel some readers will be left wondering what use, if any, there might be for our method.
 Finally, moving the first example to the appendix would save only 4 pages, so information currently in the appendix would remain there in either case.
 
+We believe the paper covers all steps in the chained melding process (construction of pooled prior and chained melded model; sampling from the subsequent posterior) for both examples, and are unclear on what additional, melding-specific details the reviewer would like to see added to the paper.
+
 We are unsure of the meaning of the comment describing pooling as producing inference that is exact or approximate.
 When all prior marginal densities are known analytically, the pooling function produces an analytic expression proportional to $\pd_{\text{pool}}(\boldsymbol{\phi})$ -- there is no approximation error here.
 If one or more of the prior marginal densities is unknown, then we suggest approximating it with a standard distribution or using kernel density estimation. Regardless, the pooling function does not introduce any approximation in addition to that of the prior marginal density estimate.
@@ -149,8 +151,12 @@ In particular, the joint model formed by multiplying the individuals submodels i
 Even if a comparable target/joint model could nevertheless be decided upon, then we are skeptical of the referee’s expectation that an alternative sampler could easily be implemented.
 In particular regarding the referee’s suggestion of an SMC sampler, we wish to highlight a number of implementation difficulties that would be faced, as well as reasons why it is not an immediate perfect fit for our problem setting:
 
-1. There are no sufficiently flexible off the shelf SMC packages. `NIMBLE` [@michaud_sequential_2020] does not support either the B-spline basis function nor multiple-root finder, and whilst one could in theory recode both in `Rcpp` to make use of `RcppSMC` [@eddelbuettel_rcppsmc_2021; @johansen_smctc_2009], this would be an enormous undertaking. We also point out the difficultly in implementing an SMC sampler for the considerably simpler first example encountered by @finke_efficient_2019 (with details discussed in the online appendix). Tuning these types of samplers is also nontrivial [@buchholz_adaptive_2021].
-1. Simultaneously evaluating all the terms in the chained melded model is necessary and computationally challenging in a SMC/MCMC environment. This is a secondary motivation for the multi-stage sampler, as complex evidence synthesis / joint models often cannot be readily evaluated in this manner [see, for example, the models in @nicholson_interoperability_2021].
+1. There are no sufficiently flexible off the shelf SMC packages. `NIMBLE` [@michaud_sequential_2020] does not support either the B-spline basis function nor multiple-root finder, and whilst one could in theory recode both in `Rcpp` to make use of `RcppSMC` [@eddelbuettel_rcppsmc_2021; @johansen_smctc_2009], this would be an enormous undertaking.
+1. We also wish to point out the difficultly in implementing an SMC sampler for the considerably simpler first example encountered by @finke_efficient_2019 (with details discussed in the online appendix). Tuning these types of samplers is also nontrivial [@buchholz_adaptive_2021].
+
+Our multi-stage sampler arises from additional considerations, and has properties not immediately apparent in an SMC sampler, including:
+
+1. Simultaneously evaluating all the terms in the chained melded model is necessary and computationally challenging in a SMC/MCMC environment. This is relevant for complex evidence synthesis / joint models, as they often cannot be readily evaluated in this manner [see, for example, the models in @nicholson_interoperability_2021].
 
     Avoiding concurrently evaluating all submodels also enables the reuse of existing software, minimising the need for custom submodel and/or sampler implementations (and the effort the construction/tuning of them entails). We see this as an advantage of our multi-stage estimation method, as it reduces the effort required to be "more Bayesian" and better quantify uncertainty. We state this in both the introduction and in Section 4.6, and have added additional text to the first paragraph of Section 3.
 
@@ -158,8 +164,8 @@ In particular regarding the referee’s suggestion of an SMC sampler, we wish to
 
 1. Our preference for HMC is because the example depends on a relatively high number ($5 \times 10^{4}$) of high-quality samples from $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$, which is $N(2 + 10) = 444$-dimensional and highly correlated within each of the 12-dimensional individual subposteriors (see Figure \ref{fig:coef_pairs} at the end of this document). This is made possible by the efficient dynamic HMC implementation within `Stan`.
 
-For the reasons above we do believe there is a reasonable and implementable comparator for the results in Section 5.
-We feel this complex example is forms an ideal complement to the simple IPM example, in which a direct comparator is easily available and via which we demonstrate that our methodology can reproduce a joint model in a more straightforward setting.
+For the reasons above we do not believe there is a reasonable and easily implementable comparator for the results in Section 5.
+We feel this complex example forms an ideal complement to the simple IPM example, in which a direct comparator is easily available and via which we demonstrate that our methodology can reproduce a joint model in a more straightforward setting.
 
 Finally, we are not sure we understand the referee's discussion of "bias" in this context.
 We infer from their comments that the referee may mean a difference between between the results of a directly-specified joint model and the Markov melding model.
