@@ -849,9 +849,7 @@ The hazard at arbitrary time $t$ is
   m_{i}(t) = \eta_{0, i} + \eta^{b}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}(t - \kappa_{i})\boldsymbol{1}_{\{t \geq \kappa_{i}\}} \\
   \frac{\partial}{\partial t} m_{i}(t) = \eta^{b}_{1, i}\boldsymbol{1}_{\{t < \kappa_{i}\}} + \eta^{a}_{1, i}\boldsymbol{1}_{\{t \geq \kappa_{i}\}}.
 \end{gather*}
-
 Then, for $t > \kappa_{i}$, the cumulative hazard is
-
 \begin{align*}
   \int_{0}^{t} h_{i}(u) \text{d}u
   &= \int_{0}^{t}
@@ -935,7 +933,7 @@ Instead we focus on specifying appropriate marginals for each of $\gamma, \alpha
 
 Before justifying our chosen marginal prior, we note that the $\exp\{\boldsymbol{x}_{i}\theta + \alpha \frac{\partial}{\partial T_{i}} m_{i}(T_{i})\}$ term implies that the priors for $\theta$ and $\alpha$ are on the log-scale.
 Hence the magnitude of these parameters must be small, otherwise all event times would be very near zero or at infinity.
-The nonsymmetric effect of the transformation from the log scale also implies that symmetric priors are not obviously sensible.
+The asymmetric effect of the transformation from the log scale also implies that symmetric priors are not obviously sensible.
 From these observations we deduce that $\theta$ and $\alpha$ must not be too large in magnitude, however if they are negative then they can be slightly larger.
 Hence, we specify the skew-normal priors detailed in Section \ref{survival-submodel-pd_2}, noting that the skewness parameter for $\alpha$ is smaller, because $\frac{\partial}{\partial T_{i}} m_{i}(T_{i})$ is strictly positive and typically between 0.5 and 20, whilst $\boldsymbol{w}_{i}$ is standardised to be approximately standard normal.
 Lastly, if $\gamma$ is too far away from $1$ (in either direction), then the event times are very small either because the hazard increases rapidly ($\gamma \gg 1$), or because almost all of the cumulative hazard is in the neighbourhood of 0 ($\gamma \ll 1$).
@@ -969,16 +967,21 @@ knitr::include_graphics("plots/mimic-example/pf-prior-plot-small.pdf")
 
 ### Survival submodel
 
-Our estimate of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ relies on the fact that $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \prod_{i = 1}^{N}\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$.
+Our estimate of $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ relies on the fact that
+\begin{equation}
+  \pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \prod_{i = 1}^{N}\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i}).
+\end{equation}
 As such we estimate $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ for each individual and take the product of these estimates.
 Drawing samples from $\pd_{2, i}(T_{i}, d_{i}, \kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ is challenging: we use the approach proposed by @crowther_simulating_2013 as implemented in @brilleman_simsurv_2021.
 Inspecting the samples reveals correlation between $(T_{i}, d_{i})$ and $(\kappa_{i}, \eta^{b}_{1, i}, \eta^{a}_{1, i})$ that we would like to capture in our estimate.
 To do so, we fit a mixture of multivariate normal distributions to transformations of the continuous parameters with support on $\mathbb{R}$,
 \begin{equation}
-  \tilde{T}_{i} = \text{Logit}\left(\frac{T_{i}}{C_{i}}\right), \quad
-  \tilde{\kappa}_{i} = \text{Logit}\left(\frac{\kappa_{i} - u_{i, (1)}}{u_{i, (n)} - u_{i, (1)}}\right), \quad
-  \tilde{\eta}^{b}_{1, i} = \log(\eta^{b}_{1, i}), \quad
-  \tilde{\eta}^{a}_{1, i} = \log(\eta^{a}_{1, i}).
+  \begin{gathered}
+    \tilde{T}_{i} = \text{Logit}\left(\frac{T_{i}}{C_{i}}\right), \quad
+    \tilde{\kappa}_{i} = \text{Logit}\left(\frac{\kappa_{i} - u_{i, (1)}}{u_{i, (n)} - u_{i, (1)}}\right), \\
+    \tilde{\eta}^{b}_{1, i} = \log(\eta^{b}_{1, i}), \quad
+    \tilde{\eta}^{a}_{1, i} = \log(\eta^{a}_{1, i}).
+  \end{gathered}
 \end{equation}
 The resulting density estimate, with estimated mixture weight $\widehat{\theta}_{i} \in [0, 1]$, is
 \begin{align*}
