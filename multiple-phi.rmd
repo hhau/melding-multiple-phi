@@ -171,7 +171,8 @@ We assume that the submodels are connected in a manner akin to a chain and so ca
 Specifically we assume that submodels $\modelindex$ and $\modelindex + 1$ have some parameter $\phi_{\modelindex \cap \modelindex + 1}$ in common for $\modelindex = 1, \ldots, \Nm - 1$.
 For notational convenience define $\phi_{1} = \phi_{1 \cap 2}, \phi_{\Nm} = \phi_{\Nm-1 \cap \Nm}$ and $\phi_{\modelindex} = (\phi_{\modelindex - 1 \cap \modelindex}, \, \phi_{\modelindex \cap \modelindex + 1})$ for $\modelindex = 2, \ldots, \Nm - 1$, so that $\phi_{\modelindex} \subseteq \theta_{\modelindex}$ denotes the parameters in model $\modelindex$ shared with another submodel.
 The submodel-specific parameters of submodel $\modelindex$ are thus $\psi_\modelindex = \theta_\modelindex \setminus \phi_\modelindex$.
-Define the vector of all common quantities $\boldsymbol{\phi} = (\phi_{1}, \ldots, \phi_{\Nm}) = (\phi_{1 \cap 2}, \ldots, \phi_{\Nm - 1 \cap \Nm})$, and denote by $\boldsymbol{\phi}_{-\modelindex}$ the subvector of $\boldsymbol{\phi}$ excluding the $\modelindex$\textsuperscript{th} element.
+Define the vector of all common quantities $\boldsymbol{\phi} = \bigcup_{\modelindex = 1}^{\Nm} \phi_{\modelindex} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \ldots, \phi_{\Nm - 1 \cap \Nm})$ so that all elements in $\boldsymbol{\phi}$ are unique.
+Further denote by $\boldsymbol{\phi}_{-\modelindex}$ the subvector of $\boldsymbol{\phi}$ excluding the $\modelindex$\textsuperscript{th} element.
 It will also be convenient to define $\boldsymbol{\psi} = (\psi_{1}, \ldots, \psi_{\Nm})$ and likewise $\boldsymbol{Y} = (Y_{1}, \ldots, Y_{\Nm})$.
 Note that all components of $\boldsymbol{\phi}, \boldsymbol{\psi}$ and $\boldsymbol{Y}$ may themselves be multivariate.
 Additionally, because $\phi_{\modelindex \cap \modelindex + 1}$ may be a deterministic function of either $\theta_{\modelindex}$ or $\theta_{\modelindex + 1}$ we refer to $\phi_{\modelindex \cap \modelindex + 1}$ as a common parameter or a common quantity as appropriate.
@@ -273,9 +274,7 @@ where $g_{1}$ and $g_{2}$ are linear or logarithmic pooling functions as desired
 Complete dictatorial pooling requires the marginal pooled prior for each component in $\boldsymbol{\phi}$ to be chosen solely on the basis of only one of the two priors specified for it under the submodels.
 For $\modelindex = 1, \ldots, \Nm - 1$, the $\modelindex$\textsuperscript{th} marginal of the pooled prior is either
 \input{tex-input/pooled-prior-discussion/0043-dictatorial-def-three.tex}\noindent
-If two consecutive marginals are chosen to have the same submodel prior then we instead define
-\input{tex-input/pooled-prior-discussion/0045-dictatorial-def-three-part-three.tex}\noindent
-to preserve any dependence between $\phi_{\modelindex - 1 \cap \modelindex}$ and $\phi_{\modelindex \cap \modelindex + 1}$ that may be present under $\pd_{\modelindex}$.
+If two consecutive marginals are chosen to have the same submodel prior then we instead use $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$ to preserve any dependence between $\phi_{\modelindex - 1 \cap \modelindex}$ and $\phi_{\modelindex \cap \modelindex + 1}$.
 The complete dictatorially pooled prior is thus
 \input{tex-input/pooled-prior-discussion/0047-complete-dict-joint-def.tex}\noindent
 where, subject to the potential modification in Equation \eqref{eqn:dictatorial-def-three-part-three}, the terms in the product are as defined in Equation \eqref{eqn:dictatorial-def-three}.
@@ -344,7 +343,8 @@ Two independent, parallel sampling processes occur in stage one.
 Terms from the melded model that pertain to $\pd_{1}$ and $\pd_{3}$ are isolated
 \input{tex-input/dc-sampler/0021-stage-one-targets.tex}\noindent
 and targeted using standard MCMC methodology.
-This produces $N_{1}$ samples $\{(\phi_{1 \cap 2}, \psi_{1})_{n}\}_{n = 1}^{N_{1}}$ from $\pd_{\text{meld}, 1}(\phi_{1 \cap 2}, \psi_{2} \mid Y_{1})$ and $N_{3}$ samples $\{(\phi_{2 \cap 3}, \psi_{3})_{n}\}_{n = 1}^{N_{3}}$ from $\pd_{\text{meld}, 3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$.
+Assuming that the stage one chains converge and after discarding warmup iterations --possibly thinning them, if within-chain correlation is high-- we obtain $N_{1}$ samples from $\{(\phi_{1 \cap 2}, \psi_{1})_{n}\}_{n = 1}^{N_{1}}$ from $\pd_{\text{meld}, 1}(\phi_{1 \cap 2}, \psi_{2} \mid Y_{1})$, and $N_{3}$ samples $\{(\phi_{2 \cap 3}, \psi_{3})_{n}\}_{n = 1}^{N_{3}}$ from $\pd_{\text{meld}, 3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$.
+For well mixing stage one Markov chains targetting the correct stationary distribution, and large values of $N_{1}$ or $N_{3}$, the stage one samples accurately approximate the subposteriors.
 
 #### Stage two
 
@@ -576,8 +576,8 @@ We consider logarithmic pooling with $\lambda = (\frac{4}{5}, \frac{4}{5}, \frac
 Because the correlation between $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$ in $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$ is important, we do not consider linear pooling in this example.
 Logarithmic pooling requires estimates of $\pd_{1}(\phi_{1 \cap 2})$ and $\pd_{2}(\phi_{1 \cap 2}, \phi_{2 \cap 3})$.
 Because these are mixed distributions, with both discrete and continuous components, standard kernel density estimation, as suggested by @goudie_joining_2019, is inappropriate.
-Instead, we fit appropriate parametric mixture distributions to the unknown prior marginal distributions.
-Details for all the parametric mixture distribution estimates are contained in Appendix&nbsp;\ref{estimating-submodel-prior-marginal-distributions}.
+Instead we fit, to transformed versions of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, a mixture containing a discrete component and either a Gaussian or beta distribution, depending on the transformation.
+Further details for all the mixture distribution estimates are contained in Appendix&nbsp;\ref{estimating-submodel-prior-marginal-distributions}.
 
 We use the parallel multi-stage sampler with $\pd_{\text{pool}, 1}(\phi_{1 \cap 2}) = \pd_{1}(\phi_{1 \cap 2}), \,\, \pd_{\text{pool}, 3}(\phi_{2 \cap 3}) = \pd_{3}(\phi_{2 \cap 3})$ and $\pd_{\text{pool}, 2}(\phi_{1 \cap 2}, \phi_{2 \cap 3}) = \pd_{\text{pool}}(\boldsymbol{\phi}) \mathop{/} \left(\pd_{1}(\phi_{1 \cap 2}) \pd_{3}(\phi_{2 \cap 3}) \right)$.
 That is, in stage one we target the subposteriors $\pd_{1}(\phi_{1 \cap 2}, \psi_{1} \mid Y_{1})$ and $\pd_{3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$; in stage two we target the full melded model.
@@ -1124,7 +1124,8 @@ It will be convenient to rewrite \eqref{eqn:sub-step-target} as
 
 Suppose there are $K_{1}$ stage one samples from $\pd_{1}(\chi_{1}, \psi_{1} \mid Y_{1})$, and each sample has a corresponding $\phi_{1 \cap 2}$.
 We propose $\psi_{1, 1}^{*}$ and $\chi_{1, 1}^{*}$ (hence $\phi_{1 \cap 2, 1}^{*})$ by sampling a random integer $k_{1}^{*}$ from $\{1, \ldots, K_{1}\}$, retrieving the corresponding values of $\psi_{1}$ and $\chi_{1}$, and ignoring $(\chi_{1, 2}, \ldots, \chi_{1, N}, \psi_{1, 2}, \ldots, \psi_{1, N})$.
-This is equivalent to proposing from $\pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1})$
+Given stage one samples from the correct stationary distribution, obtained from the post-warmup samples of a well mixed set of Markov chains, such a proposal mechanism is approximately equivalent to proposing from $\pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1})$.
+The quality of the approximation depends on the quality of the stage one samples.
 Under this proposal, noting that the denominator term in \eqref{eqn:sub-step-one-target} does not depend on the proposed parameters, the acceptance probability for this sub-step is
 \begin{equation}
 \begin{aligned}

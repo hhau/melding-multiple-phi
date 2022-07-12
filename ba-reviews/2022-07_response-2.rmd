@@ -1,0 +1,114 @@
+---
+title: "Response to Reviewers"
+author: "Andrew A. Manderson and Robert J. B. Goudie"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+fontfamily: tgpagella
+fontsize: 10pt
+papersize: a4
+geometry: margin=2.25cm
+bibliography: ../bibliography/multi-phi-bib.bib
+csl: ../bibliography/journal-of-the-royal-statistical-society.csl
+link-citations: true
+hyperrefoptions:
+  - backref
+  - colorlinks=true
+output:
+  pdf_document:
+    includes:
+      in_header:
+        ../tex-input/pre.tex
+    fig_caption: true
+    number_sections: true
+    keep_tex: true
+---
+
+<!--
+Rscript -e 'rmarkdown::render("ba-reviews/2022-07_response-2.rmd")'
+-->
+
+# Reviewer 1 {-}
+
+We thank the reviewer for their time and useful feedback on our manuscript.
+
+> $\hookrightarrow$**R1**: _There are still a few remaining details that are fuzzy, for example on page 23, first paragraph of section 5.5, "we fit appropriate parametric mixture distributions to the unknown prior marginal distributions."_
+
+We have reworded final sentences of the first paragraph of Section 5.5 to read
+
+- "_Instead we fit, to transformed versions of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, a mixture containing a discrete component and either a Gaussian or beta distribution, depending on the transformation. Further details for all the mixture distribution estimates are contained in Appendix H._"
+
+~\newline~\hrule~\newline~
+
+> $\hookrightarrow$**R1**: _Finally, they have a couple of really similar papers that have been published recently; one just appeared in Statistics and Computing [@manderson_numerically_2022] and while they did cite it, it's not really clear how these two papers are different._
+
+The current paper extends the original single, common $\phi$ modelling framework of Markov melding [@goudie_joining_2019] to chains of submodels.
+@manderson_numerically_2022 considers, in the original Markov melding context, the issue of accurately estimating the unknown prior marginal distribution $\pd_{\modelindex}(\phi)$.
+@manderson_numerically_2022 observes that we only interact with the unknown prior marginal via the _self-density ratio_ $r(\phinu, \phide) = \pd_{\modelindex}(\phinu) \mathop{/} \pd_{\modelindex}(\phide)$, for two distinct points $\phinu$ and $\phide$.
+A computational method is then proposed for estimating $r(\phinu, \phide)$ with an emphasis on accuracy for improbable, under the marginal $\pd_{\modelindex}$, values of $\phinu$ or $\phide$.
+The papers are very distinct -- self-density ratios are of interest in other areas of statistics and machine learning[@hiraoka:hamada:hori:14; @hiraoka:hamada:hori:18], with the method of @manderson_numerically_2022 being most closely related to umbrella sampling [@matthews:etal:18].
+And whilst it may have been possible to extend @manderson_numerically_2022 for use in Section 5.5 of the current paper (it does not gracefully handle mixed discrete/continuous parameters), this would be a major undertaking and not relevant to the chains of submodels idea currently under discussion.
+
+# Reviewer 2 {-}
+
+We thank the reviewer for their time and detailed, useful comments on our manuscript.
+
+> $\hookrightarrow$**R2**: _In my previous review, I mentioned that the approach proposed here induces a bias. I may not have expressed this clearly enough. The bias I was referring to is the bias induced by the proposed MCMC schemes from Section 3.1 and Appendix B. Unless "Stage One" MCMC chain is initialised from the correct posterior (which is impossible in realistic examples) the proposed MCMC schemes are biased because sampling from the MCMC draws is not equivalent to sampling from the posterior. This should be mentioned, e.g. in Section 3.1. Likewise, the sentence starting with "This is equivalent to proposing from (...)" in Appendix K needs to be phrased more carefully._
+
+We thank the reviewer for this helpful clarification.
+
+The stage one MCMC chains do not need to be initialised from the correct posterior.
+We can, and do, discard the pre-convergence fraction of the chain as warmup, and thin the samples if within-chain correlation is high.
+See for example[^links] the stage one MCMC settings for [$\color{mymidblue}{\pd_{1}}$ \textcolor{mymidblue}{(here)}](https://github.com/hhau/melding-multiple-phi/blob/master/scripts/mimic-example/fit-pf-spline-model.R#L25-L26) and [$\color{mymidblue}{\pd_{3}}$ \textcolor{mymidblue}{(here)}](https://github.com/hhau/melding-multiple-phi/blob/master/scripts/mimic-example/fit-fluid-piecewise-model.R#L53-L54) in the respiratory failure example.
+We had not made this point about warmup/thinning in previous versions of the manuscript, and it is worth making, hence after Eqn (29 TODO: CHECK NUMBERING) we have added
+
+- "_Assuming that the stage one chains converge and after discarding warmup iterations --possibly thinning them, if within-chain correlation is high-- we obtain $N_{1}$ samples from $\{(\phi_{1 \cap 2}, \psi_{1})_{n}\}_{n = 1}^{N_{1}}$ from $\pd_{\text{meld}, 1}(\phi_{1 \cap 2}, \psi_{2} \mid Y_{1})$, and $N_{3}$ samples $\{(\phi_{2 \cap 3}, \psi_{3})_{n}\}_{n = 1}^{N_{3}}$ from $\pd_{\text{meld}, 3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$. For well mixing stage one Markov chains targetting the correct stationary distribution, and large values of $N_{1}$ or $N_{3}$, the stage one samples accurately approximate the subposteriors._"
+
+The third sentence following Equation (84) in Appendix K now reads
+
+- "_Given stage one samples from the correct stationary distribution, obtained from the post-warmup samples of a well mixed set of Markov chains, such a proposal mechanism is approximately equivalent to proposing from $\pd_{1}(\chi_{1, 1}, \psi_{1, 1} \mid Y_{1})$. The quality of the approximation depends on the quality of the stage one samples._"
+
+_thinking that I should cut the following two paragraphs really_:
+
+Our experience with multi-stage sampling schemes is that there are two possible origins for bias in the final posterior.
+The first arises if the stage one samples are "incorrect", perhaps due to a non-convergent or poorly performing MCMC algorithm, or because the stage one submodel is implemented incorrectly.
+The former is detectable using standard MCMC convergence diagnostics; the latter is perhaps detectable via SBC [@talts_validating_2020], but it seems generally accepted that models in papers are implemented correctly.
+The second form of bias is due to the representational limitations of a finite number samples.
+If the posterior for $\boldsymbol{\phi}$ shifts considerably from stage one to the final melded posterior, then, even for very large $N_{1}$, we will have insufficient samples in the high density region of $\boldsymbol{\phi}$.
+Any further reweighting scheme is unable to produce an acceptable approximation to the melded posterior in this setting, as it lacks enough input material (samples in the right area) to approximate the melded posterior.
+We discuss this point in the final sentences of the third paragraph of our conclusion.
+
+Practically, some bias from the MCMC scheme does seem inevitable
+Whilst true that resampling from a finite collection of samples is an imperfect, albeit arbitrarily close, approximation to sampling from the subposterior of interest, the hope is that the splitting the model into submodels permits accurate, and ideally cheaper, sampling of the subposterior.
+Such a sample from the subposterior can then be very large, with samples from it becoming and arbitrarily good approximation to the subposterior of interest.
+Finite sample biases of this type are present in any MCMC-based Bayesian analysis.
+
+[^links]: Links may or may not work depending on your [\textcolor{mymidblue}{PDF viewer}](https://github.com/latex3/hyperref/issues/110#issuecomment-593479992).
+
+~\newline~\hrule~\newline~
+
+> $\hookrightarrow$**R2**: _I am finding Equations 23 and 25 very confusing. I understand what the authors want to say: that we can/should preserve dependence between two consecutive marginals when possible. Instead of the "=" symbol in Equations 23 and 25, it would be better to just explain this in words._
+
+Equation (23) and the first line of Equation (25) in the previous version have been excised.
+The relevant sentence now reads:
+
+- "_If two consecutive marginals are chosen to have the same submodel prior then we instead use $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$ to preserve any dependence between $\phi_{\modelindex - 1 \cap \modelindex}$ and $\phi_{\modelindex \cap \modelindex + 1}$._"
+
+~\newline~\hrule~\newline~
+
+> $\hookrightarrow$**R2**: _At the beginning of Section 2 (Page 6), the definition of bold $\phi$ as a tuple $(\phi_1, \ldots, \phi_M)$ is again confusing because some parameters appear in both $\phi_i$ and $\phi_{i+1}$ and would thus appear twice in the tuple.
+It would be good to explain the notational convention to the reader here or simply write it as a set and not a tuple._
+
+The sentence defining $\boldsymbol{\phi}$ has been rewritten to read
+
+- "_Define the vector of all common quantities $\boldsymbol{\phi} = \bigcup_{\modelindex = 1}^{\Nm} \phi_{\modelindex} = (\phi_{1 \cap 2}, \phi_{2 \cap 3}, \ldots, \phi_{\Nm - 1 \cap \Nm})$ so that all elements in $\boldsymbol{\phi}$ are unique._"
+
+
+# Bibliography {-}
+
+<div id="refs"></div>
+
+
+<!--
+\newpage
+
+# Appendix {-}
+-->
