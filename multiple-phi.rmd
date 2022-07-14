@@ -274,7 +274,9 @@ where $g_{1}$ and $g_{2}$ are linear or logarithmic pooling functions as desired
 Complete dictatorial pooling requires the marginal pooled prior for each component in $\boldsymbol{\phi}$ to be chosen solely on the basis of only one of the two priors specified for it under the submodels.
 For $\modelindex = 1, \ldots, \Nm - 1$, the $\modelindex$\textsuperscript{th} marginal of the pooled prior is either
 \input{tex-input/pooled-prior-discussion/0043-dictatorial-def-three.tex}\noindent
-If two consecutive marginals are chosen to have the same submodel prior then we instead use $\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1})$ to preserve any dependence between $\phi_{\modelindex - 1 \cap \modelindex}$ and $\phi_{\modelindex \cap \modelindex + 1}$.
+If two consecutive marginals are chosen to have the same submodel prior, then we wish to retain the dependence between $\phi_{\modelindex - 1 \cap \modelindex}$ and $\phi_{\modelindex \cap \modelindex + 1}$ present in $\pd_{\modelindex}$.
+We thus redefine consecutive terms so that
+\input{tex-input/pooled-prior-discussion/0045-dictatorial-def-three-part-three.tex}\noindent
 The complete dictatorially pooled prior is thus
 \input{tex-input/pooled-prior-discussion/0047-complete-dict-joint-def.tex}\noindent
 where, subject to the potential modification in Equation \eqref{eqn:dictatorial-def-three-part-three}, the terms in the product are as defined in Equation \eqref{eqn:dictatorial-def-three}.
@@ -309,7 +311,7 @@ Appendix&nbsp;\ref{log-pooling-gaussian-densities} shows analytically that $\lam
 # Posterior estimation
 
 We now present a multi-stage MCMC method for generating samples from the melded posterior.
-Whilst the melded posterior is a standard Bayesian posterior and so can, in principle, be targetted using any suitable Monte Carlo method, in practice this may be cumbersome or infeasible.
+Whilst the melded posterior is a standard Bayesian posterior and so can, in principle, be targeted using any suitable Monte Carlo method, in practice this may be cumbersome or infeasible.
 More specifically, it may be feasible to fit each submodel separately using standard methods, but when the submodels are combined -- either through Markov melding, or by expanding the definition of one submodel to include another -- the computation required to estimate the posterior in a single step poses an insurmountable barrier.
 In such settings we can employ multi-stage posterior estimation methods including @tom:etal:10, @lunn:etal:13, @hooten_making_2019, and @mauff_joint_2020.
 We propose a multi-stage strategy that uses the chain-like relationship to both avoid evaluating all submodels simultaneously, and parallelise the computation required in the first stage to produce posterior samples in less time than an equivalent sequential method[^sequential].
@@ -344,7 +346,7 @@ Terms from the melded model that pertain to $\pd_{1}$ and $\pd_{3}$ are isolated
 \input{tex-input/dc-sampler/0021-stage-one-targets.tex}\noindent
 and targeted using standard MCMC methodology.
 Assuming that the stage one chains converge and after discarding warmup iterations --possibly thinning them, if within-chain correlation is high-- we obtain $N_{1}$ samples from $\{(\phi_{1 \cap 2}, \psi_{1})_{n}\}_{n = 1}^{N_{1}}$ from $\pd_{\text{meld}, 1}(\phi_{1 \cap 2}, \psi_{2} \mid Y_{1})$, and $N_{3}$ samples $\{(\phi_{2 \cap 3}, \psi_{3})_{n}\}_{n = 1}^{N_{3}}$ from $\pd_{\text{meld}, 3}(\phi_{2 \cap 3}, \psi_{3} \mid Y_{3})$.
-For well mixing stage one Markov chains targetting the correct stationary distribution, and large values of $N_{1}$ or $N_{3}$, the stage one samples accurately approximate the subposteriors.
+For well mixing stage one Markov chains targeting the correct stationary distribution, and large values of $N_{1}$ or $N_{3}$, the stage one samples accurately approximate the subposteriors.
 
 #### Stage two
 
@@ -545,7 +547,7 @@ The strength of the latter relationship is captured by $\alpha$.
 Hence, the hazard is
 \input{tex-input/mimic-example/0030-surv-submodel-def.tex}\noindent
 The survival function at an individual's observed event time and status, $(T_{i}, d_{i})$, denoted $S_{i}(T_{i}) = \exp\{-\int_{0}^{T_{i}}h_{i}(u)\text{d}u\}$, has an analytic form which we derive in Appendix&nbsp;\ref{analytic-form-for-the-survival-function}.
-Hence the likelihood for individual $i$ is
+Thus, the likelihood for individual $i$ is
 \begin{equation}
   \pd(T_{i}, d_{i} \mid \gamma, \boldsymbol{\theta}, \alpha, \kappa_{i}, \eta_{1, i}^{b}, \eta_{1, i}^{a}, \boldsymbol{w}_{i}) = h_{i}(T_{i})^{d_{i}} S_{i}(T_{i}), \\
 \end{equation}
