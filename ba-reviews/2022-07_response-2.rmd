@@ -32,7 +32,9 @@ We thank the reviewer for their time and useful feedback on our manuscript.
 
 > $\hookrightarrow$**R1**: _There are still a few remaining details that are fuzzy, for example on page 23, first paragraph of section 5.5, "we fit appropriate parametric mixture distributions to the unknown prior marginal distributions."_
 
-We agree that this sentence was fuzzy, however the following sentence referred to the appendix that contains all relevant details. Such details are extensive and unsuitable for inclusion in the main text. We have eluded to the detail of said appendix in the revised version of the final sentences in the first paragraph of Section 5.5, which read
+We agree that this sentence was fuzzy, however the following sentence referred to the appendix containing all necessary details. 
+Such details are extensive and unsuitable for inclusion in the main text.
+We have alluded to the content of said appendix in our revised manuscript. The final sentences of the first paragraph in Section 5.5 now read
 
 - "_Instead we fit, to transformed versions of $\phi_{1 \cap 2}$ and $\phi_{2 \cap 3}$, a mixture containing a discrete component and either a Gaussian or beta distribution, depending on the transformation. Further details for all the mixture distribution estimates are contained in Appendix H._"
 
@@ -61,7 +63,7 @@ We agree that some of the wording in Section 3.1 and Appendix k was insufficient
 The theoretical correctness and unbiasedness of the multi-stage sampler requires exact samples from the subposteriors.
 Standard MCMC methods do not guarantee exactness within a finite computational budget, but can be arbitrarily close.
 In practice, if the stage one MCMC samples are close enough to an exact sample from the subposterior, then the resulting bias is minimal.
-Many two-stage methods make use of this practical equivalence [@lunn:etal:13; @mauff_joint_2020; @tom:etal:10; @blomstedt:etal:19; @hooten_making_2019] even considering the potential for this type of bias.
+Many two-stage methods make excellent use of this practical equivalence [@lunn:etal:13; @mauff_joint_2020; @tom:etal:10; @blomstedt:etal:19; @hooten_making_2019] despite the potential for this type of bias.
 
 We have reworked to the relevant sentences in Section 3.1 to read
 
@@ -110,7 +112,7 @@ We thus redefine consecutive terms so that_"
         \pd_{\text{pool, dict}}(\phi_{\modelindex - 1 \cap \modelindex})
         \pd_{\text{pool, dict}}(\phi_{\modelindex \cap \modelindex + 1})
           = \, &\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}) \pd_{\modelindex}(\phi_{\modelindex \cap \modelindex + 1}), \quad 
-          \textsc{\footnotesize{(From (22))}} \\
+          \textsc{\footnotesize{(From Eq. (22))}} \\
         \pd_{\text{pool, dict}}(\phi_{\modelindex - 1 \cap \modelindex})
         \pd_{\text{pool, dict}}(\phi_{\modelindex \cap \modelindex + 1}) 
           \coloneqq \, &\pd_{\modelindex}(\phi_{\modelindex - 1 \cap \modelindex}, \phi_{\modelindex \cap \modelindex + 1}). \quad
