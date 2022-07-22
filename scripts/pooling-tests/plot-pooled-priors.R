@@ -23,7 +23,7 @@ n_lambda <- 5
 pooling_methods <- c("logarithmic", "linear")
 lambda_one_values <- seq(from = 0, to = 0.5, length.out = n_lambda)
 control_df <- expand.grid(
-  pooling_method = pooling_methods, 
+  pooling_method = pooling_methods,
   lambda_one_value = lambda_one_values
 )
 
@@ -43,5 +43,6 @@ plot_output <- wrap_plots(
 
 ggsave_fullpage(
   filename = "plots/pooling-tests/version-two.pdf",
-  plot = plot_output
+  plot = plot_output,
+  adjust_height = -1
 )

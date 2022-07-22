@@ -1,0 +1,13 @@
+In my previous review, I mentioned that the approach proposed here induces a bias.
+I may not have expressed this clearly enough.
+The bias I was referring to is the bias induced by the proposed MCMC schemes from Section 3.1 and Appendix B.
+Unless "Stage One" MCMC chain is initialised from the correct posterior (which is impossible in realistic examples) the proposed MCMC schemes are biased because sampling from the MCMC draws is not equivalent to sampling from the posterior.
+This should be mentioned, e.g. in Section 3.1.
+Likewise, the sentence starting with "This is equivalent to proposing from (...)" in Appendix K needs to be phrased more carefully.
+
+I am finding Equations 23 and 25 very confusing.
+I understand what the authors want to say: that we can/should preserve dependence between two consecutive marginals when possible.
+Instead of the "=" symbol in Equations 23 and 25, it would be better to just explain this in words.
+
+At the beginning of Section 2 (Page 6), the definition of bold \phi as a tuple (\phi_1, ..., \phi_M) is again confusing because some parameters appear in both \phi_i and \phi_{i+1} and would thus appear twice in the tuple.
+It would be good to explain the notational convention to the reader here or simply write it as a set and not a tuple.

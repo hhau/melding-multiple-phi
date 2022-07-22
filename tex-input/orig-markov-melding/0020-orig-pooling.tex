@@ -2,10 +2,10 @@
   \pd_{\text{pool, lin}}(\phi) &=
     \frac{1}{K_{\text{lin}}(\lambda)}
     \sum_{\modelindex = 1}^{\Nm} \lambda_{\modelindex} \pd_{\modelindex}(\phi), \quad
-  K_{\text{lin}}(\lambda) = \int \sum_{\modelindex = 1}^{\Nm} \lambda_{\modelindex} \pd_{\modelindex}(\phi) \text{d}\phi \label{eqn:orig-pooling-linear}\\
+  K_{\text{lin}}(\lambda) = \int \sum_{\modelindex = 1}^{\Nm} \lambda_{\modelindex} \pd_{\modelindex}(\phi) \text{d}\phi, \label{eqn:orig-pooling-linear}\\
   \pd_{\text{pool, log}}(\phi) &=  
     \frac{1}{K_{\text{log}}(\lambda)}
     \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}(\phi)^{\lambda_{\modelindex}}, \quad
-  K_{\text{log}}(\lambda) = \int \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}(\phi)^{\lambda_{\modelindex}} \text{d}\phi
+  K_{\text{log}}(\lambda) = \int \prod_{\modelindex = 1}^{\Nm} \pd_{\modelindex}(\phi)^{\lambda_{\modelindex}} \text{d}\phi,
   \label{eqn:orig-pooling-logarithmic}
 \end{align}

@@ -1,0 +1,8 @@
+I really appreciated the authors' detailed response document.
+For the record, I still think the manuscript is too long and the second example is too complicated for readers to easily digest.
+It seems like the second reviewer agreed with me on that.
+With that said, I understand the authors' reason for retaining it in the main text and they did add some clarifying comments and background about the approach that were helpful.
+There are still a few remaining details that are fuzzy, for example on page 23, first paragraph of section 5.5, "we fit appropriate parametric mixture distributions to the unknown prior marginal distributions."
+However, I understand there are a lot of choices and complexities to these approaches when different priors are used for submodels, and they clearly described the challenges associated with that in their author response document.
+Also, regarding the complicated second example in the manuscript: It seems unreasonable to ask them to prepare an entirely new example that is slightly simpler.
+Finally, they have a couple of really similar papers that have been published recently; one just appeared in Statistics and Computing (Manderson and Goudie, 2022) and while they did cite it, it's not really clear how these two papers are different.
