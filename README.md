@@ -1,7 +1,7 @@
-# Code to accompany [_Combining chains of Bayesian models with Markov melding_](https://arxiv.org/abs/2111.11566)
+# Code to accompany [_Combining chains of Bayesian models with Markov melding_](https://doi.org/10.1214/22-BA1327)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6552714.svg)](https://doi.org/10.5281/zenodo.6552714)
-
+[`arXiv` version](https://arxiv.org/abs/2111.11566)
 
 ## Re-running this code
 
